@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 function NotFoundComponent() {
   return (
@@ -113,6 +114,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SiteHeader />
+      <ScrollReveal />
       <Outlet />
       <footer className="site-footer"><div className="container-wide footer-inner"><div><Link to="/" className="footer-brand">houseprovider<span>.in</span></Link><p>A better way to find where you belong.</p></div><nav aria-label="Footer navigation"><Link to="/properties" search={{ intent: "Rent" }}>Rent</Link><Link to="/properties" search={{ intent: "Buy" }}>Buy</Link><Link to="/properties">Explore homes</Link></nav></div><div className="container-wide footer-bottom"><span>© HouseProvider.in</span><span>Showcase properties are fictional and illustrative.</span></div></footer>
     </QueryClientProvider>
