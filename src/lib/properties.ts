@@ -33,7 +33,7 @@ export const properties: Property[] = [
   { slug: "2bhk-apartment-adyar-chennai-1006", title: "The Palm Apartment", city: "Chennai", locality: "Adyar", price: 38000, intent: "Rent", type: "Apartment", beds: 2, baths: 2, area: 980, furnishing: "Semi furnished", image: chennai, description: "A light-filled home with a relaxed living space, balcony greenery and a warm, welcoming feel.", amenities: ["Balcony", "Lift", "Security", "Air conditioning"], available: "Availability to be confirmed" },
 ];
 
-export type SearchFilters = { location?: string; intent?: string; type?: string; budget?: string };
+export type SearchFilters = { location?: string | undefined; intent?: string | undefined; type?: string | undefined; budget?: string | undefined };
 
 export function filterProperties(items: Property[], filters: SearchFilters) {
   const location = filters.location?.trim().toLocaleLowerCase() ?? "";
