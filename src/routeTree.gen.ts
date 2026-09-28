@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListPropertyRoute = ListPropertyRouteImport.update({
+  id: '/list-property',
+  path: '/list-property',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PropertiesRoute = PropertiesRouteImport.update({
@@ -31,30 +37,34 @@ const PropertySlugRoute = PropertySlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/properties' | '/property/$slug'
+  fullPaths: '/' | '/list-property' | '/properties' | '/property/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/properties' | '/property/$slug'
-  id: '__root__' | '/' | '/properties' | '/property/$slug'
+  to: '/' | '/list-property' | '/properties' | '/property/$slug'
+  id: '__root__' | '/' | '/list-property' | '/properties' | '/property/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ListPropertyRoute: typeof ListPropertyRoute
   PropertiesRoute: typeof PropertiesRoute
   PropertySlugRoute: typeof PropertySlugRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/list-property': {
+      id: '/list-property'
+      path: '/list-property'
+      fullPath: '/list-property'
+      preLoaderRoute: typeof ListPropertyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/properties': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ListPropertyRoute: ListPropertyRoute,
   PropertiesRoute: PropertiesRoute,
   PropertySlugRoute: PropertySlugRoute,
 }
