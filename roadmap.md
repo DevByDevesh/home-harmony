@@ -2,7 +2,7 @@
 
 - [x] Inspect starter, dependencies, and preview diagnostics.
 - [x] Define Phase 1 architecture and visual direction.
-- [ ] Phase 1: shell, home, search, listing results, property details, responsive layout, and tests.
+- [x] Phase 1: shell, home, search, listing results, property details, responsive layout, and browser checks.
 - [ ] Phase 2: map, advanced filters, saved homes, comparison, dashboard, visit scheduling.
 - [ ] Phase 3: owner listing workflows, agent CRM, analytics, verification architecture.
 - [ ] Phase 4: connected AI search, matching, listing assistance, alerts.
