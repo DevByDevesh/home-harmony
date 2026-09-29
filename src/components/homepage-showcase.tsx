@@ -1,0 +1,22 @@
+import { Link } from "@tanstack/react-router";
+import { ArrowUpRight, GitCompareArrows, MapPin, ScanSearch, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { DemoMap } from "@/components/demo-map";
+import { Reveal } from "@/components/cinematic-motion";
+import { displayPrice, listings } from "@/lib/catalog";
+
+const neighborhoods = ["Hinjewadi", "Bandra West", "Indiranagar", "Jubilee Hills"];
+
+export function HomepageShowcase() {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const pair = listings.slice(0, 2);
+  return <>
+    <section className="story-band story-match"><div className="wrap story-split"><Reveal><p className="kicker">A SEARCH THAT STARTS WITH YOU / 02</p><h2>A little more <em>in sync.</em></h2><p>Tell us what matters — from budget to BHK — and see which listing details line up. Match explanations use only the preferences you choose.</p><Button asChild variant="outline"><Link to="/dashboard" search={{ tab: "preferences" }}>Set your preferences <SlidersHorizontal size={16}/></Link></Button></Reveal><Reveal className="story-index" delay={0.1}><span>01 / YOUR CRITERIA</span><span>02 / LISTING FACTS</span><span>03 / A CLEARER MATCH</span><ScanSearch size={34} aria-hidden="true"/></Reveal></div></section>
+    <section className="story-band story-neighborhood"><div className="wrap"><Reveal className="story-head"><div><p className="kicker">EXPLORE THE EVERYDAY / 03</p><h2>Find your <em>neighborhood.</em></h2></div><p>Start with a place. Explore fictional example homes across familiar Indian neighborhoods.</p></Reveal><div className="neighborhood-grid">{neighborhoods.map((name, i) => <Reveal key={name} delay={i * 0.05}><Link to="/properties" search={{ location: name }} className="neighborhood-link"><span>0{i + 1}</span><strong>{name}</strong><small>{listings.find(h => h.neighborhood === name)?.city}</small><ArrowUpRight size={20}/></Link></Reveal>)}</div></div></section>
+    <section className="story-band story-map"><div className="wrap story-split"><Reveal className="story-map-copy"><p className="kicker">ANOTHER WAY TO EXPLORE / 04</p><h2>See the bigger <em>picture.</em></h2><p>Explore homes visually, then switch between the map and the list whenever you like. Pins here show approximate positions in a demo map, not real locations.</p><Button asChild variant="outline"><Link to="/properties" search={{ view: "map" }}>Explore the map <MapPin size={16}/></Link></Button></Reveal><Reveal className="story-map-frame" delay={0.1}><DemoMap homes={listings.slice(0, 5)} selected={selected} hovered={hovered} onSelect={setSelected} onHover={setHovered} layer="map"/></Reveal></div></section>
+    <section className="story-band story-compare"><div className="wrap"><Reveal className="story-head"><div><p className="kicker">SIDE BY SIDE / 05</p><h2>Good decisions need <em>perspective.</em></h2></div><p>Compare the facts that matter to you, without rankings or a “best” home.</p></Reveal><div className="compare-editorial">{pair.map((home, i) => <Reveal key={home.slug} delay={i * 0.08}><Link to="/property/$slug" params={{ slug: home.slug }} className="compare-editorial-item"><img src={home.image} alt={`Illustrative view of ${home.name}`} loading="lazy" width={500} height={380}/><div><span>{home.neighborhood}, {home.city}</span><strong>{home.name}</strong><small>{home.beds} BHK · {home.area.toLocaleString("en-IN")} sq.ft. · {displayPrice(home)}{home.mode === "Rent" ? " / month" : ""}</small></div></Link></Reveal>)}</div><Reveal className="story-bottom"><span>Illustrative homes · fictional details and prices</span><Button asChild variant="outline"><Link to="/compare">Open comparison <GitCompareArrows size={16}/></Link></Button></Reveal></div></section>
+    <section className="story-band story-trust"><div className="wrap story-split"><Reveal><p className="kicker">A CLEARER PICTURE / 06</p><h2>Trust starts with <em>clarity.</em></h2></Reveal><Reveal delay={0.08}><ShieldCheck size={32} aria-hidden="true"/><p>Every home shown here is a fictional example and is not verified. As real checks become available, verification will reflect actual review records — never an assumption.</p><Link className="text-link" to="/properties">Explore property details <ArrowUpRight size={17}/></Link></Reveal></div></section>
+  </>;
+}
