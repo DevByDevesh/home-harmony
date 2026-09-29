@@ -14,6 +14,7 @@ import { amenityOptions, cities, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
 import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
 import { useServerFn } from "@tanstack/react-start";
+import { SavedPhotoUploader, StagedPhotoUploader, uploadAll } from "@/components/photo-uploader";
 import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
 import { emptyRecord, requestChecks, verificationItems, type VerificationKey } from "@/lib/verification";
 
@@ -49,6 +50,7 @@ function Wizard() {
   // Editing a database listing: load it from the server (ownership checked there); never touches the device draft.
   useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"], checks: d.checks as VerificationKey[] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
+  const [staged, setStaged] = useState<File[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => { if (dbEdit || !ready || draft || submitted) return; ownerActions.startDraft(edit); }, [ready, edit, draft, submitted]);
@@ -68,7 +70,7 @@ function Wizard() {
   const toggle = <K extends "amenities" | "photos" | "checks">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
   const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
-    if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(r => { ownerActions.discardDraft(); setSavedToDb(true); setSubmitted(r.id); toast.success("Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
+    if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => { ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]); setSavedToDb(true); setSubmitted(r.id); toast.success(failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
   const home = draftToHome(draft);
 
@@ -103,9 +105,10 @@ function Wizard() {
       {step === 5 && <>
         <p className="form-hint">Pick sample photos for this demo. The first one becomes the cover.</p>
         <div className="photo-grid">{(Object.keys(demoPhotos) as DemoPhoto[]).map(p => { const i = draft.photos.indexOf(p); return <button key={p} type="button" aria-pressed={i >= 0} className="photo-pick" onClick={() => toggle("photos", p)}><img src={demoPhotos[p]} alt="" loading="lazy"/><span>{i === 0 ? "Cover · " : i > 0 ? `${i + 1} · ` : ""}{photoLabels[p]}</span></button>; })}</div>
+        {dbEdit ? <SavedPhotoUploader propertyId={dbEdit}/> : !data.editingId ? <StagedPhotoUploader files={staged} onChange={setStaged}/> : <>
         <label className="upload-drop"><ImagePlus size={20}/><span>Try uploading your own (preview only)</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => { const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith("image/") && f.size < 10_000_000).slice(0, 8); setUploads(u => [...u, ...files.map(f => ({ name: f.name, url: URL.createObjectURL(f) }))]); }}/></label>
         {uploads.length > 0 && <div className="upload-list">{uploads.map(u => <figure key={u.url}><img src={u.url} alt={u.name}/><figcaption>{u.name}</figcaption></figure>)}</div>}
-        <p className="form-hint">Uploaded files stay in this browser tab only and disappear on refresh. Nothing is stored until a storage service is connected.</p></>}
+        <p className="form-hint">Uploaded files stay in this browser tab only and disappear on refresh. Nothing is stored until a storage service is connected.</p></>}</>}
       {step === 6 && <>
         <p className="form-hint">Choose which checks you’d like to request. Listing review and photo checks are always requested on submission.</p>
         <div className="choice-grid">{verificationItems.filter(i => i.key !== "listingReview" && i.key !== "photos").map(i => <button key={i.key} type="button" aria-pressed={draft.checks.includes(i.key)} className="choice" onClick={() => toggle("checks", i.key as VerificationKey)}>{draft.checks.includes(i.key) && <Check size={14}/>}{i.label}</button>)}</div>

@@ -20,7 +20,8 @@ const brokerages = ["None", "Half month", "One month", "1% of price"] as const;
 const unverified = { ownerIdentity: false, phone: false, location: false, listingReviewed: false, photosChecked: false, availabilityConfirmed: false };
 
 export function toListing(p: PublicProperty): Listing {
-  const img = p.images[0];
+  // Owner-uploaded photos (stored with a public URL) take the cover; sample photos are only a fallback.
+  const img = p.images.find((i) => i.storageKey.startsWith("properties/") && i.url) ?? p.images[0];
   return {
     slug: p.slug, name: p.title, city: p.city, neighborhood: p.locality,
     mode: p.listingType === "BUY" ? "Buy" : "Rent",
