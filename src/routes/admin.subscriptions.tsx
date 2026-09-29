@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
+import { LivePlansPanel, LiveSubscriptionsPanel } from "@/components/admin/live-business";
 import { adminHead } from "@/lib/admin/head";
 import { inr } from "@/lib/catalog";
 import type { Subscription, SubscriptionPlan } from "@/lib/admin/types";
@@ -22,6 +23,8 @@ function AdminSubscriptions() {
   ];
   return <>
     <AdminHeader title="Subscriptions" intro="Plans are configuration, not hard-coded prices. Values shown are placeholders pending commercial decisions."/>
+    <LivePlansPanel canEdit={act.can("plans.edit")}/>
+    <LiveSubscriptionsPanel/>
     <AdminDemoNote>Placeholder prices, fictional subscribers. Billing will run through the payment provider once connected.</AdminDemoNote>
     <div className="admin-plans">{s.plans.map(p => <article key={p.id} className={`admin-plan ${p.enabled ? "" : "is-off"}`}>
       <header><h3>{p.name}</h3><AdminStatusBadge status={p.enabled ? "ACTIVE" : "SUSPENDED"}/></header>

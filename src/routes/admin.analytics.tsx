@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { LocalEventsCard } from "@/components/analytics-kit";
 import { AdminChartCard, AdminDemoNote, AdminHeader, AdminMetricCard, Distribution, count } from "@/components/admin/admin-kit";
 import { useAdminData } from "@/lib/admin/repository";
+import { LiveCountsPanel } from "@/components/admin/live-business";
 import { adminHead } from "@/lib/admin/head";
 import { demoSeries, total, type SeriesPoint } from "@/lib/analytics";
 
@@ -26,6 +27,7 @@ function AdminAnalytics() {
   const funnel = [["Searches", t("Searches")], ["Saved properties", t("Saved properties")], ["Comparisons", t("Comparisons")], ["Visit requests", t("Visit requests")]] as [string, number][];
   return <>
     <AdminHeader title="Analytics" intro="Operational trends. Server-side event collection is not connected, so series are illustrative."/>
+    <LiveCountsPanel/>
     <AdminDemoNote>Illustrative series generated for demo — not real platform performance.</AdminDemoNote>
     <div className="admin-filters"><label className="admin-select"><span>Period</span><select value={period} onChange={e => setPeriod(e.target.value as keyof typeof periods)}>{Object.keys(periods).map(p => <option key={p}>{p}</option>)}</select></label>
       <div className="seg-tabs" role="tablist" aria-label="Granularity">{(["Daily", "Weekly", "Monthly"] as Gran[]).map(g => <button key={g} role="tab" aria-selected={gran === g} onClick={() => setGran(g)}>{g}</button>)}</div></div>

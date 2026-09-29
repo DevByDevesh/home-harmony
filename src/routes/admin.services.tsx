@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
+import { LiveServicesPanel } from "@/components/admin/live-business";
 import { adminHead } from "@/lib/admin/head";
 import type { ServiceProvider, ServiceRequest, ServiceRequestStatus } from "@/lib/admin/types";
 
@@ -27,6 +28,7 @@ function AdminServices() {
   const setReqPatch = (x: ServiceRequest, patch: Partial<ServiceRequest>, action: string) => act.update("serviceRequests", x.id, patch, action, `Service request ${x.id}`, "services.manage");
   return <>
     <AdminHeader title="Services marketplace" intro="Foundation for moving, cleaning, legal and other home services. No real providers are onboarded yet."/>
+    <LiveServicesPanel/>
     <AdminDemoNote>All providers are fictional. Ratings shown are demo placeholders, not customer reviews.</AdminDemoNote>
     <div className="seg-tabs" role="tablist" aria-label="Services sections">{tabs.map(t => <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
     {tab === "Providers" && <AdminDataTable rows={s.providers} ready={ready} caption="Service providers" emptyTitle="No service providers match these filters." rowLabel={p => p.business} onOpen={p => setOpen(p.id)} actions={provActions}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminMetricCard, AdminStatusBadge, DetailList, fmtDate, fmtDateTime } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
+import { LivePaymentsPanel } from "@/components/admin/live-business";
 import { adminHead } from "@/lib/admin/head";
 import { getPaymentProvider, providerLabels } from "@/lib/payments/provider";
 import { inr } from "@/lib/catalog";
@@ -18,6 +19,7 @@ function AdminPayments() {
   const sum = (st: string) => s.payments.filter(p => p.status === st).reduce((n, p) => n + p.amount, 0);
   return <>
     <AdminHeader title="Payments" intro={`Gateway: ${provider.label}. No real money moves in this environment.`}/>
+    <LivePaymentsPanel canRefund={act.can("payments.refund")}/>
     <AdminDemoNote>Demo transactions with fictional IDs. Razorpay/Stripe connect later through a server-side provider — no keys live in this app.</AdminDemoNote>
     <AdminMetricCard items={[{ label: "Succeeded (demo)", value: inr(sum("SUCCEEDED")) }, { label: "Refunded (demo)", value: inr(sum("REFUNDED")) }, { label: "Failed transactions", value: s.payments.filter(p => p.status === "FAILED").length }]}/>
     <AdminDataTable rows={s.payments} ready={ready} caption="Transactions" emptyTitle="No transactions found." rowLabel={p => p.id} onOpen={p => { setOpen(p.id); setInvoice(false); }}
