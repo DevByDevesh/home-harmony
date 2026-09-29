@@ -4,6 +4,7 @@ import type { Visit, VisitStatus } from "./visits";
 import { COMPARE_LIMIT } from "./compare";
 import { track } from "./analytics";
 import { defaultAlerts, matchingSlugs, type AlertSettings } from "./alerts";
+import { toast } from "sonner";
 import { useCurrentUser } from "./auth/use-current-user";
 import { cancelVisitFn, deleteSearchFn, getMyUserDataFn, requestVisitFn, saveSearchFn, setCompareFn, setSavedFn } from "./user-data.functions";
 
@@ -33,7 +34,6 @@ function load() {
 /** Signed-in user id when account data is active; device copy of the synced fields is kept aside, untouched. */
 let serverUser: string | null = null;
 let deviceCopy: Pick<UserData, "saved" | "compare" | "visits" | "searches"> | null = null;
-const SYNCED = ["saved", "compare", "visits", "searches"] as const;
 function persist(): boolean {
   const out = serverUser && deviceCopy ? { ...state, ...deviceCopy } : state;
   try { window.localStorage.setItem(KEY, JSON.stringify(out)); return true; } catch { return false; }
@@ -64,7 +64,6 @@ function remote(p: Promise<{ ok: boolean; message?: string }>, onError?: (m: str
 let errorHandler: (m: string) => void = () => {};
 /** Lets the UI show account save failures (wired to the toast in useUserData). */
 export function onUserDataError(fn: (m: string) => void) { errorHandler = fn; }
-void SYNCED;
 const id = () => Math.random().toString(36).slice(2, 10);
 const uuid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${id()}${id()}${id()}`);
 /** Writes one saved search (label, filters, alert settings, seen list) to the account. */
@@ -78,6 +77,7 @@ export function useUserData() {
   const data = useSyncExternalStore(cb => { listeners.add(cb); return () => listeners.delete(cb); }, () => { load(); return state; }, () => empty);
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
+  useEffect(() => onUserDataError(m => toast.error(m)), []);
   const { user, loading } = useCurrentUser();
   const uid = user?.id ?? null;
   useEffect(() => { if (!loading && uid !== serverUser && !syncing) syncing = syncAccount(uid).catch(() => {}).finally(() => { syncing = null; }); }, [uid, loading]);
