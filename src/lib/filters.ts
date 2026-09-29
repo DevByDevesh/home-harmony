@@ -4,13 +4,15 @@ import { isVerified } from "./catalog";
 import { computeMatch } from "./match";
 
 /** URL-safe discovery filters. Everything is a string so links stay shareable. */
+/** URL values like ?beds=2 arrive as numbers; normalise to strings. */
+const str = z.union([z.string(), z.number()]).transform(String).optional();
 export const filterSchema = z.object({
-  location: z.string().optional(), mode: z.string().optional(), kind: z.string().optional(), city: z.string().optional(),
-  beds: z.string().optional(), min: z.string().optional(), max: z.string().optional(), minArea: z.string().optional(),
-  furnishing: z.string().optional(), parking: z.string().optional(), baths: z.string().optional(), amenities: z.string().optional(),
-  available: z.string().optional(), verified: z.string().optional(), match: z.string().optional(), sort: z.string().optional(), view: z.string().optional(),
+  location: str, mode: str, kind: str, city: str,
+  beds: str, min: str, max: str, minArea: str,
+  furnishing: str, parking: str, baths: str, amenities: str,
+  available: str, verified: str, match: str, sort: str, view: str,
 });
-export type Filters = z.infer<typeof filterSchema>;
+export type Filters = z.output<typeof filterSchema>;
 export type FilterKey = keyof Filters;
 
 const num = (v?: string) => { const n = Number(v); return v && Number.isFinite(n) ? n : undefined; };
