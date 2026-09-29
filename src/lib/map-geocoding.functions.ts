@@ -18,8 +18,9 @@ export const findMapPlace = createServerFn({ method: "GET" })
     const payload = await response.json() as { features?: Array<{ place_name?: string; center?: number[]; bbox?: number[] }> };
     const match = payload.features?.[0];
     const center = match?.center;
-    if (!center || center.length < 2 || !Number.isFinite(center[0]) || !Number.isFinite(center[1])) return null;
+    const lng = center?.[0], lat = center?.[1];
+    if (lng === undefined || lat === undefined || !Number.isFinite(lng) || !Number.isFinite(lat)) return null;
     const bbox = match?.bbox;
-    return { name: match?.place_name ?? data.query, lng: center[0], lat: center[1],
+    return { name: match?.place_name ?? data.query, lng, lat,
       bbox: bbox?.length === 4 && bbox.every(Number.isFinite) ? bbox as [number, number, number, number] : null };
   });
