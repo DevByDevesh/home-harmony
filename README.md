@@ -27,3 +27,8 @@ npm run dev
 - TypeScript
 - React
 - Tailwind CSS
+
+## Database (PostgreSQL + Prisma)
+Copy `.env.example` → set `DATABASE_URL` as a server secret (never `VITE_`-prefixed). Then:
+`bun run db:validate`, `bun run db:migrate --name init` (dev) or `bun run db:deploy` (prod).
+Without `DATABASE_URL`, the app runs on its device-local demo data.
