@@ -46,7 +46,7 @@ export const setMyListingStatusFn = createServerFn({ method: "POST" })
       const changed = await setOwnerPropertyStatus(data.id, me.id, data.status);
       if (!changed) {
         await writeAudit({ actorId: me.id, action: "listing.status", entityType: "Property", entityId: data.id, result: "DENIED", metadata: { to: data.status } });
-        throw new Error("You can only change your own listings.");
+        return { ok: false as const, message: "You can only change your own listings." };
       }
       await writeAudit({ actorId: me.id, action: "listing.status", entityType: "Property", entityId: data.id, metadata: { to: data.status } });
       return { ok: true as const, status: data.status };
