@@ -1,3 +1,4 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { BarChart3, Building2, CalendarClock, CalendarCheck, ChevronLeft, ChevronRight, CreditCard, MessageSquare, UserCheck, Users, UsersRound } from "lucide-react";
@@ -16,6 +17,7 @@ import { agentActions, leadLabel, leadStatuses, useAgentData, type Lead, type Le
 const tabs = [["leads", "Leads", Users], ["listings", "Listings", Building2], ["clients", "Clients", UserCheck], ["visits", "Visits", CalendarCheck], ["followups", "Follow-ups", CalendarClock], ["messages", "Messages", MessageSquare], ["analytics", "Analytics", BarChart3], ["team", "Team", UsersRound], ["subscription", "Subscription", CreditCard]] as const;
 
 export const Route = createFileRoute("/agent")({
+  beforeLoad: guardArea("agent"),
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({ meta: [
     { title: "Agent CRM — HouseProvider.in" },

@@ -1,3 +1,4 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { Archive, BarChart3, CalendarCheck, CheckCircle2, Eye, LayoutDashboard, Pause, Pencil, Play, Plus, RotateCcw, Send, ShieldCheck, User } from "lucide-react";
@@ -21,6 +22,7 @@ const tabs = [["overview", "Overview", LayoutDashboard], ["listings", "Listings"
 const statusGroups: (ListingStatus | "ARCHIVED" | "ALL")[] = ["ALL", "ACTIVE", "PAUSED", "UNDER_REVIEW", "RENTED", "SOLD", "EXPIRED", "ARCHIVED"];
 
 export const Route = createFileRoute("/owner")({
+  beforeLoad: guardArea("owner"),
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({ meta: [
     { title: "Owner dashboard — HouseProvider.in" },

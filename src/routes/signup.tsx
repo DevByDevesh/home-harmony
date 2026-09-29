@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AuthField, AuthNotice, AuthShell, ProviderRow } from "@/components/auth-shell";
 import { authClient, authErrorMessage } from "@/lib/auth/auth-client";
 import { currentUserQuery } from "@/lib/auth/use-current-user";
-import { safeRedirect } from "./login";
+import { safeRedirect } from "@/lib/auth/redirect";
 
 export const Route = createFileRoute("/signup")({
   validateSearch: z.object({ redirect: z.string().optional() }),

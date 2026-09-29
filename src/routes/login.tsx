@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { AuthField, AuthNotice, AuthShell, ProviderRow } from "@/components/auth-shell";
 import { authClient, authErrorMessage } from "@/lib/auth/auth-client";
+import { safeRedirect } from "@/lib/auth/redirect";
 import { currentUserQuery } from "@/lib/auth/use-current-user";
 
 const search = z.object({ redirect: z.string().optional(), signedOut: z.boolean().optional(), created: z.boolean().optional() });
@@ -20,12 +21,6 @@ export const Route = createFileRoute("/login")({
   ] }),
   component: LoginPage,
 });
-
-/** Only same-origin paths are honoured after sign-in. */
-export function safeRedirect(r?: string) {
-  if (!r) return "/dashboard";
-  try { const u = new URL(r, "http://x"); return u.origin === "http://x" && r.startsWith("/") && !r.startsWith("//") ? u.pathname + u.search : "/dashboard"; } catch { return "/dashboard"; }
-}
 
 function LoginPage() {
   const { redirect, signedOut } = Route.useSearch();

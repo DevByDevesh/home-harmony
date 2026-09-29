@@ -1,3 +1,4 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, ImagePlus, Loader2 } from "lucide-react";
@@ -18,6 +19,7 @@ const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Ph
 const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
 
 export const Route = createFileRoute("/owner_/new")({
+  beforeLoad: guardArea("owner"),
   validateSearch: z.object({ edit: z.string().optional() }),
   head: () => ({ meta: [
     { title: "List your property — HouseProvider.in" },

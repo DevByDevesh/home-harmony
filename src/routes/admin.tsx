@@ -1,3 +1,4 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { BarChart3, BadgeCheck, Building2, CalendarCheck, ClipboardList, CreditCard, Flag, Gauge, Layers, Menu, MessagesSquare, Settings, ShieldCheck, Users, Briefcase, UserCog, Wrench } from "lucide-react";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { roleInfo, setDemoRole, useDemoRoleState } from "@/lib/roles";
 import { isAdminRole } from "@/lib/admin/permissions";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: guardArea("admin"),
   head: () => ({ meta: [
     { title: "Admin — HouseProvider.in" }, { name: "robots", content: "noindex, nofollow" },
     { name: "description", content: "Private HouseProvider operations area." },
