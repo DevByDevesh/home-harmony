@@ -63,7 +63,27 @@ const createSchema = z.object({
   furnishing: z.enum(["Fully furnished", "Semi furnished", "Unfurnished"]), parking: numStr(0, 50),
   amenities: z.array(z.string().trim().min(1).max(60)).max(40), description: z.string().trim().max(5000),
   photos: z.array(z.enum(["living", "city", "dining", "exterior"])).max(10),
+  checks: z.array(z.enum(["ownerIdentity", "phone", "location", "listingReview", "photos", "availability"])).max(10).default([]),
 });
+type WizardInput = z.infer<typeof createSchema>;
+const checkType = { ownerIdentity: "OWNER_IDENTITY", phone: "PHONE", location: "LOCATION", listingReview: "PROPERTY", photos: "PHOTOS", availability: "AVAILABILITY" } as const;
+
+/** Maps wizard input to repository fields. Listing review + photo checks are always requested (matches the wizard copy). */
+function toPropertyInput(d: WizardInput) {
+  const deposit = Number(d.deposit);
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(d.availableFrom) ? new Date(d.availableFrom) : null;
+  return {
+    title: d.title || `${d.beds} BHK ${d.kind.toLowerCase()} in ${d.locality}`, description: d.description,
+    propertyType: ({ Apartment: "APARTMENT", House: "HOUSE", Room: "ROOM", PG: "PG", Commercial: "COMMERCIAL" } as const)[d.kind],
+    listingType: d.mode === "Buy" ? ("BUY" as const) : ("RENT" as const), price: d.price,
+    deposit: d.deposit && Number.isFinite(deposit) && deposit >= 0 ? Math.round(deposit) : null,
+    areaSqft: d.area, bedrooms: d.beds, bathrooms: d.baths, parking: d.parking,
+    furnishing: d.furnishing === "Fully furnished" ? ("FULLY_FURNISHED" as const) : d.furnishing === "Semi furnished" ? ("SEMI_FURNISHED" as const) : ("UNFURNISHED" as const),
+    availableFrom: from, city: d.city, locality: d.locality, addressLine1: d.address || null,
+    amenities: [...new Set(d.amenities)], photoKeys: [...new Set(d.photos)].map((p) => photoKey[p]),
+    checks: [...new Set([...d.checks, "listingReview", "photos"] as const)].map((c) => checkType[c]),
+  };
+}
 
 /** Creates a DB listing owned by the signed-in owner. Owner id comes from the session only. */
 export const createMyListingFn = createServerFn({ method: "POST" })
@@ -75,19 +95,57 @@ export const createMyListingFn = createServerFn({ method: "POST" })
       const { writeAudit } = await import("./auth/audit.server");
       const me = await requireRole(AREA_ROLES.owner, "owner.listing.create");
       const { createOwnerProperty } = await import("./db/repositories/properties.server");
-      const deposit = Number(d.deposit);
-      const from = /^\d{4}-\d{2}-\d{2}$/.test(d.availableFrom) ? new Date(d.availableFrom) : null;
-      const prop = await createOwnerProperty(me.id, {
-        title: d.title || `${d.beds} BHK ${d.kind.toLowerCase()} in ${d.locality}`, description: d.description,
-        propertyType: ({ Apartment: "APARTMENT", House: "HOUSE", Room: "ROOM", PG: "PG", Commercial: "COMMERCIAL" } as const)[d.kind],
-        listingType: d.mode === "Buy" ? "BUY" : "RENT", price: d.price,
-        deposit: d.deposit && Number.isFinite(deposit) && deposit >= 0 ? Math.round(deposit) : null,
-        areaSqft: d.area, bedrooms: d.beds, bathrooms: d.baths, parking: d.parking,
-        furnishing: d.furnishing === "Fully furnished" ? "FULLY_FURNISHED" : d.furnishing === "Semi furnished" ? "SEMI_FURNISHED" : "UNFURNISHED",
-        availableFrom: from, city: d.city, locality: d.locality, addressLine1: d.address || null,
-        amenities: [...new Set(d.amenities)], photoKeys: [...new Set(d.photos)].map((p) => photoKey[p]),
-      });
+      const prop = await createOwnerProperty(me.id, toPropertyInput(d));
       await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW" } });
       return { id: prop.id };
+    } catch (e) { rethrow(e); }
+  });
+
+const fromKind = { APARTMENT: "Apartment", HOUSE: "House", ROOM: "Room", PG: "PG", COMMERCIAL: "Commercial" } as const;
+const fromPhoto = Object.fromEntries(Object.entries(photoKey).map(([k, v]) => [v, k])) as Record<string, "living" | "city" | "dining" | "exterior">;
+const fromCheck = Object.fromEntries(Object.entries(checkType).map(([k, v]) => [v, k])) as Record<string, string>;
+
+/** Loads the signed-in owner's DB listing as a wizard draft. Returns null when missing or not theirs. */
+export const getMyListingDraftFn = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.edit");
+      const { getOwnerPropertyForEdit } = await import("./db/repositories/properties.server");
+      const p = await getOwnerPropertyForEdit(data.id, me.id);
+      if (!p) return null;
+      const furn = p.furnishing === "FULLY_FURNISHED" ? "Fully furnished" : p.furnishing === "SEMI_FURNISHED" ? "Semi furnished" : "Unfurnished";
+      return {
+        kind: (fromKind as Record<string, string>)[p.propertyType] ?? "", mode: p.listingType === "BUY" ? "Buy" : "Rent",
+        city: p.city, locality: p.locality, address: p.addressLine1 ?? "", title: p.title,
+        price: String(p.price), deposit: p.deposit == null ? "" : String(p.deposit),
+        availableFrom: p.availableFrom ? p.availableFrom.toISOString().slice(0, 10) : "",
+        beds: String(p.bedrooms), baths: String(p.bathrooms), area: String(p.areaSqft), furnishing: furn, parking: String(p.parking),
+        amenities: p.amenities.map((a) => a.amenity.name), description: p.description,
+        photos: p.images.map((i) => fromPhoto[i.storageKey]).filter((x): x is "living" | "city" | "dining" | "exterior" => !!x),
+        checks: [...new Set(p.verifications.map((v) => fromCheck[v.type]).filter((c): c is string => !!c && c !== "listingReview" && c !== "photos"))],
+      };
+    } catch (e) { rethrow(e); }
+  });
+
+/** Saves edits to the same DB listing. Ownership enforced in the repository transaction. */
+export const updateMyListingFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64), draft: createSchema }).parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const { writeAudit } = await import("./auth/audit.server");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.edit");
+      const { updateOwnerProperty } = await import("./db/repositories/properties.server");
+      const r = await updateOwnerProperty(data.id, me.id, toPropertyInput(data.draft));
+      if (!r) {
+        await writeAudit({ actorId: me.id, action: "listing.update", entityType: "Property", entityId: data.id, result: "DENIED" });
+        return { ok: false as const, message: "You can only change your own listings." };
+      }
+      await writeAudit({ actorId: me.id, action: "listing.update", entityType: "Property", entityId: data.id, metadata: { status: "UNDER_REVIEW", checksAdded: r.added } });
+      return { ok: true as const, id: r.id };
     } catch (e) { rethrow(e); }
   });

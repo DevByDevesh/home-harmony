@@ -140,7 +140,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
         <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of this listing.</DialogDescription>
           <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Illustrative image" disclaimer="Owner preview. Verification is not implied." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
         </DialogContent></Dialog>
-      <Button size="sm" variant="outline" disabled title="Editing saved listings arrives with the listing wizard update"><Pencil size={14}/> Edit</Button>
+      <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
       {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
       {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
     </div></li>;
