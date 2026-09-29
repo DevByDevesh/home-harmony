@@ -128,7 +128,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
   const qc = useQueryClient();
   const setStatus = useServerFn(setMyListingStatusFn);
   const change = async (to: "ACTIVE" | "PAUSED") => {
-    try { await setStatus({ data: { id: listing.id, status: to } }); await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
+    try { const r = await setStatus({ data: { id: listing.id, status: to } }); if (!r.ok) { toast.error(r.message); return; } await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this listing."); }
   };
   return <li>
