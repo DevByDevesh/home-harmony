@@ -1,12 +1,8 @@
-# HouseProvider.in roadmap
+# HouseProvider.in — fresh Phase 1
 
-- [x] Inspect starter, dependencies, and preview diagnostics.
-- [x] Define Phase 1 architecture and visual direction.
-- [x] Phase 1: shell, home, search, listing results, property details, responsive layout, and browser checks.
-- [ ] Phase 2: map, advanced filters, saved homes, comparison, dashboard, visit scheduling.
-- [ ] Phase 3: owner listing workflows, agent CRM, analytics, verification architecture.
-- [ ] Phase 4: connected AI search, matching, listing assistance, alerts.
-- [ ] Phase 5: 3D city/floor plan, virtual tours, advanced scene motion.
-- [ ] Phase 6: admin, payments, subscriptions, services marketplace.
+- [x] Identify the supplied framework and dependencies.
+- [x] Plan a fresh Phase 1: plum/peach design system; photographic home; typed fictional catalog and pure filters; home, results, property details; responsive navigation; honest unavailable future actions.
+- [ ] Replace prior HouseProvider-specific source and imagery without migrating its components, layouts, CSS or mock records.
+- [ ] Verify search, navigation, detail view, mobile layout, accessibility and preview diagnostics.
 
-Later phases require a connected data service and real operational integrations; do not present mock content as verified listings.
+Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, visits, verification, AI, 3D, dashboards and payments require real integrations. No fabricated scores or verified badges.

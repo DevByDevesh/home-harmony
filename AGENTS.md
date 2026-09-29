@@ -1,15 +1,10 @@
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
+> This project is connected to Lovable. Avoid rewriting published git history.
 <!-- LOVABLE:END -->
 
-## Project architecture
-- Keep Phase 1 listing data in a typed client-safe catalog and filtering in a pure utility so live API data can replace mock records without rewriting views.
-- Use TanStack Start file routes for home, results, and property detail because this project already runs on TanStack Start rather than Next.js.
-- Keep shared navigation in the root layout and reusable property UI in components so every content route remains consistent.
+## Architecture
+- Keep this fresh Phase 1 on TanStack Start file routes, because the project runtime is TanStack Start and replacing it would break the preview.
+- Separate typed fictional catalog and pure search filtering from React presentation, so future live data can replace the catalog without rewriting views.
+- Keep global navigation in the root route and property presentation in small shared components, so routes remain consistent.
+- Never present mock listings as verified, available, or contactable; live integrations belong to later phases.
