@@ -46,15 +46,20 @@ function update(fn: (s: UserData) => UserData): boolean {
 }
 function set(next: UserData) { state = next; listeners.forEach(l => l()); persist(); }
 let syncing: Promise<void> | null = null;
+/** Homes opened on this page load before account data arrived; added to the account list once it loads. */
+let pendingViews: string[] = [];
 /** Loads account data for the signed-in user, or restores device data after sign-out. */
 async function syncAccount(userId: string | null) {
   load();
-  if (!userId) { if (serverUser && deviceCopy) set({ ...state, ...deviceCopy }); serverUser = null; deviceCopy = null; return; }
+  if (!userId) { if (serverUser && deviceCopy) set({ ...state, ...deviceCopy }); serverUser = null; deviceCopy = null; pendingViews = []; return; }
   const d = await getMyUserDataFn();
   if (!d) return;
   if (!serverUser) deviceCopy = { saved: state.saved, compare: state.compare, recent: state.recent, visits: state.visits, searches: state.searches };
   serverUser = userId;
-  set({ ...state, saved: d.saved, compare: d.compare, recent: d.recent, visits: d.visits, searches: d.searches });
+  const views = pendingViews; pendingViews = [];
+  const recent = views.length ? [...views, ...d.recent.filter(x => !views.includes(x))].slice(0, 12) : d.recent;
+  set({ ...state, saved: d.saved, compare: d.compare, recent, visits: d.visits, searches: d.searches });
+  if (views.length) remote(setRecentFn({ data: { slugs: recent } }), () => {});
 }
 function resync() { if (serverUser) { const u = serverUser; syncing = syncAccount(u).catch(() => {}).finally(() => { syncing = null; }); } }
 /** Sends a change to the account; on failure, reloads account data so the screen matches what's saved. */
@@ -97,7 +102,7 @@ export const userActions = {
     return true;
   },
   clearCompare() { update(s => ({ ...s, compare: [] })); if (serverUser) remote(setCompareFn({ data: { slugs: [] } }), errorHandler); },
-  viewed(slug: string) { track("PROPERTY_VIEW", slug); update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); if (serverUser) remote(setRecentFn({ data: { slugs: state.recent } }), () => {}); },
+  viewed(slug: string) { track("PROPERTY_VIEW", slug); update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); if (serverUser) remote(setRecentFn({ data: { slugs: state.recent } }), () => {}); else pendingViews = [slug, ...pendingViews.filter(x => x !== slug)].slice(0, 12); },
   requestVisit(v: Omit<Visit, "id" | "status" | "createdAt">, name: string): boolean {
     track("VISIT_REQUEST", v.slug);
     const vid = uuid();
