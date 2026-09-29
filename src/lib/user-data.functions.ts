@@ -10,7 +10,7 @@ import type { AlertSettings } from "./alerts";
 import type { Visit } from "./visits";
 
 export type ServerSavedSearch = { id: string; label: string; filters: Filters; createdAt: string; alerts: AlertSettings; seen?: string[] };
-export type ServerUserData = { saved: string[]; compare: string[]; searches: ServerSavedSearch[]; visits: Visit[] };
+export type ServerUserData = { saved: string[]; compare: string[]; recent: string[]; searches: ServerSavedSearch[]; visits: Visit[] };
 
 function rethrow(e: unknown): never { if (e instanceof Error) throw new Error(e.message); throw e; }
 async function me() { const { requireUser } = await import("./auth/guards.server"); return requireUser(); }
@@ -25,8 +25,9 @@ export const getMyUserDataFn = createServerFn({ method: "GET" }).handler(async (
     const { getSessionUser } = await import("./auth/guards.server");
     const u = await getSessionUser();
     if (!u) return null;
-    const s = await (await repo()).getUserDataSnapshot(u.id);
+    const [s, recent] = await Promise.all([(await repo()).getUserDataSnapshot(u.id), (await import("./db/repositories/engagement.server")).getRecent(u.id)]);
     return {
+      recent,
       saved: s.saved.map((x) => x.property.slug),
       compare: s.comparison?.properties.map((x) => x.property.slug) ?? [],
       searches: s.searches.map((x) => {
@@ -91,13 +92,15 @@ export const requestVisitFn = createServerFn({ method: "POST" })
       const pid = (await r.resolveSlugs([data.slug])).get(data.slug);
       if (!pid) return not("This home isn’t available for visits.");
       const v = await r.createUserVisit({ id: data.id, userId: u.id, propertyId: pid, date: data.date, time: data.slot, notes: data.note || null });
-      return v ? { ok: true as const } : not("This home isn’t available for visits.");
+      if (!v) return not("This home isn’t available for visits.");
+      await (await import("./db/repositories/engagement.server")).notifyVisitRequested(v.id);
+      return { ok: true as const };
     } catch (e) { rethrow(e); }
   });
 
 export const cancelVisitFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: uid }).strict().parse(d))
   .handler(async ({ data }) => {
-    try { const u = await me(); return (await (await repo()).cancelUserVisit(u.id, data.id)) ? { ok: true as const } : not("Visit not found in your account, or it can no longer be cancelled."); }
+    try { const u = await me(); if (!(await (await repo()).cancelUserVisit(u.id, data.id))) return not("Visit not found in your account, or it can no longer be cancelled."); await (await import("./db/repositories/engagement.server")).notifyVisitCancelled(data.id); return { ok: true as const }; }
     catch (e) { rethrow(e); }
   });

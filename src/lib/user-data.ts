@@ -7,6 +7,7 @@ import { defaultAlerts, matchingSlugs, type AlertSettings } from "./alerts";
 import { toast } from "sonner";
 import { useCurrentUser } from "./auth/use-current-user";
 import { cancelVisitFn, deleteSearchFn, getMyUserDataFn, requestVisitFn, saveSearchFn, setCompareFn, setSavedFn } from "./user-data.functions";
+import { setRecentFn } from "./engagement.functions";
 
 /**
  * User data. Signed out: device-local demo. Signed in: saved homes, compare, saved searches and
@@ -33,7 +34,7 @@ function load() {
 }
 /** Signed-in user id when account data is active; device copy of the synced fields is kept aside, untouched. */
 let serverUser: string | null = null;
-let deviceCopy: Pick<UserData, "saved" | "compare" | "visits" | "searches"> | null = null;
+let deviceCopy: Pick<UserData, "saved" | "compare" | "recent" | "visits" | "searches"> | null = null;
 function persist(): boolean {
   const out = serverUser && deviceCopy ? { ...state, ...deviceCopy } : state;
   try { window.localStorage.setItem(KEY, JSON.stringify(out)); return true; } catch { return false; }
@@ -51,9 +52,9 @@ async function syncAccount(userId: string | null) {
   if (!userId) { if (serverUser && deviceCopy) set({ ...state, ...deviceCopy }); serverUser = null; deviceCopy = null; return; }
   const d = await getMyUserDataFn();
   if (!d) return;
-  if (!serverUser) deviceCopy = { saved: state.saved, compare: state.compare, visits: state.visits, searches: state.searches };
+  if (!serverUser) deviceCopy = { saved: state.saved, compare: state.compare, recent: state.recent, visits: state.visits, searches: state.searches };
   serverUser = userId;
-  set({ ...state, saved: d.saved, compare: d.compare, visits: d.visits, searches: d.searches });
+  set({ ...state, saved: d.saved, compare: d.compare, recent: d.recent, visits: d.visits, searches: d.searches });
 }
 function resync() { if (serverUser) { const u = serverUser; syncing = syncAccount(u).catch(() => {}).finally(() => { syncing = null; }); } }
 /** Sends a change to the account; on failure, reloads account data so the screen matches what's saved. */
@@ -96,7 +97,7 @@ export const userActions = {
     return true;
   },
   clearCompare() { update(s => ({ ...s, compare: [] })); if (serverUser) remote(setCompareFn({ data: { slugs: [] } }), errorHandler); },
-  viewed(slug: string) { track("PROPERTY_VIEW", slug); update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); },
+  viewed(slug: string) { track("PROPERTY_VIEW", slug); update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); if (serverUser) remote(setRecentFn({ data: { slugs: state.recent } }), () => {}); },
   requestVisit(v: Omit<Visit, "id" | "status" | "createdAt">, name: string): boolean {
     track("VISIT_REQUEST", v.slug);
     const vid = uuid();
