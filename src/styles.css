@@ -115,3 +115,4 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .dashboard-page { padding-top: 36px; } .compare-notes { padding: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .map-marker, .filter-chip, .compare-tray, .map-preview { animation: none; } }
+.footer-main nav { flex-wrap: wrap; gap: 14px 28px; }
