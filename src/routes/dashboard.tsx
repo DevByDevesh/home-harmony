@@ -1,3 +1,4 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { Bell, Bookmark, CalendarCheck, Clock, Eye, GitCompareArrows, Heart, LayoutDashboard, MessageSquare, Send, Settings2, User } from "lucide-react";
@@ -20,6 +21,7 @@ const tabs = [
 ] as const;
 
 export const Route = createFileRoute("/dashboard")({
+  beforeLoad: guardArea("dashboard"),
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({ meta: [
     { title: "Your dashboard — HouseProvider.in" },

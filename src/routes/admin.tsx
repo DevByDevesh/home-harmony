@@ -1,14 +1,13 @@
+import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { BarChart3, BadgeCheck, Building2, CalendarCheck, ClipboardList, CreditCard, Flag, Gauge, Layers, Menu, MessagesSquare, Settings, ShieldCheck, Users, Briefcase, UserCog, Wrench } from "lucide-react";
+import { BarChart3, BadgeCheck, Building2, CalendarCheck, ClipboardList, CreditCard, Flag, Gauge, Layers, Menu, MessagesSquare, Settings, Users, Briefcase, UserCog, Wrench } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { AdminLoadingState } from "@/components/admin/admin-kit";
-import { RoleSwitcher } from "@/components/role-switcher";
-import { roleInfo, setDemoRole, useDemoRoleState } from "@/lib/roles";
-import { isAdminRole } from "@/lib/admin/permissions";
+import { roleInfo } from "@/lib/roles";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: guardArea("admin"),
   head: () => ({ meta: [
     { title: "Admin — HouseProvider.in" }, { name: "robots", content: "noindex, nofollow" },
     { name: "description", content: "Private HouseProvider operations area." },
@@ -33,18 +32,13 @@ function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function AdminLayout() {
-  const { role, ready } = useDemoRoleState();
+  // Real session user, resolved server-side by guardArea("admin") before this renders.
+  const { user } = Route.useRouteContext();
   const [open, setOpen] = useState(false);
   const path = useRouterState({ select: s => s.location.pathname });
-  if (!ready) return <main className="admin-page wrap"><AdminLoadingState label="Checking access"/></main>;
-  if (!isAdminRole(role)) return <main className="admin-page wrap admin-gate">
-    <ShieldCheck size={34}/><p className="kicker">RESTRICTED</p><h1>Admin access required</h1>
-    <p>This area is for HouseProvider operations staff. You are viewing as <strong>{roleInfo[role].label}</strong>, which has no admin permissions.</p>
-    <p className="form-hint">Demo mode: sign-in doesn't exist yet, so you can preview the admin area below. Real access will be enforced by the server.</p>
-    <div className="fallback-actions"><Button onClick={() => setDemoRole("ADMIN")}>Preview as Admin (demo)</Button><Button variant="outline" onClick={() => setDemoRole("SUPER_ADMIN")}>Preview as Super admin (demo)</Button><Button asChild variant="ghost"><Link to="/">Go home</Link></Button></div>
-  </main>;
+  const role = user.role;
   return <main className="admin-page wrap">
-    <div className="admin-topbar"><Button variant="outline" size="sm" className="admin-menu-btn" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu size={16}/> Menu</Button><RoleSwitcher/></div>
+    <div className="admin-topbar"><Button variant="outline" size="sm" className="admin-menu-btn" onClick={() => setOpen(true)} aria-label="Open admin menu"><Menu size={16}/> Menu</Button><span className="admin-signed">Signed in as <strong>{user.name || user.email}</strong> · {roleInfo[role].label}</span></div>
     <div className="admin-layout">
       <aside className="admin-aside"><p className="admin-aside-title">Operations · {roleInfo[role].label}</p><AdminSidebar/></aside>
       <div className="admin-main" key={path}><Outlet/></div>

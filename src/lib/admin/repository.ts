@@ -7,7 +7,7 @@
 import { toast } from "sonner";
 import { createLocalStore, uid } from "@/lib/local-store";
 import type { Role } from "@/lib/roles";
-import { useDemoRole } from "@/lib/roles";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { can, type AdminPermission } from "./permissions";
 import { defaultCategories, defaultPlans, defaultSettings, type PlatformSettings } from "./config";
 import * as seed from "./seed";
@@ -46,7 +46,8 @@ function patch<C extends Collection>(s: AdminState, c: C, id: string, p: Partial
 const now = () => new Date().toISOString();
 
 export function useAdminActions() {
-  const role = useDemoRole();
+  // Real session role (UI only); the demo view switcher can no longer grant admin actions.
+  const role = useCurrentUser().user?.role ?? "USER";
   const who = actorName(role);
   const note = (text: string): Note => ({ at: now(), by: who, text });
   return {

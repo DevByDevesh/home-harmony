@@ -10,14 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentRouteImport } from './routes/agent'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -35,10 +39,16 @@ import { Route as AdminVerificationRouteImport } from './routes/admin.verificati
 import { Route as AdminVisitsRouteImport } from './routes/admin.visits'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -61,9 +71,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ListPropertyRoute = ListPropertyRouteImport.update({
   id: '/list-property',
   path: '/list-property',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OwnerRoute = OwnerRouteImport.update({
@@ -79,6 +99,11 @@ const PropertiesRoute = PropertiesRouteImport.update({
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -166,17 +191,26 @@ const PropertySlugRoute = PropertySlugRouteImport.update({
   path: '/property/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
+  '/login': typeof LoginRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
@@ -194,16 +228,21 @@ export interface FileRoutesByFullPath {
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
+  '/login': typeof LoginRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
@@ -221,18 +260,23 @@ export interface FileRoutesByTo {
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin': typeof AdminIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
+  '/login': typeof LoginRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
@@ -250,19 +294,24 @@ export interface FileRoutesById {
   '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/admin'
     | '/agent'
     | '/compare'
     | '/dashboard'
+    | '/forgot-password'
     | '/list-property'
+    | '/login'
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/signup'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
@@ -280,16 +329,21 @@ export interface FileRouteTypes {
     | '/owner/new'
     | '/property/$slug'
     | '/admin/'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/agent'
     | '/compare'
     | '/dashboard'
+    | '/forgot-password'
     | '/list-property'
+    | '/login'
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/signup'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
@@ -307,17 +361,22 @@ export interface FileRouteTypes {
     | '/owner/new'
     | '/property/$slug'
     | '/admin'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/admin'
     | '/agent'
     | '/compare'
     | '/dashboard'
+    | '/forgot-password'
     | '/list-property'
+    | '/login'
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/signup'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
@@ -335,20 +394,26 @@ export interface FileRouteTypes {
     | '/owner_/new'
     | '/property/$slug'
     | '/admin/'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRouteWithChildren
   AgentRoute: typeof AgentRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   ListPropertyRoute: typeof ListPropertyRoute
+  LoginRoute: typeof LoginRoute
   OwnerRoute: typeof OwnerRoute
   PropertiesRoute: typeof PropertiesRoute
   SavedRoute: typeof SavedRoute
+  SignupRoute: typeof SignupRoute
   OwnerNewRoute: typeof OwnerNewRoute
   PropertySlugRoute: typeof PropertySlugRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -358,6 +423,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -388,11 +460,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/list-property': {
       id: '/list-property'
       path: '/list-property'
       fullPath: '/list-property'
       preLoaderRoute: typeof ListPropertyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/owner': {
@@ -414,6 +500,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -535,6 +628,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -578,16 +678,21 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   AdminRoute: AdminRouteWithChildren,
   AgentRoute: AgentRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   ListPropertyRoute: ListPropertyRoute,
+  LoginRoute: LoginRoute,
   OwnerRoute: OwnerRoute,
   PropertiesRoute: PropertiesRoute,
   SavedRoute: SavedRoute,
+  SignupRoute: SignupRoute,
   OwnerNewRoute: OwnerNewRoute,
   PropertySlugRoute: PropertySlugRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
