@@ -52,3 +52,42 @@ export const setMyListingStatusFn = createServerFn({ method: "POST" })
       return { ok: true as const, status: data.status };
     } catch (e) { rethrow(e); }
   });
+
+const photoKey = { living: "demo/new-home-pune.jpg", city: "demo/new-home-mumbai.jpg", dining: "demo/new-home-bengaluru.jpg", exterior: "demo/new-home-house.jpg" } as const;
+const numStr = (min: number, max: number) => z.string().trim().refine((v) => { const n = Number(v); return Number.isInteger(n) && n >= min && n <= max; }).transform(Number);
+const createSchema = z.object({
+  kind: z.enum(["Apartment", "House", "Room", "PG", "Commercial"]), mode: z.enum(["Rent", "Buy"]),
+  city: z.string().trim().min(1).max(80), locality: z.string().trim().min(1).max(120), address: z.string().trim().max(300),
+  title: z.string().trim().max(160), price: numStr(1, 10_000_000_000), deposit: z.string().trim().max(15),
+  availableFrom: z.string().trim().max(10), beds: numStr(0, 50), baths: numStr(0, 50), area: numStr(1, 1_000_000),
+  furnishing: z.enum(["Fully furnished", "Semi furnished", "Unfurnished"]), parking: numStr(0, 50),
+  amenities: z.array(z.string().trim().min(1).max(60)).max(40), description: z.string().trim().max(5000),
+  photos: z.array(z.enum(["living", "city", "dining", "exterior"])).max(10),
+});
+
+/** Creates a DB listing owned by the signed-in owner. Owner id comes from the session only. */
+export const createMyListingFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => createSchema.parse(d))
+  .handler(async ({ data: d }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const { writeAudit } = await import("./auth/audit.server");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.create");
+      const { createOwnerProperty } = await import("./db/repositories/properties.server");
+      const deposit = Number(d.deposit);
+      const from = /^\d{4}-\d{2}-\d{2}$/.test(d.availableFrom) ? new Date(d.availableFrom) : null;
+      const prop = await createOwnerProperty(me.id, {
+        title: d.title || `${d.beds} BHK ${d.kind.toLowerCase()} in ${d.locality}`, description: d.description,
+        propertyType: ({ Apartment: "APARTMENT", House: "HOUSE", Room: "ROOM", PG: "PG", Commercial: "COMMERCIAL" } as const)[d.kind],
+        listingType: d.mode === "Buy" ? "BUY" : "RENT", price: d.price,
+        deposit: d.deposit && Number.isFinite(deposit) && deposit >= 0 ? Math.round(deposit) : null,
+        areaSqft: d.area, bedrooms: d.beds, bathrooms: d.baths, parking: d.parking,
+        furnishing: d.furnishing === "Fully furnished" ? "FULLY_FURNISHED" : d.furnishing === "Semi furnished" ? "SEMI_FURNISHED" : "UNFURNISHED",
+        availableFrom: from, city: d.city, locality: d.locality, addressLine1: d.address || null,
+        amenities: [...new Set(d.amenities)], photoKeys: [...new Set(d.photos)].map((p) => photoKey[p]),
+      });
+      await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW" } });
+      return { id: prop.id };
+    } catch (e) { rethrow(e); }
+  });

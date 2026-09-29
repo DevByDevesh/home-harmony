@@ -67,3 +67,33 @@ export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "A
   const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: { status: to } });
   return r.count;
 }
+
+export type NewOwnerProperty = {
+  title: string; description: string; propertyType: PropertyType; listingType: "RENT" | "BUY";
+  price: number; deposit: number | null; areaSqft: number; bedrooms: number; bathrooms: number; parking: number;
+  furnishing: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; availableFrom: Date | null;
+  city: string; locality: string; addressLine1: string | null; amenities: string[]; photoKeys: string[];
+};
+
+/** Creates an owner listing. Status is always UNDER_REVIEW and verification NOT_REQUESTED — never approved here. */
+export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) {
+  const db = await requireDb();
+  const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const slug = `${slugify(`${p.bedrooms}bhk ${p.propertyType} ${p.locality} ${p.city}`)}-${crypto.randomUUID().slice(0, 8)}`;
+  return db.$transaction(async (tx) => {
+    const prop = await tx.property.create({
+      data: {
+        slug, title: p.title, description: p.description, propertyType: p.propertyType, listingType: p.listingType,
+        price: p.price, deposit: p.deposit, areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking,
+        furnishing: p.furnishing, availableFrom: p.availableFrom, city: p.city, locality: p.locality, addressLine1: p.addressLine1,
+        status: "UNDER_REVIEW", verificationStatus: "NOT_REQUESTED", ownerId,
+        images: { create: p.photoKeys.map((storageKey, i) => ({ storageKey, altText: `${p.title} (owner-selected illustrative photo)`, sortOrder: i })) },
+      },
+    });
+    for (const name of p.amenities) {
+      const a = await tx.amenity.upsert({ where: { name }, update: {}, create: { name, slug: slugify(name) } });
+      await tx.propertyAmenity.create({ data: { propertyId: prop.id, amenityId: a.id } });
+    }
+    return prop;
+  });
+}
