@@ -18,7 +18,6 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Verification architecture (NOT_REQUESTED/PENDING/VERIFIED/REJECTED/EXPIRED)
 - [x] Agent CRM with lead pipeline, lead detail, follow-ups, analytics
 - [x] Analytics event seam + reusable charts
-- [ ] Phase 4 — not started
 
 ## Phase 4 — AI intelligence layer (done)
 - [x] Smart Search (natural language → existing filters), editable chips, honest errors
@@ -26,3 +25,11 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Listing assistant in wizard step 4 (Details), editable, accept/regenerate/reset
 - [x] Saved-search alerts (device-local): enable, frequency, types, edit, delete
 - [x] AI provider seam (local rules provider only)
+
+## Phase 5 — cinematic 2D experience
+- [x] Homepage story sequence: hero, search, featured, match, neighborhoods, demo map, comparison, trust, owner CTA
+- [x] Restrained scroll, page, card, gallery, search, map, dashboard, wizard, and CRM transitions
+- [x] Reduced motion, mobile simplification, performance-aware transforms
+- [x] Regression verification of discovery and demo owner/agent flows
+
+Phase 6 remains deferred: admin, payments, subscriptions and marketplace.
