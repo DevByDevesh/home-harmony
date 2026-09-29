@@ -71,7 +71,7 @@ export function draftToHome(d: ListingDraft, id = "preview"): Home {
     slug: `draft-${id}`, name: d.title.trim() || `${beds ? `${beds} BHK ` : ""}${d.kind || "Home"} in ${d.locality || "your locality"}`,
     city: d.city || "City", neighborhood: d.locality || "Locality", mode: d.mode, kind: (d.kind || "Apartment") as Home["kind"],
     price: Number(d.price) || 0, beds, baths: Number(d.baths) || 0, area: Number(d.area) || 0, furnishing: d.furnishing || "Furnishing not set",
-    image: demoPhotos[d.photos[0] ?? "living"], description: d.description || "No description yet.", features: [...d.amenities, ...(Number(d.parking) > 0 ? [] : [])],
+    image: demoPhotos[d.photos[0] ?? "living"], description: d.description || "No description yet.", features: d.amenities,
   };
 }
 export function freshness(l: OwnerListing) {
