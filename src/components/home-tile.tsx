@@ -5,10 +5,10 @@ import type { MatchResult } from "@/lib/match";
 import { CompareButton, SaveButton } from "./listing-actions";
 import { MatchBadge } from "./match-badge";
 
-type Props = { home: Home; match?: MatchResult | null; compact?: boolean; highlighted?: boolean; onHover?: (slug: string | null) => void };
-export function HomeTile({ home, match, compact, highlighted, onHover }: Props) {
+type Props = { home: Home; match?: MatchResult | null; compact?: boolean; highlighted?: boolean; onHover?: (slug: string | null) => void; onSelect?: (slug: string) => void };
+export function HomeTile({ home, match, compact, highlighted, onHover, onSelect }: Props) {
   const listing = getListing(home.slug);
-  return <article id={`tile-${home.slug}`} className={`home-tile${compact ? " compact" : ""}${highlighted ? " highlighted" : ""}`} onMouseEnter={() => onHover?.(home.slug)} onMouseLeave={() => onHover?.(null)}>
+  return <article id={`tile-${home.slug}`} className={`home-tile${compact ? " compact" : ""}${highlighted ? " highlighted" : ""}`} onClick={() => onSelect?.(home.slug)} onMouseEnter={() => onHover?.(home.slug)} onMouseLeave={() => onHover?.(null)}>
     <div className="tile-media">
       <Link to="/property/$slug" params={{ slug: home.slug }} className="tile-image" aria-label={`View ${home.name}`}><img src={home.image} alt={`Illustrative view of ${home.name}`} width={1008} height={768} loading="lazy"/><span className="tile-tag">{home.mode === "Rent" ? "FOR RENT" : "FOR SALE"}</span><span className="tile-arrow"><ArrowUpRight size={20}/></span></Link>
       {listing && <div className="tile-actions"><SaveButton home={listing}/><CompareButton home={listing}/></div>}
