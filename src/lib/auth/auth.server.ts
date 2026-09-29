@@ -5,7 +5,7 @@
  */
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { requireDb } from "@/lib/db/client.server";
 import { AUTH_ERRORS } from "./roles";
@@ -88,9 +88,7 @@ async function buildAuth() {
       }),
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path === "/sign-out") {
-          const session = await ctx.context.internalAdapter.findSession(
-            (await ctx.getSignedCookie(ctx.context.authCookies.sessionToken.name, ctx.context.secret)) ?? "",
-          ).catch(() => null);
+          const session = await getSessionFromCtx(ctx).catch(() => null);
           if (session) await writeAudit({ actorId: session.user.id, action: "auth.logout", entityType: "User", entityId: session.user.id });
         }
       }),
