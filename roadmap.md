@@ -6,3 +6,8 @@
 - [x] Verify search, navigation, detail view, mobile layout, accessibility and preview diagnostics.
 
 Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, visits, verification, AI, 3D, dashboards and payments require real integrations. No fabricated scores or verified badges.
+
+## Phase 2 — Discovery & user experience
+- [x] Map/list/satellite discovery with demo map provider
+- [x] Advanced filters, chips, sheet on mobile
+- [x] Saved properties, comparison (max 4), dashboard, visit scheduling (device-local demo)
