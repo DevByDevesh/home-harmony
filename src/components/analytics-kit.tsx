@@ -1,4 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { motion, useReducedMotion, useInView } from "motion/react";
+import { useRef } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { countByType, eventLabels, useLocalEvents, type AnalyticsEventType, type SeriesPoint } from "@/lib/analytics";
 
@@ -6,7 +8,22 @@ export function DemoLabel({ children = "Demo analytics — illustrative numbers,
   return <p className="demo-label" role="note"><span>DEMO</span>{children}</p>;
 }
 export function MetricGrid({ items }: { items: { label: string; value: string | number; hint?: string | undefined }[] }) {
-  return <div className="metric-grid">{items.map(m => <div className="metric" key={m.label}><span>{m.label}</span><strong>{typeof m.value === "number" ? m.value.toLocaleString("en-IN") : m.value}</strong>{m.hint && <small>{m.hint}</small>}</div>)}</div>;
+  return <div className="metric-grid">{items.map(m => <div className="metric" key={m.label}><span>{m.label}</span><strong>{typeof m.value === "number" ? <CountUp value={m.value}/> : m.value}</strong>{m.hint && <small>{m.hint}</small>}</div>)}</div>;
+}
+function CountUp({ value }: { value: number }) {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.2 });
+  const reduced = useReducedMotion();
+  const [number, setNumber] = useState(value);
+  useEffect(() => {
+    if (!inView || reduced || value === 0) { setNumber(value); return; }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => { const t = Math.min((now - start) / 550, 1); setNumber(Math.round(value * (1 - (1 - t) ** 3))); if (t < 1) frame = requestAnimationFrame(tick); };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, inView, reduced]);
+  return <motion.span ref={ref} aria-label={value.toLocaleString("en-IN")} className="metric-number">{number.toLocaleString("en-IN")}</motion.span>;
 }
 const axis = { fontSize: 11, fill: "var(--muted-foreground)" };
 export function TrendCard({ title, data, kind = "area" }: { title: string; data: SeriesPoint[]; kind?: "area" | "bar" }) {
