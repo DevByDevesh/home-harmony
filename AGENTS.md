@@ -11,3 +11,7 @@
 - Device-local user data lives behind `src/lib/user-data.ts` actions/hooks, so an authenticated API can replace localStorage without touching views.
 - Maps go through `src/lib/map-provider.ts`; only a demo provider exists until a real service and browser-safe key are configured.
 - Match scores come only from `src/lib/match.ts` using criteria the user set; comparison text from `src/lib/compare.ts` stays neutral, never ranks.
+- Owner, agent and analytics demo state live in `src/lib/{owner-data,agent-data,analytics}.ts` via `createLocalStore`, so each can be swapped for an authenticated API without touching views.
+- Verification states come only from `src/lib/verification.ts`; UI may request checks (PENDING) but only a backend may set VERIFIED.
+- Roles in `src/lib/roles.ts` are a demo view switcher only; real authorization must be server-side.
+- Charts render after mount only, because date-based demo series differ between server and browser and break hydration.
