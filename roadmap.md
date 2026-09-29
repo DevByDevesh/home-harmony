@@ -32,4 +32,7 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Reduced motion, mobile simplification, performance-aware transforms
 - [x] Regression verification of discovery and demo owner/agent flows
 
-Phase 6 remains deferred: admin, payments, subscriptions and marketplace.
+## Phase 6 — Admin, payments, subscriptions, services (demo/local)
+- [x] Role-gated /admin with 15 sections, centralized permissions, audit log
+- [x] Payment provider seam, config-driven plans, featured placements, services marketplace
+- [x] Desktop/tablet/mobile checks and Phase 1–5 regression

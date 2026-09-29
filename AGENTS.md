@@ -21,3 +21,6 @@
 - Saved-search alerts use `src/lib/alerts.ts` + user-data; nothing is sent yet.
 - Keep the product 2D-only, with no Three.js, R3F or WebGL; Phase 5 replaced the earlier 3D direction.
 - Keep motion shared, once-only and reduced-motion aware; off-screen animation stays idle.
+- Admin data lives behind `src/lib/admin/repository.ts` (device-local seed) and permissions only via `can()` in `src/lib/admin/permissions.ts`; both are UX seams — real auth and persistence must be server-side.
+- Payments go through `getPaymentProvider()` in `src/lib/payments/provider.ts`; gateway SDKs and secrets must run server-side only.
+- Plans, settings and notification rules come from `src/lib/admin/config.ts`, never hard-coded in UI.

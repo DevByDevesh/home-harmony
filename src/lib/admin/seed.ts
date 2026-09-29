@@ -90,7 +90,7 @@ const provNames: [string, string, number, string][] = [["Rakesh Gupta", "SwiftSh
 export const seedProviders: ServiceProvider[] = provNames.map(([name, business, cat, city], i) => ({
   id: `sp-${i + 1}`, name, business, categoryId: defaultCategories[cat]!.id, city, contact: `+91 00000 0000${i} (demo)`,
   verification: i % 3 === 0 ? "PENDING" : "NOT_REQUESTED", demoRating: provStatus[i] === "ACTIVE" ? 4 + (i % 3) / 10 : null,
-  status: provStatus[i]!, services: [defaultCategories[cat]!.name], pricingModel: (["QUOTE", "FIXED", "HOURLY"] as const)[i % 3],
+  status: provStatus[i]!, services: [defaultCategories[cat]!.name], pricingModel: (["QUOTE", "FIXED", "HOURLY"] as const)[i % 3]!,
 }));
 const srStatus: ServiceRequest["status"][] = ["NEW", "ASSIGNED", "IN_PROGRESS", "NEW", "COMPLETED", "CANCELLED"];
 export const seedServiceRequests: ServiceRequest[] = srStatus.map((status, i) => ({
