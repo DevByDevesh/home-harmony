@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { countByType, eventLabels, useLocalEvents, type AnalyticsEventType, type SeriesPoint } from "@/lib/analytics";
 
@@ -29,7 +29,9 @@ export function TrendCard({ title, data, kind = "area" }: { title: string; data:
 }
 /** Real events recorded on this device by the analytics seam. */
 export function LocalEventsCard({ types }: { types: AnalyticsEventType[] }) {
-  const { data, ready } = useLocalEvents();
+  const { data } = useLocalEvents();
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const counts = countByType(data.events);
   return <section className="local-events"><h3>Recorded on this device</h3><p>Real interactions from this browser, counted locally until server analytics exist.</p>
     {!ready ? <p className="chart-empty">Loading…</p> : <dl>{types.map(t => <div key={t}><dt>{eventLabels[t]}</dt><dd>{counts[t]}</dd></div>)}</dl>}
