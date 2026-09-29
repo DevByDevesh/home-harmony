@@ -17,6 +17,10 @@ import { demoSeries, rate, total } from "@/lib/analytics";
 import { timeAgo } from "@/lib/local-store";
 import { draftToHome, freshness, ownerActions, useOwnerData, type OwnerListing } from "@/lib/owner-data";
 import { formatVisitDate, statusLabel, visitTransitions } from "@/lib/visits";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listMyListingsFn, setMyListingStatusFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
+import { toListing } from "@/lib/property-mapper";
 
 const tabs = [["overview", "Overview", LayoutDashboard], ["listings", "Listings", ShieldCheck], ["enquiries", "Enquiries", Send], ["visits", "Visits", CalendarCheck], ["analytics", "Analytics", BarChart3], ["verification", "Verification", CheckCircle2], ["profile", "Profile", User]] as const;
 const statusGroups: (ListingStatus | "ARCHIVED" | "ALL")[] = ["ALL", "ACTIVE", "PAUSED", "UNDER_REVIEW", "RENTED", "SOLD", "EXPIRED", "ARCHIVED"];
@@ -84,11 +88,15 @@ function ListingsPanel() {
   const [group, setGroup] = useState<(typeof statusGroups)[number]>("ALL");
   const count = (g: (typeof statusGroups)[number]) => data.listings.filter(l => g === "ALL" ? !l.archived : g === "ARCHIVED" ? l.archived : !l.archived && l.status === g).length;
   const items = data.listings.filter(l => group === "ALL" ? !l.archived : group === "ARCHIVED" ? l.archived : !l.archived && l.status === group);
+  const fetchMine = useServerFn(listMyListingsFn);
+  const db = useQuery({ queryKey: ["owner-db-listings"], queryFn: () => fetchMine() }).data ?? [];
+  const dbItems = db.filter(p => group === "ALL" || p.status === group);
+  const dbCount = (g: (typeof statusGroups)[number]) => g === "ARCHIVED" ? 0 : db.filter(p => g === "ALL" || p.status === g).length;
   return <>
     {data.draft && !data.editingId && <div className="draft-note"><span>You have an unfinished draft{data.draftSavedAt ? ` · saved ${timeAgo(data.draftSavedAt)}` : ""}.</span><Button asChild size="sm" variant="outline"><Link to="/owner/new">Resume draft</Link></Button></div>}
-    <div className="seg-tabs" role="tablist" aria-label="Filter by status">{statusGroups.map(g => <button key={g} role="tab" aria-selected={group === g} onClick={() => setGroup(g)}>{g.replace("_", " ").toLowerCase()} <small>{count(g)}</small></button>)}</div>
-    {items.length === 0 ? <EmptyState icon={<ShieldCheck size={30}/>} title="No listings yet" action={<Button asChild><Link to="/owner/new"><Plus size={16}/> Create a listing</Link></Button>}>{group === "ALL" ? "Create your first listing in nine guided steps." : "Nothing in this status right now."}</EmptyState> :
-    <ul className="owner-listings">{items.map(l => { const h = draftToHome(l.draft, l.id); return <li key={l.id}>
+    <div className="seg-tabs" role="tablist" aria-label="Filter by status">{statusGroups.map(g => <button key={g} role="tab" aria-selected={group === g} onClick={() => setGroup(g)}>{g.replace("_", " ").toLowerCase()} <small>{count(g) + dbCount(g)}</small></button>)}</div>
+    {items.length + dbItems.length === 0 ? <EmptyState icon={<ShieldCheck size={30}/>} title="No listings yet" action={<Button asChild><Link to="/owner/new"><Plus size={16}/> Create a listing</Link></Button>}>{group === "ALL" ? "Create your first listing in nine guided steps." : "Nothing in this status right now."}</EmptyState> :
+    <ul className="owner-listings">{dbItems.map(p => <DbListingRow key={p.id} listing={p}/>)}{items.map(l => { const h = draftToHome(l.draft, l.id); return <li key={l.id}>
       <img src={h.image} alt="" loading="lazy"/>
       <div className="ol-body"><div className="ol-title"><strong>{h.name}</strong><ListingStatusPill status={l.status}/>{l.demo && <span className="demo-chip">Sample</span>}</div>
         <small>{h.neighborhood}, {h.city} · {inr(h.price)}{h.mode === "Rent" ? " / month" : ""} · {h.beds} BHK · {h.area.toLocaleString("en-IN")} sq.ft.</small>
@@ -112,4 +120,28 @@ function ViewListing({ listing }: { listing: OwnerListing }) {
     <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of how seekers would see this listing.</DialogDescription>
       <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Owner photo preview" disclaimer="Owner preview. Only listings approved by moderation are visible to seekers." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={listing.status}/></h3><div><span>Deposit</span><strong>{inr(Number(listing.draft.deposit) || 0)}</strong></div><div><span>Availability</span><strong>{freshness(listing)}</strong></div><div><span>Updated</span><strong>{timeAgo(listing.updatedAt)}</strong></div><VerificationPanel record={listing.verification} compact/></div>}/></div>
     </DialogContent></Dialog>;
+}
+
+function DbListingRow({ listing }: { listing: OwnerDbListing }) {
+  const h = toListing(listing);
+  const status = listing.status as ListingStatus;
+  const qc = useQueryClient();
+  const setStatus = useServerFn(setMyListingStatusFn);
+  const change = async (to: "ACTIVE" | "PAUSED") => {
+    try { await setStatus({ data: { id: listing.id, status: to } }); await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this listing."); }
+  };
+  return <li>
+    <img src={h.image} alt="" loading="lazy"/>
+    <div className="ol-body"><div className="ol-title"><strong>{h.name}</strong><ListingStatusPill status={status}/></div>
+      <small>{h.neighborhood}, {h.city} · {inr(h.price)}{h.mode === "Rent" ? " / month" : ""} · {h.beds} BHK · {h.area.toLocaleString("en-IN")} sq.ft.</small></div>
+    <div className="dash-row-actions">
+      <Dialog><DialogTrigger asChild><Button size="sm" variant="outline"><Eye size={14}/> View</Button></DialogTrigger>
+        <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of this listing.</DialogDescription>
+          <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Illustrative image" disclaimer="Owner preview. Verification is not implied." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
+        </DialogContent></Dialog>
+      <Button size="sm" variant="outline" disabled title="Editing saved listings arrives with the listing wizard update"><Pencil size={14}/> Edit</Button>
+      {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
+      {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
+    </div></li>;
 }
