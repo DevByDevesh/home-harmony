@@ -18,6 +18,7 @@ import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 
@@ -66,6 +67,11 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const OwnerNewRoute = OwnerNewRouteImport.update({
   id: '/owner_/new',
   path: '/owner/new',
@@ -79,7 +85,7 @@ const PropertySlugRoute = PropertySlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
@@ -89,10 +95,10 @@ export interface FileRoutesByFullPath {
   '/saved': typeof SavedRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
@@ -102,11 +108,12 @@ export interface FileRoutesByTo {
   '/saved': typeof SavedRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
@@ -116,6 +123,7 @@ export interface FileRoutesById {
   '/saved': typeof SavedRoute
   '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,10 +139,10 @@ export interface FileRouteTypes {
     | '/saved'
     | '/owner/new'
     | '/property/$slug'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/agent'
     | '/compare'
     | '/dashboard'
@@ -144,6 +152,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/owner/new'
     | '/property/$slug'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -157,11 +166,12 @@ export interface FileRouteTypes {
     | '/saved'
     | '/owner_/new'
     | '/property/$slug'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AgentRoute: typeof AgentRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
@@ -238,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/owner_/new': {
       id: '/owner_/new'
       path: '/owner/new'
@@ -255,9 +272,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AgentRoute: AgentRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
