@@ -5,7 +5,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { displayPrice, type Listing } from "@/lib/catalog";
 
 type Props = { homes: Listing[]; selected: string | null; hovered: string | null; onSelect: (slug: string) => void; onHover: (slug: string | null) => void; layer: "map" | "satellite" };
-const token = import.meta.env.VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN;
+const token = import.meta.env['VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN'];
 const styleFor = (layer: Props["layer"]) => layer === "satellite" ? "mapbox://styles/mapbox/satellite-streets-v12" : "mapbox://styles/mapbox/streets-v12";
 const short = (h: Listing) => h.mode === "Rent" ? `₹${Math.round(h.price / 1000)}K` : `₹${(h.price / 10000000).toFixed(1)}Cr`;
 const hasCoordinates = (h: Listing) => Number.isFinite(h.lat) && Number.isFinite(h.lng) && Math.abs(h.lat) <= 90 && Math.abs(h.lng) <= 180 && !(h.lat === 0 && h.lng === 0);
@@ -49,7 +49,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
       element.className = "property-map-marker";
       element.textContent = short(home);
       element.setAttribute("aria-label", `${home.name}, ${home.neighborhood}, ${home.city}, ${displayPrice(home)}`);
-      element.dataset.slug = home.slug;
+      element.dataset['slug'] = home.slug;
       element.addEventListener("click", () => callbacks.current.onSelect(home.slug));
       element.addEventListener("mouseenter", () => callbacks.current.onHover(home.slug));
       element.addEventListener("mouseleave", () => callbacks.current.onHover(null));
@@ -58,7 +58,8 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
       markers.current.set(home.slug, new mapboxgl.Marker({ element, anchor: "center" }).setLngLat([home.lng, home.lat]).addTo(instance));
       bounds.extend([home.lng, home.lat]);
     }
-    if (mappedHomes.length === 1) instance.easeTo({ center: [mappedHomes[0].lng, mappedHomes[0].lat], zoom: 11, duration: 0 });
+    const onlyHome = mappedHomes[0];
+    if (mappedHomes.length === 1 && onlyHome) instance.easeTo({ center: [onlyHome.lng, onlyHome.lat], zoom: 11, duration: 0 });
     else if (mappedHomes.length > 1) instance.fitBounds(bounds, { padding: 70, maxZoom: 12, duration: 0 });
     return () => { markers.current.forEach(marker => marker.remove()); markers.current.clear(); };
   }, [mappedHomes, ready]);

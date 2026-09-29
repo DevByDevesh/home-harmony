@@ -43,7 +43,7 @@ function ResultsPage() {
   const criteria = criteriaFrom(prefs, filters);
   const go = (next: Filters) => navigate({ search: next });
   const select = (slug: string) => { setSelected(slug); document.getElementById(`tile-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
-   const grid = results.map(h => <HomeTile key={h.slug} home={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} onSelect={view !== "list" ? setSelected : undefined}/>);
+   const grid = results.map(h => <HomeTile key={h.slug} home={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
 
   return <main className={`results-page view-${view}`}><div className="wrap">
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
