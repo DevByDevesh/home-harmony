@@ -1,5 +1,9 @@
 # HouseProvider.in — fresh Phase 1
 
+## Mapbox integration
+- [x] Connect public-token Mapbox map to property discovery with DB coordinates, markers, synchronized selection, and 2D map/satellite modes.
+- [x] Verify nine markers, marker/card selection, list/map/satellite, mobile fit, type check and preview build.
+
 - [x] Identify the supplied framework and dependencies.
 - [x] Plan a fresh Phase 1: plum/peach design system; photographic home; typed fictional catalog and pure filters; home, results, property details; responsive navigation; honest unavailable future actions.
 - [x] Replace prior HouseProvider-specific source and imagery without migrating its components, layouts, CSS or mock records.
