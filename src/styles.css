@@ -228,3 +228,4 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 }
 @media (prefers-reduced-motion: reduce) { .metric, .wizard-card, .lead-card, .wizard-success { animation: none; } .wizard-meter span { transition: none; } }
 .preview-tile a, .preview-detail a { pointer-events: none; } .metric-grid.loading { height: 180px; }
+.chart-loading { background: var(--secondary); border-radius: var(--radius); }

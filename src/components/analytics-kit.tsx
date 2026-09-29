@@ -11,6 +11,9 @@ export function MetricGrid({ items }: { items: { label: string; value: string | 
 const axis = { fontSize: 11, fill: "var(--muted-foreground)" };
 export function TrendCard({ title, data, kind = "area" }: { title: string; data: SeriesPoint[]; kind?: "area" | "bar" }) {
   const empty = data.every(p => p.value === 0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <figure className="chart-card"><figcaption>{title}</figcaption><div className="chart-box chart-loading" aria-busy="true"/></figure>;
   return <figure className="chart-card"><figcaption>{title}</figcaption>
     {empty ? <p className="chart-empty">No analytics yet.</p> : <div className="chart-box" role="img" aria-label={`${title} chart, ${data.length} points`}>
       <ResponsiveContainer width="100%" height="100%">
