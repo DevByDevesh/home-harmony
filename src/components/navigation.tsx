@@ -20,7 +20,7 @@ export function Navigation() {
         <Button variant="ghost" size="icon" className="menu-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X/> : <Menu/>}</Button>
       </div>
     </div></header>
-    {open && <nav className="mobile-menu" aria-label="Mobile menu" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/properties" search={{ mode: "Rent" }}>Rent a home</Link><Link to="/properties" search={{ mode: "Buy" }}>Buy a home</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">List your property</Link></nav>}
+    {open && <nav className="mobile-menu" aria-label="Mobile menu" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/properties" search={{ mode: "Rent" }}>Rent a home</Link><Link to="/properties" search={{ mode: "Buy" }}>Buy a home</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/owner">Owner dashboard</Link><Link to="/agent">Agent CRM</Link><Link to="/list-property">List your property</Link></nav>}
     <nav className="bottom-nav" aria-label="Mobile navigation">
       <Link to="/" aria-current={path === "/" ? "page" : undefined}><Home size={20}/><span>Home</span></Link>
       <Link to="/properties" aria-current={path === "/properties" && !onMap ? "page" : undefined} activeOptions={{ exact: true }}><Search size={20}/><span>Search</span></Link>

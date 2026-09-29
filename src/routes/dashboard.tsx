@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState, TileSkeletons } from "@/components/empty-state";
 import { HomeTile } from "@/components/home-tile";
+import { RoleSwitcher } from "@/components/role-switcher";
 import { cities, getListing } from "@/lib/catalog";
 import { activeChips } from "@/lib/filters";
 import { userActions, useUserData, type Preferences } from "@/lib/user-data";
@@ -35,6 +36,7 @@ function Dashboard() {
   const { ready } = useUserData();
   return <main className="dashboard-page"><div className="wrap">
     <div className="results-intro"><p className="kicker">YOUR SPACE</p><h1>Welcome <em>home.</em></h1></div>
+    <RoleSwitcher/>
     <div className="demo-banner" role="note"><strong>Demo dashboard.</strong> Everything here is stored on this device only. Accounts, messaging and owner responses arrive when sign-in is connected.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Dashboard sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/dashboard" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>

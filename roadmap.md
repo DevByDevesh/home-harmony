@@ -11,3 +11,11 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Map/list/satellite discovery with demo map provider
 - [x] Advanced filters, chips, sheet on mobile
 - [x] Saved properties, comparison (max 4), dashboard, visit scheduling (device-local demo)
+
+## Phase 3 — Owner + Agent (demo/local)
+- [x] Owner dashboard (overview, listings, enquiries, visits, analytics, verification, profile)
+- [x] 9-step listing wizard with validation, autosave, preview, submit → UNDER_REVIEW
+- [x] Verification architecture (NOT_REQUESTED/PENDING/VERIFIED/REJECTED/EXPIRED)
+- [x] Agent CRM with lead pipeline, lead detail, follow-ups, analytics
+- [x] Analytics event seam + reusable charts
+- [ ] Phase 4 — not started

@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Filters } from "./filters";
 import type { Visit, VisitStatus } from "./visits";
 import { COMPARE_LIMIT } from "./compare";
+import { track } from "./analytics";
 
 /**
  * Device-local user data for the demo. The same shape will come from an authenticated API later:
@@ -38,21 +39,23 @@ export function useUserData() {
 }
 
 export const userActions = {
-  toggleSaved(slug: string, name: string) { update(s => s.saved.includes(slug) ? { ...s, saved: s.saved.filter(x => x !== slug), activity: log(s, `Removed ${name} from saved`) } : { ...s, saved: [slug, ...s.saved], activity: log(s, `Saved ${name}`) }); },
+  toggleSaved(slug: string, name: string) { load(); if (!state.saved.includes(slug)) track("PROPERTY_SAVE", slug); update(s => s.saved.includes(slug) ? { ...s, saved: s.saved.filter(x => x !== slug), activity: log(s, `Removed ${name} from saved`) } : { ...s, saved: [slug, ...s.saved], activity: log(s, `Saved ${name}`) }); },
   /** Returns false when the comparison is already full. */
   toggleCompare(slug: string): boolean {
     load();
     if (!state.compare.includes(slug) && state.compare.length >= COMPARE_LIMIT) return false;
+    if (!state.compare.includes(slug)) track("PROPERTY_COMPARE", slug);
     update(s => ({ ...s, compare: s.compare.includes(slug) ? s.compare.filter(x => x !== slug) : [...s.compare, slug] }));
     return true;
   },
   clearCompare() { update(s => ({ ...s, compare: [] })); },
-  viewed(slug: string) { update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); },
+  viewed(slug: string) { track("PROPERTY_VIEW", slug); update(s => ({ ...s, recent: [slug, ...s.recent.filter(x => x !== slug)].slice(0, 12) })); },
   requestVisit(v: Omit<Visit, "id" | "status" | "createdAt">, name: string): boolean {
+    track("VISIT_REQUEST", v.slug);
     return update(s => ({ ...s, visits: [{ ...v, id: id(), status: "REQUESTED", createdAt: new Date().toISOString() }, ...s.visits], activity: log(s, `Visit request saved for ${name}`) }));
   },
   setVisitStatus(visitId: string, status: VisitStatus) { update(s => ({ ...s, visits: s.visits.map(v => v.id === visitId ? { ...v, status } : v), activity: log(s, `Visit ${status.toLowerCase()}`) })); },
-  saveSearch(label: string, filters: Filters) { update(s => ({ ...s, searches: [{ id: id(), label, filters, createdAt: new Date().toISOString() }, ...s.searches], activity: log(s, `Saved search “${label}”`) })); },
+  saveSearch(label: string, filters: Filters) { track("SEARCH"); update(s => ({ ...s, searches: [{ id: id(), label, filters, createdAt: new Date().toISOString() }, ...s.searches], activity: log(s, `Saved search “${label}”`) })); },
   removeSearch(searchId: string) { update(s => ({ ...s, searches: s.searches.filter(x => x.id !== searchId) })); },
   setPreferences(p: Preferences) { update(s => ({ ...s, preferences: p, activity: log(s, "Updated preferences") })); },
   reset() { update(() => empty); },

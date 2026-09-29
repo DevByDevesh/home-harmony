@@ -5,7 +5,7 @@ import { computeMatch } from "./match";
 
 /** URL-safe discovery filters. Everything is a string so links stay shareable. */
 /** URL values like ?beds=2 arrive as numbers; normalise to strings. */
-const str = z.union([z.string(), z.number()]).transform(String).optional();
+const str = z.union([z.string(), z.number(), z.boolean()]).transform(String).optional();
 export const filterSchema = z.object({
   location: str, mode: str, kind: str, city: str,
   beds: str, min: str, max: str, minArea: str,
