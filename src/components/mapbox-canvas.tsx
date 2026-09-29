@@ -13,7 +13,7 @@ const hasCoordinates = (h: Listing) => Number.isFinite(h.lat) && Number.isFinite
 export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHover, layer }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
-  const markers = useRef<Map<string, Marker>>(new Map());
+  const markers = useRef<globalThis.Map<string, Marker>>(new globalThis.Map());
   const callbacks = useRef({ onSelect, onHover });
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
