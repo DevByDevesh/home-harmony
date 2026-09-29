@@ -189,6 +189,7 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 .upload-drop { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--border); border-radius: var(--radius); padding: 16px; font-size: 13px; font-weight: 600; cursor: pointer; position: relative; }
 .upload-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; } .upload-drop:focus-within { outline: 2px solid var(--ring); }
 .upload-list { display: flex; gap: 8px; flex-wrap: wrap; } .upload-list figure { margin: 0; width: 96px; } .upload-list img { width: 96px; height: 72px; object-fit: cover; border-radius: 4px; } .upload-list figcaption { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-list { list-style: none; padding: 0; margin: 0; } .upload-list li { display: grid; gap: 4px; width: 120px; } .upload-list li figure, .upload-list li img { width: 120px; } .upload-list li .dash-row-actions { flex-wrap: wrap; gap: 4px; }
 .preview-sub { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); margin: 10px 0; } .preview-tile { max-width: 380px; }
 .preview-detail { padding: 0 !important; } .preview-detail .detail-heading h1 { font-size: clamp(32px, 4vw, 48px); }
 .publish-step { display: grid; gap: 14px; } .publish-list { margin: 0; padding-left: 18px; display: grid; gap: 8px; font-size: 14px; } .publish-step button { width: fit-content; }
