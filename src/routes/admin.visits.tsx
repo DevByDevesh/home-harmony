@@ -5,6 +5,7 @@ import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStat
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
+import { LiveVisitsPanel } from "@/components/admin/live-records";
 import { visitTransitions, statusLabel, type VisitStatus } from "@/lib/visits";
 import type { AdminVisit } from "@/lib/admin/types";
 
@@ -23,6 +24,7 @@ function AdminVisits() {
   const cur = s.visits.find(v => v.id === open);
   return <>
     <AdminHeader title="Visits" intro="Visit requests across the platform, using the same statuses and rules as seekers and owners."/>
+    <LiveVisitsPanel/>
     <AdminDemoNote>Fictional visits. Seeker visits you request elsewhere stay on your device and aren't shown here.</AdminDemoNote>
     <AdminDataTable rows={s.visits} ready={ready} caption="Visits" emptyTitle="No visits found." rowLabel={name} onOpen={v => setOpen(v.id)} actions={actions}
       search={v => `${l.propertyTitle(v.propertyId)} ${l.userName(v.userId)} ${l.userName(v.handlerId)}`}
