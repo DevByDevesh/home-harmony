@@ -40,6 +40,7 @@ import { Route as AdminVisitsRouteImport } from './routes/admin.visits'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiPublicBootstrapSuperAdminRouteImport } from './routes/api/public/bootstrap-super-admin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -196,6 +197,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBootstrapSuperAdminRoute =
+  ApiPublicBootstrapSuperAdminRouteImport.update({
+    id: '/api/public/bootstrap-super-admin',
+    path: '/api/public/bootstrap-super-admin',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -261,6 +269,7 @@ export interface FileRoutesByTo {
   '/property/$slug': typeof PropertySlugRoute
   '/admin': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -295,6 +304,7 @@ export interface FileRoutesById {
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/property/$slug'
     | '/admin/'
     | '/api/auth/$'
+    | '/api/public/bootstrap-super-admin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/property/$slug'
     | '/admin'
     | '/api/auth/$'
+    | '/api/public/bootstrap-super-admin'
   id:
     | '__root__'
     | '/'
@@ -395,6 +407,7 @@ export interface FileRouteTypes {
     | '/property/$slug'
     | '/admin/'
     | '/api/auth/$'
+    | '/api/public/bootstrap-super-admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -414,6 +427,7 @@ export interface RootRouteChildren {
   OwnerNewRoute: typeof OwnerNewRoute
   PropertySlugRoute: typeof PropertySlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiPublicBootstrapSuperAdminRoute: typeof ApiPublicBootstrapSuperAdminRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -635,6 +649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bootstrap-super-admin': {
+      id: '/api/public/bootstrap-super-admin'
+      path: '/api/public/bootstrap-super-admin'
+      fullPath: '/api/public/bootstrap-super-admin'
+      preLoaderRoute: typeof ApiPublicBootstrapSuperAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -693,6 +714,7 @@ const rootRouteChildren: RootRouteChildren = {
   OwnerNewRoute: OwnerNewRoute,
   PropertySlugRoute: PropertySlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiPublicBootstrapSuperAdminRoute: ApiPublicBootstrapSuperAdminRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
