@@ -37,3 +37,38 @@ export function searchHomes(catalog: Home[], query: HomeQuery): Home[] {
 export function displayPrice(home: Home) {
   return home.mode === "Buy" ? `₹${(home.price / 10000000).toFixed(2)} Cr` : `₹${home.price.toLocaleString("en-IN")}`;
 }
+
+/* ---------- Phase 2: listing details (fictional) ---------- */
+export type ListingStatus = "ACTIVE" | "PAUSED" | "RENTED" | "SOLD" | "EXPIRED" | "UNDER_REVIEW";
+/** Each check must come from a real verification record. Showcase homes have none, so every value is false. */
+export type Verification = { ownerIdentity: boolean; phone: boolean; location: boolean; listingReviewed: boolean; photosChecked: boolean; availabilityConfirmed: boolean };
+export type ListingDetails = {
+  lat: number; lng: number; deposit: number; brokerage: "None" | "Half month" | "One month" | "1% of price";
+  parking: number; availableFrom: string | null; updatedAt: string; status: ListingStatus; verification: Verification;
+};
+export type Listing = Home & ListingDetails;
+
+const unverified: Verification = { ownerIdentity: false, phone: false, location: false, listingReviewed: false, photosChecked: false, availabilityConfirmed: false };
+const details: Record<string, Omit<ListingDetails, "verification" | "status">> = {
+  "2bhk-apartment-hinjewadi-pune-2101": { lat: 18.5913, lng: 73.7389, deposit: 96000, brokerage: "None", parking: 1, availableFrom: null, updatedAt: "2026-09-27" },
+  "3bhk-apartment-bandra-mumbai-2102": { lat: 19.0596, lng: 72.8295, deposit: 552000, brokerage: "One month", parking: 1, availableFrom: "2026-10-15", updatedAt: "2026-09-24" },
+  "2bhk-apartment-indiranagar-bengaluru-2103": { lat: 12.9784, lng: 77.6408, deposit: 324000, brokerage: "None", parking: 1, availableFrom: null, updatedAt: "2026-09-26" },
+  "4bhk-house-baner-pune-2104": { lat: 18.559, lng: 73.7868, deposit: 0, brokerage: "1% of price", parking: 2, availableFrom: null, updatedAt: "2026-09-20" },
+  "2bhk-apartment-jubilee-hills-hyderabad-2105": { lat: 17.4326, lng: 78.4071, deposit: 201000, brokerage: "Half month", parking: 1, availableFrom: "2026-11-01", updatedAt: "2026-09-25" },
+  "3bhk-apartment-greater-kailash-delhi-2106": { lat: 28.5482, lng: 77.238, deposit: 285000, brokerage: "One month", parking: 2, availableFrom: null, updatedAt: "2026-09-22" },
+  "1bhk-apartment-adyar-chennai-2107": { lat: 13.0012, lng: 80.2565, deposit: 130000, brokerage: "None", parking: 0, availableFrom: null, updatedAt: "2026-09-28" },
+  "3bhk-house-prahlad-nagar-ahmedabad-2108": { lat: 23.012, lng: 72.5108, deposit: 0, brokerage: "1% of price", parking: 2, availableFrom: "2026-12-01", updatedAt: "2026-09-18" },
+  "2bhk-apartment-dharampeth-nagpur-2109": { lat: 21.1418, lng: 79.066, deposit: 72000, brokerage: "None", parking: 1, availableFrom: null, updatedAt: "2026-09-26" },
+};
+
+/** Single source of listings. Replace with an API/Prisma repository later; views only depend on the Listing type. */
+export const listings: Listing[] = homes.map(home => ({ ...home, ...details[home.slug]!, status: "ACTIVE", verification: unverified }));
+export function getListing(slug: string) { return listings.find(item => item.slug === slug); }
+export const cities = ["Pune", "Mumbai", "Bengaluru", "Delhi NCR", "Hyderabad", "Chennai", "Ahmedabad", "Nagpur"];
+export const amenityOptions = ["Balcony", "Parking", "Lift", "Power backup", "Air conditioning", "Garden", "Terrace", "Study"];
+export function isVerified(item: Listing) { return Object.values(item.verification).every(Boolean); }
+export function availabilityLabel(item: Listing) {
+  if (!item.availableFrom) return "Listed as available now";
+  return `Listed from ${new Date(item.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`;
+}
+export function inr(value: number) { return `₹${value.toLocaleString("en-IN")}`; }

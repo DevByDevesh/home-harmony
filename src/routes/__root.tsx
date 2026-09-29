@@ -5,6 +5,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { CompareTray } from "@/components/compare-tray";
 
 function NotFoundPage() { return <main className="fallback wrap"><p className="kicker">NOT FOUND</p><h1>That place isn’t here.</h1><p>The page may have moved, but there are more homes to explore.</p><Button asChild><Link to="/properties">Explore homes</Link></Button></main>; }
 function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
@@ -23,5 +25,5 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) { return <html lang="en"><head><HeadContent/></head><body>{children}<Scripts/></body></html>; }
 function RootApp() {
   const { queryClient } = Route.useRouteContext();
-  return <QueryClientProvider client={queryClient}><Navigation/><Outlet/><footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/list-property">For property owners</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>All properties shown are fictional examples. No listing is verified or available for enquiry.</span></div></footer></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><Navigation/><Outlet/><CompareTray/><Toaster position="top-center"/><footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/saved">Saved</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">For property owners</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>All properties shown are fictional examples. No listing is verified or available for enquiry.</span></div></footer></QueryClientProvider>;
 }
