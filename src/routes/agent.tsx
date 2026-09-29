@@ -37,7 +37,7 @@ function AgentCRM() {
     <div className="demo-banner" role="note"><strong>Demo CRM.</strong> Every lead is a fictional placeholder stored on this device. No real contacts are imported, and no one is messaged or called.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Agent sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/agent" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
-      <section className="dash-panel" aria-labelledby="agent-title"><h2 id="agent-title">{active[1]}</h2>{ready ? <Panel id={active[0]} open={setOpenId}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</section>
+       <section className="dash-panel" aria-labelledby="agent-title"><h2 id="agent-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]} open={setOpenId}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</div></section>
     </div>
     <LeadSheet id={openId} onClose={() => setOpenId(null)}/>
   </div></main>;
