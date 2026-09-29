@@ -8,6 +8,7 @@ import { availabilityLabel, displayPrice, getListing, inr, isVerified, type List
 import { COMPARE_LIMIT, neutralDifferences } from "@/lib/compare";
 import { computeMatch, criteriaFrom } from "@/lib/match";
 import { userActions, useUserData } from "@/lib/user-data";
+import { commuteLabel } from "@/lib/commute";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({ meta: [
@@ -29,7 +30,7 @@ function ComparePage() {
     ["Rent / price", l => <>{displayPrice(l)}{l.mode === "Rent" && <small> / month</small>}</>],
     ["Deposit", l => l.deposit ? inr(l.deposit) : "Not applicable"], ["Area", l => `${l.area.toLocaleString("en-IN")} sq.ft.`],
     ["BHK", l => `${l.beds} BHK`], ["Furnishing", l => l.furnishing], ["Parking", l => l.parking ? `${l.parking} listed` : "None listed"],
-    ["Bathrooms", l => l.baths], ["Availability", l => availabilityLabel(l)], ["Brokerage", l => l.brokerage], ["Commute", () => "Not listed"],
+    ["Bathrooms", l => l.baths], ["Availability", l => availabilityLabel(l)], ["Brokerage", l => l.brokerage], ["Commute", () => commuteLabel(null)],
     ["Amenities", l => l.features.join(", ")], ["Verification", l => isVerified(l) ? "Verified" : "Not verified"],
     ["Match score", l => { const m = computeMatch(l, criteria); return m ? <span className="compare-match">{m.score}%<small>{m.matched.length} met{m.warnings.length ? ` · ${m.warnings.length} close` : ""}{m.unmatched.length ? ` · ${m.unmatched.length} not met` : ""}</small></span> : "Add 2+ preferences to see"; }],
   ];

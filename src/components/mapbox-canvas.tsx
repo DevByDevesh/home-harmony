@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import mapboxgl, { type Map, type Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Supercluster from "supercluster";
@@ -33,7 +33,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
   }))), [mappedHomes]);
   const preview = homes.find(h => h.slug === (hovered ?? selected));
 
-  async function searchPlace(event: React.FormEvent<HTMLFormElement>) {
+  async function searchPlace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const query = place.trim();
     if (query.length < 2) { setPlaceStatus("Enter a city or locality."); return; }
@@ -115,7 +115,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
     const all = new mapboxgl.LngLatBounds();
     mappedHomes.forEach(home => all.extend([home.lng, home.lat]));
     if (mappedHomes.length > 1) instance.fitBounds(all, { padding: 70, maxZoom: 12, duration: 0 });
-    else if (mappedHomes.length === 1) instance.easeTo({ center: [mappedHomes[0].lng, mappedHomes[0].lat], zoom: 11, duration: 0 });
+    else if (mappedHomes.length === 1) { const home = mappedHomes[0]; if (home) instance.easeTo({ center: [home.lng, home.lat], zoom: 11, duration: 0 }); }
     draw();
     return () => { instance.off("moveend", draw); markers.current.forEach(marker => marker.remove()); markers.current.clear(); };
   }, [mappedHomes, bySlug, clusterIndex, ready]);
@@ -130,7 +130,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
 
   useEffect(() => {
     const home = mappedHomes.find(item => item.slug === selected);
-    if (home && map.current && ready) map.current.easeTo({ center: [home.lng, home.lat], zoom: Math.max(map.current.getZoom(), 9), duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450 });
+    if (home && map.current && ready) map.current.easeTo({ center: [home.lng, home.lat], zoom: Math.max(map.current.getZoom(), 16), duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450 });
   }, [selected, mappedHomes, ready]);
 
   return <div className="property-map" role="region" aria-label="Map of listed homes">

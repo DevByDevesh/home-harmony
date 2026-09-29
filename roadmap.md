@@ -4,6 +4,12 @@
 - [x] Connect public-token Mapbox map to property discovery with DB coordinates, markers, synchronized selection, and 2D map/satellite modes.
 - [x] Verify nine markers, marker/card selection, list/map/satellite, mobile fit, type check and preview build.
 
+## Map batch 2
+- [x] Add viewport-aware clusters based on filtered homes and zoom-to-expand interaction.
+- [x] Add Mapbox city/locality recentering without passing property data to geocoding.
+- [x] Keep public coordinates only and provide an unavailable-by-default commute provider seam.
+- [ ] Verify cluster/filter, place search, public privacy, commute copy, type check and preview build.
+
 - [x] Identify the supplied framework and dependencies.
 - [x] Plan a fresh Phase 1: plum/peach design system; photographic home; typed fictional catalog and pure filters; home, results, property details; responsive navigation; honest unavailable future actions.
 - [x] Replace prior HouseProvider-specific source and imagery without migrating its components, layouts, CSS or mock records.
