@@ -27,7 +27,7 @@ export function publicImageUrl(key: string) { return `${cfg().url}/storage/v1/ob
 
 export async function putImage(key: string, bytes: Uint8Array, type: ImageMime) {
   const { url, headers } = cfg();
-  const r = await fetch(`${url}/storage/v1/object/${BUCKET}/${key}`, { method: "POST", headers: { ...headers, "content-type": type, "x-upsert": "false", "cache-control": "31536000" }, body: bytes });
+  const r = await fetch(`${url}/storage/v1/object/${BUCKET}/${key}`, { method: "POST", headers: { ...headers, "content-type": type, "x-upsert": "false", "cache-control": "31536000" }, body: new Blob([bytes as BlobPart], { type }) });
   if (!r.ok) throw new Error("The photo couldn’t be stored. Please try again.");
 }
 
