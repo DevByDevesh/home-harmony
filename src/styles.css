@@ -260,6 +260,8 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 
 /* ---------- Phase 5: restrained cinematic 2D motion ---------- */
 .page-entrance { min-height: 1px; }
+.home-smart { max-width: 920px; margin-top: 48px; }
+.home-smart .smart-search { margin-top: 0; }
 .hero h1 { animation: rise-in .65s .16s ease-out both; }
 .hero-description { animation: rise-in .65s .28s ease-out both; }
 .hero-ctas { animation: rise-in .65s .38s ease-out both; }
