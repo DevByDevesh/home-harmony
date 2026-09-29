@@ -1,11 +1,10 @@
 /**
- * Map provider abstraction. A real provider (Mapbox / Google Maps) plugs in here later,
- * loading its browser-safe key from configuration. No keys live in this file.
+ * Browser-side Mapbox configuration. Only the public token may reach the map.
  */
 export type MapPoint = { id: string; lat: number; lng: number; label: string };
 export type MapProviderInfo = { id: "demo" | "mapbox" | "google"; live: boolean; supportsSatellite: boolean; name: string };
 export function getMapProvider(): MapProviderInfo {
-  return { id: "demo", live: false, supportsSatellite: false, name: "Demo map" };
+  return { id: "mapbox", live: true, supportsSatellite: true, name: "Mapbox" };
 }
 export type Cluster = { id: string; x: number; y: number; points: MapPoint[] };
 /** Projects points into a 0–100 box and groups those closer than `radius` — simple grid-free clustering. */
