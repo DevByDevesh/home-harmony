@@ -39,7 +39,7 @@ function Wizard() {
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => { if (!ready || draft || submitted) return; ownerActions.startDraft(edit); }, [ready, edit, draft, submitted]);
-  useEffect(() => { if (ready && !draft && data.draft && !submitted) { setDraft(data.draft); setStep(Math.min(data.draftStep, 7)); } }, [ready, data.draft, data.draftStep, draft, submitted]);
+  useEffect(() => { if (ready && !draft && data.draft && !submitted && data.editingId === (edit ?? null)) { setDraft(data.draft); setStep(Math.min(data.draftStep, 7)); } }, [ready, data.draft, data.draftStep, data.editingId, edit, draft, submitted]);
   // Autosave (device-local) shortly after each change.
   useEffect(() => { if (!draft || submitted) return; setSaving(true); const t = setTimeout(() => { if (!ownerActions.saveDraft(draft, step)) toast.error("Draft couldn’t be saved on this device"); setSaving(false); }, 500); return () => clearTimeout(t); }, [draft, step, submitted]);
   useEffect(() => () => uploads.forEach(u => URL.revokeObjectURL(u.url)), [uploads]);

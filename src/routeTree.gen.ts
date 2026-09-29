@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
+import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
@@ -36,6 +37,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ListPropertyRoute = ListPropertyRouteImport.update({
   id: '/list-property',
   path: '/list-property',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PropertiesRoute = PropertiesRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
+  '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
   '/owner/new': typeof OwnerNewRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
+  '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
   '/owner/new': typeof OwnerNewRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
+  '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
   '/owner_/new': typeof OwnerNewRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/dashboard'
     | '/list-property'
+    | '/owner'
     | '/properties'
     | '/saved'
     | '/owner/new'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/dashboard'
     | '/list-property'
+    | '/owner'
     | '/properties'
     | '/saved'
     | '/owner/new'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/dashboard'
     | '/list-property'
+    | '/owner'
     | '/properties'
     | '/saved'
     | '/owner_/new'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   ListPropertyRoute: typeof ListPropertyRoute
+  OwnerRoute: typeof OwnerRoute
   PropertiesRoute: typeof PropertiesRoute
   SavedRoute: typeof SavedRoute
   OwnerNewRoute: typeof OwnerNewRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/list-property'
       fullPath: '/list-property'
       preLoaderRoute: typeof ListPropertyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/properties': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   ListPropertyRoute: ListPropertyRoute,
+  OwnerRoute: OwnerRoute,
   PropertiesRoute: PropertiesRoute,
   SavedRoute: SavedRoute,
   OwnerNewRoute: OwnerNewRoute,

@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { Archive, BarChart3, CalendarCheck, CheckCircle2, Eye, LayoutDashboard, Pause, Pencil, Play, Plus, RotateCcw, Send, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PropertyDetailView } from "@/components/property-detail-view";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DemoLabel, LocalEventsCard, MetricGrid, TrendCard } from "@/components/analytics-kit";
@@ -91,7 +93,7 @@ function ListingsPanel() {
         <small className="ol-fresh">{freshness(l)} · Updated {timeAgo(l.updatedAt)} · Not verified</small>
         <div className="ol-stats"><span><Eye size={13}/>{l.metrics.views}</span><span>{l.metrics.saves} saves</span><span>{l.metrics.enquiries} enquiries</span></div></div>
       <div className="ol-actions">
-        <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ edit: l.id }} onClick={() => ownerActions.startDraft(l.id)}><Pencil size={14}/> Edit</Link></Button>
+        <ViewListing listing={l}/><Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ edit: l.id }}><Pencil size={14}/> Edit</Link></Button>
         {l.archived ? <Button size="sm" variant="outline" onClick={() => { ownerActions.restore(l.id); toast.success("Listing restored"); }}><RotateCcw size={14}/> Restore</Button> : <>
           {l.status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "PAUSED"); toast.success("Listing paused"); }}><Pause size={14}/> Pause</Button>}
           {l.status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "ACTIVE"); toast.success("Listing resumed (demo)"); }}><Play size={14}/> Resume</Button>}
@@ -100,4 +102,12 @@ function ListingsPanel() {
           <Button size="sm" variant="ghost" onClick={() => { ownerActions.archive(l.id); toast("Listing archived", { action: { label: "Undo", onClick: () => ownerActions.restore(l.id) } }); }}><Archive size={14}/> Archive</Button></>}
       </div></li>; })}</ul>}
   </>;
+}
+
+function ViewListing({ listing }: { listing: OwnerListing }) {
+  const h = draftToHome(listing.draft, listing.id);
+  return <Dialog><DialogTrigger asChild><Button size="sm" variant="outline"><Eye size={14}/> View</Button></DialogTrigger>
+    <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of how seekers would see this listing.</DialogDescription>
+      <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Owner photo preview" disclaimer="Owner preview. Only listings approved by moderation are visible to seekers." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={listing.status}/></h3><div><span>Deposit</span><strong>{inr(Number(listing.draft.deposit) || 0)}</strong></div><div><span>Availability</span><strong>{freshness(listing)}</strong></div><div><span>Updated</span><strong>{timeAgo(listing.updatedAt)}</strong></div><VerificationPanel record={listing.verification} compact/></div>}/></div>
+    </DialogContent></Dialog>;
 }
