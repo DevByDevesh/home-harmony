@@ -14,13 +14,13 @@ export function TrendCard({ title, data, kind = "area" }: { title: string; data:
   return <figure className="chart-card"><figcaption>{title}</figcaption>
     {empty ? <p className="chart-empty">No analytics yet.</p> : <div className="chart-box" role="img" aria-label={`${title} chart, ${data.length} points`}>
       <ResponsiveContainer width="100%" height="100%">
-        {kind === "area" ? <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+        {kind === "area" ? <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs><linearGradient id={`g-${title.replace(/\W/g, "")}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--primary)" stopOpacity={0.22}/><stop offset="100%" stopColor="var(--primary)" stopOpacity={0}/></linearGradient></defs>
-          <CartesianGrid vertical={false} stroke="var(--border)"/><XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd"/><YAxis tick={axis} tickLine={false} axisLine={false} width={40}/>
+          <CartesianGrid vertical={false} stroke="var(--border)"/><XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd"/><YAxis tick={axis} tickLine={false} axisLine={false} width={44} allowDecimals={false}/>
           <Tooltip contentStyle={{ borderRadius: 6, border: "1px solid var(--border)", fontSize: 12 }}/>
           <Area type="monotone" dataKey="value" name={title} stroke="var(--primary)" strokeWidth={2} fill={`url(#g-${title.replace(/\W/g, "")})`}/>
-        </AreaChart> : <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-          <CartesianGrid vertical={false} stroke="var(--border)"/><XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval={0}/><YAxis tick={axis} tickLine={false} axisLine={false} width={40}/>
+        </AreaChart> : <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid vertical={false} stroke="var(--border)"/><XAxis dataKey="label" tick={axis} tickLine={false} axisLine={false} interval="preserveStartEnd"/><YAxis tick={axis} tickLine={false} axisLine={false} width={44} allowDecimals={false}/>
           <Tooltip cursor={{ fill: "var(--secondary)" }} contentStyle={{ borderRadius: 6, border: "1px solid var(--border)", fontSize: 12 }}/>
           <Bar dataKey="value" name={title} fill="var(--primary)" radius={[3, 3, 0, 0]}/>
         </BarChart>}
