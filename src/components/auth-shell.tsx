@@ -26,7 +26,7 @@ export function AuthNotice({ tone, children }: { tone: "error" | "success" | "in
   return <div className={`auth-notice auth-notice-${tone}`} role={tone === "error" ? "alert" : "status"}><Icon size={16}/><span>{children}</span></div>;
 }
 
-export function AuthField({ label, hint, error, ...input }: { label: string; hint?: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+export function AuthField({ label, hint, error, ...input }: { label: string; hint?: string | undefined; error?: string | undefined } & React.InputHTMLAttributes<HTMLInputElement>) {
   const [show, setShow] = useState(false);
   const isPw = input.type === "password";
   const id = input.id ?? input.name;

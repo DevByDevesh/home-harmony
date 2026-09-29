@@ -9,7 +9,7 @@ export function RealAccountsPanel() {
   const { user } = useCurrentUser();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
-  const done = (msg: string) => ({ onSuccess: () => { toast.success(msg); void qc.invalidateQueries({ queryKey: ["admin", "accounts"] }); }, onError: (e: Error) => toast.error(e.message) });
+  const done = (msg: string) => ({ onSuccess: () => { toast.success(msg); void qc.invalidateQueries({ queryKey: ["admin", "accounts"] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Action failed") });
   const role = useMutation({ mutationFn: (d: { userId: string; role: AuthRole }) => changeUserRole({ data: d }), ...done("Role updated") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
 

@@ -5,7 +5,7 @@ import { AUTH_ERRORS } from "./roles";
 export const authClient = createAuthClient({ fetchOptions: { credentials: "include" } });
 
 /** Maps server errors to user-facing copy without revealing whether an email exists. */
-export function authErrorMessage(err: { message?: string; code?: string; status?: number } | null | undefined): string {
+export function authErrorMessage(err: { message?: string | undefined; code?: string | undefined; status?: number | undefined } | null | undefined): string {
   const code = err?.code ?? err?.message ?? "";
   if (code.includes(AUTH_ERRORS.SUSPENDED)) return "This account is suspended. Contact HouseProvider support if you think this is a mistake.";
   if (code.includes(AUTH_ERRORS.DEACTIVATED)) return "This account has been deactivated and can't be used to sign in.";
