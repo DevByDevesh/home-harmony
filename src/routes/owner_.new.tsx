@@ -14,7 +14,7 @@ import { amenityOptions, cities, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
 import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
 import { useServerFn } from "@tanstack/react-start";
-import { createMyListingFn } from "@/lib/owner-listings.functions";
+import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
 import { emptyRecord, requestChecks, verificationItems, type VerificationKey } from "@/lib/verification";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
@@ -22,7 +22,7 @@ const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
 
 export const Route = createFileRoute("/owner_/new")({
   beforeLoad: guardArea("owner"),
-  validateSearch: z.object({ edit: z.string().optional() }),
+  validateSearch: z.object({ edit: z.string().optional(), dbEdit: z.string().max(64).optional() }),
   head: () => ({ meta: [
     { title: "List your property — HouseProvider.in" },
     { name: "description", content: "Create a property listing in nine guided steps, preview it exactly as seekers will see it, and submit it for review." },
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/owner_/new")({
 });
 
 function Wizard() {
-  const { edit } = Route.useSearch();
+  const { edit, dbEdit } = Route.useSearch();
   const { data, ready } = useOwnerData();
   const [draft, setDraft] = useState<ListingDraft | null>(null);
   const [step, setStep] = useState(0);
@@ -43,29 +43,36 @@ function Wizard() {
   const [savedToDb, setSavedToDb] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const createListing = useServerFn(createMyListingFn);
+  const loadDbDraft = useServerFn(getMyListingDraftFn);
+  const updateListing = useServerFn(updateMyListingFn);
+  const [dbLoadError, setDbLoadError] = useState<string | null>(null);
+  // Editing a database listing: load it from the server (ownership checked there); never touches the device draft.
+  useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
 
-  useEffect(() => { if (!ready || draft || submitted) return; ownerActions.startDraft(edit); }, [ready, edit, draft, submitted]);
-  useEffect(() => { if (ready && !draft && data.draft && !submitted && data.editingId === (edit ?? null)) { setDraft(data.draft); setStep(Math.min(data.draftStep, 7)); } }, [ready, data.draft, data.draftStep, data.editingId, edit, draft, submitted]);
+  useEffect(() => { if (dbEdit || !ready || draft || submitted) return; ownerActions.startDraft(edit); }, [ready, edit, draft, submitted]);
+  useEffect(() => { if (!dbEdit && ready && !draft && data.draft && !submitted && data.editingId === (edit ?? null)) { setDraft(data.draft); setStep(Math.min(data.draftStep, 7)); } }, [ready, data.draft, data.draftStep, data.editingId, edit, draft, submitted]);
   // Autosave (device-local) shortly after each change.
-  useEffect(() => { if (!draft || submitted) return; setSaving(true); const t = setTimeout(() => { if (!ownerActions.saveDraft(draft, step)) toast.error("Draft couldn’t be saved on this device"); setSaving(false); }, 500); return () => clearTimeout(t); }, [draft, step, submitted]);
+  useEffect(() => { if (dbEdit || !draft || submitted) return; setSaving(true); const t = setTimeout(() => { if (!ownerActions.saveDraft(draft, step)) toast.error("Draft couldn’t be saved on this device"); setSaving(false); }, 500); return () => clearTimeout(t); }, [draft, step, submitted, dbEdit]);
   useEffect(() => () => uploads.forEach(u => URL.revokeObjectURL(u.url)), [uploads]);
 
   if (submitted) return <Shell><div className="wizard-success" role="status"><CheckCircle2 size={40}/><p className="kicker">STATUS · UNDER REVIEW</p><h2>Listing submitted for review</h2>
     {savedToDb ? <p>Your listing is saved to your account with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong> until moderation reviews it. No seeker can see it yet.</p> :
     <p>Your listing is saved on this device with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong>: real moderation and verification need the HouseProvider backend, which isn’t connected yet. No seeker can see it.</p>}
     <div className="wizard-nav"><Button asChild><Link to="/owner" search={{ tab: "listings" }}>Go to my listings</Link></Button><Button variant="outline" onClick={() => { setSubmitted(null); setSavedToDb(false); setDraft(null); setStep(0); ownerActions.startDraft(); }}>Create another</Button></div></div></Shell>;
+  if (dbLoadError) return <Shell editing><div className="wizard-card" role="alert"><p>{dbLoadError}</p><Button asChild variant="outline"><Link to="/owner" search={{ tab: "listings" }}>Back to my listings</Link></Button></div></Shell>;
   if (!ready || !draft) return <Shell><div className="wizard-card" aria-busy="true"><Loader2 className="spin" size={22}/> Loading your draft…</div></Shell>;
 
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => { setDraft({ ...draft, [k]: v }); setErrors([]); };
   const toggle = <K extends "amenities" | "photos" | "checks">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
-  const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(r => { ownerActions.discardDraft(); setSavedToDb(true); setSubmitted(r.id); toast.success("Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
+  const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
+    if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(r => { ownerActions.discardDraft(); setSavedToDb(true); setSubmitted(r.id); toast.success("Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
   const home = draftToHome(draft);
 
-  return <Shell editing={!!data.editingId}>
+  return <Shell editing={!!data.editingId || !!dbEdit}>
     <ol className="wizard-progress" aria-label="Listing steps">{steps.map((s, i) => <li key={s} aria-current={i === step ? "step" : undefined} className={i < step ? "done" : ""}><button type="button" onClick={() => go(i)}><span>{i < step ? <Check size={12}/> : i + 1}</span>{s}</button></li>)}</ol>
     <div className="wizard-meter" aria-hidden><span style={{ width: `${((step + 1) / steps.length) * 100}%` }}/></div>
     <div className="wizard-card" key={step}>
