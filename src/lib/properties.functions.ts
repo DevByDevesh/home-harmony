@@ -11,8 +11,9 @@ export type PublicProperty = {
   propertyType: string; listingType: string; price: number; deposit: number | null;
   areaSqft: number; bedrooms: number; bathrooms: number; parking: number; furnishing: string;
   availableFrom: string | null; city: string; locality: string;
-  verificationStatus: string; publishedAt: string | null;
-  images: { url: string | null; altText: string; type: string }[];
+  verificationStatus: string; publishedAt: string | null; updatedAt: string;
+  brokerage: string | null; latitude: number | null; longitude: number | null;
+  images: { url: string | null; storageKey: string; altText: string; type: string }[];
   amenities: string[];
 };
 
@@ -24,8 +25,9 @@ function toPublic(p: Row): PublicProperty {
     propertyType: p.propertyType, listingType: p.listingType, price: p.price, deposit: p.deposit,
     areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, furnishing: p.furnishing,
     availableFrom: p.availableFrom?.toISOString() ?? null, city: p.city, locality: p.locality,
-    verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null,
-    images: p.images.map((i) => ({ url: i.url, altText: i.altText, type: i.type })),
+    verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null, updatedAt: p.updatedAt.toISOString(),
+    brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
+    images: p.images.map((i) => ({ url: i.url, storageKey: i.storageKey, altText: i.altText, type: i.type })),
     amenities: p.amenities.map((a) => a.amenity.name),
   };
 }

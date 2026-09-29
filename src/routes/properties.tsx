@@ -7,7 +7,8 @@ import { DemoMap } from "@/components/demo-map";
 import { EmptyState } from "@/components/empty-state";
 import { FilterSheet } from "@/components/filter-sheet";
 import { HomeTile } from "@/components/home-tile";
-import { listings } from "@/lib/catalog";
+import { listPropertiesFn } from "@/lib/properties.functions";
+import { toListing } from "@/lib/property-mapper";
 import { activeChips, applyFilters, clearFilters, filterSchema, type Filters } from "@/lib/filters";
 import { computeMatch, criteriaFrom } from "@/lib/match";
 import { SmartSearch } from "@/components/smart-search";
@@ -16,6 +17,8 @@ import { userActions, useUserData } from "@/lib/user-data";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
+  loader: async () => (await listPropertiesFn({ data: { take: 100 } })).map(toListing),
+  errorComponent: () => <main className="results-page"><div className="wrap"><EmptyState icon={<SearchX size={34}/>} title="Homes could not be loaded.">Please try again in a moment.</EmptyState></div></main>,
   head: () => ({ meta: [
     { title: "Explore homes on list or map — HouseProvider.in" },
     { name: "description", content: "Filter fictional example homes across India by budget, BHK, furnishing and amenities, on a list or map." },
@@ -27,6 +30,7 @@ export const Route = createFileRoute("/properties")({
 
 function ResultsPage() {
   const filters = Route.useSearch();
+  const listings = Route.useLoaderData();
   const navigate = useNavigate({ from: "/properties" });
   const { data } = useUserData();
   const [hovered, setHovered] = useState<string | null>(null);
