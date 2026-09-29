@@ -24,3 +24,5 @@
 - Admin data lives behind `src/lib/admin/repository.ts` (device-local seed) and permissions only via `can()` in `src/lib/admin/permissions.ts`; both are UX seams — real auth and persistence must be server-side.
 - Payments go through `getPaymentProvider()` in `src/lib/payments/provider.ts`; gateway SDKs and secrets must run server-side only.
 - Plans, settings and notification rules come from `src/lib/admin/config.ts`, never hard-coded in UI.
+- Database is PostgreSQL via Prisma (`prisma/schema.prisma`); client only from `src/lib/db/client.server.ts` (pg adapter, returns null without `DATABASE_URL`), so the demo keeps working and Prisma never reaches the browser.
+- UI never calls Prisma; DB access goes through `src/lib/db/repositories/*.server.ts`, which are not wired into the UI until a later backend phase.
