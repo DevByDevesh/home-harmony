@@ -586,7 +586,7 @@ model ServiceCategory {
   requests      ServiceRequest[]
 }
 
-/// `demoRating` is null for real providers until genuine reviews exist.
+/// `rating` stays null until genuine reviews exist.
 model ServiceProvider {
   id                 String             @id @default(cuid())
   userId             String?            @unique
