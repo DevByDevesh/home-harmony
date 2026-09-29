@@ -10,7 +10,7 @@ import { VerificationPanel } from "@/components/verification-panel";
 import { ListingStatusPill } from "@/components/role-switcher";
 import { amenityOptions, cities, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
-import { demoPhotos, draftToHome, emptyDraft, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
+import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
 import { emptyRecord, requestChecks, verificationItems, type VerificationKey } from "@/lib/verification";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
@@ -115,4 +115,4 @@ function Shell({ children, editing }: { children: ReactNode; editing?: boolean }
     {children}
   </div></main>;
 }
-export { emptyDraft };
+

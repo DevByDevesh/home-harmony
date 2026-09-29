@@ -15,6 +15,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OwnerNewRoute = OwnerNewRouteImport.update({
+  id: '/owner_/new',
+  path: '/owner/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropertySlugRoute = PropertySlugRouteImport.update({
   id: '/property/$slug',
   path: '/property/$slug',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/list-property'
     | '/properties'
     | '/saved'
+    | '/owner/new'
     | '/property/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/list-property'
     | '/properties'
     | '/saved'
+    | '/owner/new'
     | '/property/$slug'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/list-property'
     | '/properties'
     | '/saved'
+    | '/owner_/new'
     | '/property/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   ListPropertyRoute: typeof ListPropertyRoute
   PropertiesRoute: typeof PropertiesRoute
   SavedRoute: typeof SavedRoute
+  OwnerNewRoute: typeof OwnerNewRoute
   PropertySlugRoute: typeof PropertySlugRoute
 }
 
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/owner_/new': {
+      id: '/owner_/new'
+      path: '/owner/new'
+      fullPath: '/owner/new'
+      preLoaderRoute: typeof OwnerNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/property/$slug': {
       id: '/property/$slug'
       path: '/property/$slug'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   ListPropertyRoute: ListPropertyRoute,
   PropertiesRoute: PropertiesRoute,
   SavedRoute: SavedRoute,
+  OwnerNewRoute: OwnerNewRoute,
   PropertySlugRoute: PropertySlugRoute,
 }
 export const routeTree = rootRouteImport
