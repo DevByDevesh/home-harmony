@@ -41,7 +41,7 @@ function OwnerDashboard() {
     <div className="demo-banner" role="note"><strong>Demo owner dashboard.</strong> Sample listings, visits and numbers are fictional and stored on this device. Sign-in, real enquiries and moderation arrive with the backend.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Owner sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/owner" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
-      <section className="dash-panel" aria-labelledby="owner-title"><h2 id="owner-title">{active[1]}</h2>{ready ? <Panel id={active[0]}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</section>
+       <section className="dash-panel" aria-labelledby="owner-title"><h2 id="owner-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</div></section>
     </div>
   </div></main>;
 }

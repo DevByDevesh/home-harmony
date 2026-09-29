@@ -59,7 +59,7 @@ function Wizard() {
   return <Shell editing={!!data.editingId}>
     <ol className="wizard-progress" aria-label="Listing steps">{steps.map((s, i) => <li key={s} aria-current={i === step ? "step" : undefined} className={i < step ? "done" : ""}><button type="button" onClick={() => go(i)}><span>{i < step ? <Check size={12}/> : i + 1}</span>{s}</button></li>)}</ol>
     <div className="wizard-meter" aria-hidden><span style={{ width: `${((step + 1) / steps.length) * 100}%` }}/></div>
-    <div className="wizard-card">
+    <div className="wizard-card" key={step}>
       <div className="wizard-head"><div><p className="kicker">STEP {step + 1} OF {steps.length}</p><h2 ref={heading} tabIndex={-1}>{steps[step]}</h2></div><span className="autosave" aria-live="polite">{saving ? "Saving draft…" : data.draftSavedAt ? `Draft saved ${timeAgo(data.draftSavedAt)} · this device` : "Draft not saved yet"}</span></div>
       {errors.length > 0 && <div className="form-errors" role="alert"><strong>Please fix the following:</strong><ul>{errors.map(e => <li key={e}>{e}</li>)}</ul></div>}
 

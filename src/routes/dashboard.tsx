@@ -40,7 +40,7 @@ function Dashboard() {
     <div className="demo-banner" role="note"><strong>Demo dashboard.</strong> Everything here is stored on this device only. Accounts, messaging and owner responses arrive when sign-in is connected.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Dashboard sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/dashboard" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
-      <section className="dash-panel" aria-labelledby="dash-title"><h2 id="dash-title">{active[1]}</h2>{ready ? <Panel id={active[0]}/> : <TileSkeletons count={2}/>}</section>
+      <section className="dash-panel" aria-labelledby="dash-title"><h2 id="dash-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]}/> : <TileSkeletons count={2}/>}</div></section>
     </div>
   </div></main>;
 }

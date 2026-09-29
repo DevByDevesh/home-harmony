@@ -33,6 +33,6 @@ export function DemoMap({ homes, selected, hovered, onSelect, onHover, layer }: 
         aria-label={`${bySlug.get(p.id)?.name}, ${p.label}`} aria-pressed={selected === p.id} onClick={() => onSelect(p.id)} onMouseEnter={() => onHover(p.id)} onMouseLeave={() => onHover(null)} onFocus={() => onHover(p.id)} onBlur={() => onHover(null)}>{p.label}</button>;
     })}
     {!homes.length && <div className="map-empty">No homes to place on the map. Try clearing a filter.</div>}
-    {preview && <Link to="/property/$slug" params={{ slug: preview.slug }} className="map-preview"><img src={preview.image} alt="" width={96} height={76}/><span><small>{preview.neighborhood}, {preview.city}</small><strong>{preview.name}</strong><em>{displayPrice(preview)}{preview.mode === "Rent" ? " / month" : ""} · {preview.beds} BHK</em></span></Link>}
+    {preview && <Link key={preview.slug} to="/property/$slug" params={{ slug: preview.slug }} className="map-preview"><img src={preview.image} alt="" width={96} height={76}/><span><small>{preview.neighborhood}, {preview.city}</small><strong>{preview.name}</strong><em>{displayPrice(preview)}{preview.mode === "Rent" ? " / month" : ""} · {preview.beds} BHK</em></span></Link>}
   </div>;
 }

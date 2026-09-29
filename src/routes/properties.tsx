@@ -56,9 +56,9 @@ function ResultsPage() {
       </div>
     </div>
     {chips.length > 0 && <div className="chip-row" aria-label="Active filters">{chips.map(c => <EditableChip key={c.key + (c.value ?? "") + (filters[c.key] ?? "")} chip={c} filters={filters} onChange={next => { setPlace(next.location ?? ""); go(next); }}/>)}<button type="button" className="chip-clear" onClick={() => { setPlace(""); go(clearFilters(filters)); }}>Clear all</button></div>}
-    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite">{results.length} {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Fictional showcase properties</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }); toast("Search saved on this device"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
-    {view === "list" ? (results.length ? <div className="home-grid results-grid">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
-      : <div className="map-layout">
+    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Fictional showcase properties</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }); toast("Search saved on this device"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
+     {view === "list" ? (results.length ? <div key="list" className="home-grid results-grid results-entrance">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
+       : <div key={view} className="map-layout results-entrance">
           <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
           <div className="map-pane"><DemoMap homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view}/></div>
         </div>}
