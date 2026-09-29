@@ -28,3 +28,4 @@
 - UI never calls Prisma; DB access goes through `src/lib/db/repositories/*.server.ts`, which are not wired into the UI until a later backend phase.
 - First Super admin only via POST `/api/public/bootstrap-super-admin` (secret header, existing active account, one-time lock in AuditLog, 5 fails/hour lockout); no scripts or UI may grant SUPER_ADMIN otherwise, so privilege never bypasses the audited path.
 - Plans and service categories are seeded from config via idempotent `prisma/seed-config.sql` (psql), because the Prisma engine can't run scripts in this sandbox; admin edits are never overwritten.
+- Owner photos go through `src/lib/storage/property-images.server.ts` (Supabase Storage bucket `property-images`, service key server-only); only server functions write after a DB ownership check, because sign-in is Better Auth, not Supabase auth.
