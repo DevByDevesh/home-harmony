@@ -4,28 +4,18 @@
 <!-- LOVABLE:END -->
 
 ## Architecture
-- Keep TanStack Start file routes; changing runtime breaks preview.
-- Keep typed fictional catalog and pure filters apart from React, for future live data replacement.
-- Keep global nav in root and property presentation shared across routes.
-- Never present mock listings as verified, available, or contactable; live integrations belong to later phases.
-- Keep device-local user data behind `src/lib/user-data.ts` for future API replacement.
-- Maps use `src/lib/map-provider.ts`; demo only until a real provider is connected.
-- Match scores come only from `src/lib/match.ts` using criteria the user set; comparison text from `src/lib/compare.ts` stays neutral, never ranks.
-- Owner, agent and analytics demo state use `createLocalStore` for future API replacement.
-- Verification states come only from `src/lib/verification.ts`; UI may request checks (PENDING) but only a backend may set VERIFIED.
-- Roles in `src/lib/roles.ts` are a demo view switcher only; real authorization must be server-side.
-- Charts render after mount only, because date-based demo series differ between server and browser and break hydration.
-- All AI features go through `getAIProvider()` in `src/lib/ai/provider.ts`; only a local rules provider exists, so UI must label it preview, and a real LLM must run server-side returning the same shapes.
-- Smart Search output is a `Filters` object fed to the existing `applyFilters`, so there is one search engine.
-- The listing assistant (`src/lib/ai/listing-assistant.ts`) may only rephrase owner-entered facts, never add them.
-- Saved-search alerts use `src/lib/alerts.ts` + user-data; nothing is sent yet.
-- Keep the product 2D-only, with no Three.js, R3F or WebGL; Phase 5 replaced the earlier 3D direction.
-- Keep motion shared, once-only and reduced-motion aware; off-screen animation stays idle.
-- Admin data lives behind `src/lib/admin/repository.ts` (device-local seed) and permissions only via `can()` in `src/lib/admin/permissions.ts`; both are UX seams — real auth and persistence must be server-side.
-- Payments go through `getPaymentProvider()` in `src/lib/payments/provider.ts`; gateway SDKs and secrets must run server-side only.
-- Plans, settings and notification rules come from `src/lib/admin/config.ts`, never hard-coded in UI.
-- Database is PostgreSQL via Prisma (`prisma/schema.prisma`); client only from `src/lib/db/client.server.ts` (pg adapter, returns null without `DATABASE_URL`), so the demo keeps working and Prisma never reaches the browser.
-- UI never calls Prisma; DB access goes through `src/lib/db/repositories/*.server.ts`, which are not wired into the UI until a later backend phase.
-- First Super admin only via POST `/api/public/bootstrap-super-admin` (secret header, existing active account, one-time lock in AuditLog, 5 fails/hour lockout); no scripts or UI may grant SUPER_ADMIN otherwise, so privilege never bypasses the audited path.
-- Plans and service categories are seeded from config via idempotent `prisma/seed-config.sql` (psql), because the Prisma engine can't run scripts in this sandbox; admin edits are never overwritten.
-- Owner photos go through `src/lib/storage/property-images.server.ts` (Supabase Storage bucket `property-images`, service key server-only); only server functions write after a DB ownership check, because sign-in is Better Auth, not Supabase auth.
+- Keep TanStack Start file routes, root nav, shared property presentation, typed fictional catalog, and pure filters; this preserves preview and data interchangeability.
+- Keep device-local data behind `user-data.ts` and demo state behind `createLocalStore`; these are future API seams.
+- Discovery maps use browser-only Mapbox GL JS with the public token and stored DB coordinates; private map credentials never reach browsers.
+- Keep the product 2D-only; Mapbox's standard 2D map is the sole WebGL exception, never add terrain, 3D buildings, Three.js or R3F.
+- Match scores use `match.ts`; neutral comparisons use `compare.ts`; only set criteria contribute to scoring.
+- Verification states use `verification.ts`; only a backend can mark VERIFIED. Demo roles are view-only; real access is server-enforced.
+- Render date-based charts after mount to avoid hydration drift; motion is once-only, reduced-motion-aware, and idle off screen.
+- AI uses `getAIProvider()`; local rules are preview-only, Smart Search returns Filters for `applyFilters`, and listing text may only rephrase entered facts.
+- Saved-search alerts use `alerts.ts` and user data; never claim delivery without a real sender.
+- Admin demo data uses `admin/repository.ts` and `can()` permissions; server-side checks protect live actions.
+- Payments use `getPaymentProvider()` with server-only gateway secrets; plans and service rules come from `admin/config.ts`.
+- Prisma lives in server-only `db/client.server.ts`; UI calls repositories/functions, never Prisma directly, to protect credentials.
+- First Super admin uses only audited POST `/api/public/bootstrap-super-admin`; never bypass the one-time lock.
+- Seed config idempotently via `prisma/seed-config.sql`; never overwrite admin edits.
+- Owner photos use server-only `storage/property-images.server.ts` after a DB ownership check; Better Auth is separate from storage auth.
