@@ -45,7 +45,7 @@ export function writeListing(f: ListingFacts, variant = 0): ListingContent {
 
   const s: string[] = [];
   const opener = [
-    `A ${[furn, bhk, kind.toLowerCase()].filter(Boolean).join(" ")}${f.mode === "Rent" ? " available for rent" : " for sale"}${place ? ` in ${place}` : ""}.`,
+    `${/^[aeiou]/i.test([furn, bhk, kind].filter(Boolean).join(" ")) ? "An" : "A"} ${[furn, bhk, kind.toLowerCase()].filter(Boolean).join(" ")}${f.mode === "Rent" ? " available for rent" : " for sale"}${place ? ` in ${place}` : ""}.`,
     `This ${[bhk, kind.toLowerCase()].filter(Boolean).join(" ")}${place ? ` in ${place}` : ""} is listed ${f.mode === "Rent" ? "for rent" : "for sale"}${furn ? ` and comes ${furn}` : ""}.`,
     `${place ? `Located in ${place}, this` : "This"} ${[bhk, kind.toLowerCase()].filter(Boolean).join(" ")} is offered ${f.mode === "Rent" ? "on rent" : "for sale"}${furn ? `, ${furn}` : ""}.`,
   ];
