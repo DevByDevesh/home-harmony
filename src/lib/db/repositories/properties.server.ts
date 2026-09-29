@@ -28,6 +28,15 @@ export async function getPropertyBySlug(slug: string) {
   return db.property.findUnique({ where: { slug }, include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } } });
 }
 
+/** Public detail read: ACTIVE listings only, matched by id or slug. */
+export async function getPublicProperty(idOrSlug: string) {
+  const db = await requireDb();
+  return db.property.findFirst({
+    where: { status: "ACTIVE", OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+  });
+}
+
 /** Approval changes listing status only; verification status is never touched here. */
 export async function approveListing(propertyId: string, actorId: string) {
   const db = await requireDb();
