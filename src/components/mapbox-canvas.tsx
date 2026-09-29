@@ -56,6 +56,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
       element.addEventListener("focus", () => callbacks.current.onHover(home.slug));
       element.addEventListener("blur", () => callbacks.current.onHover(null));
       markers.current.set(home.slug, new mapboxgl.Marker({ element, anchor: "center" }).setLngLat([home.lng, home.lat]).addTo(instance));
+      element.setAttribute("role", "button");
       bounds.extend([home.lng, home.lat]);
     }
     const onlyHome = mappedHomes[0];
@@ -71,6 +72,11 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
       marker.getElement().setAttribute("aria-pressed", String(slug === selected));
     });
   }, [selected, hovered, mappedHomes, ready]);
+
+  useEffect(() => {
+    const home = mappedHomes.find(item => item.slug === selected);
+    if (home && map.current && ready) map.current.easeTo({ center: [home.lng, home.lat], zoom: Math.max(map.current.getZoom(), 9), duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450 });
+  }, [selected, mappedHomes, ready]);
 
   return <div className="property-map" role="region" aria-label="Map of listed homes">
     <div ref={container} className="property-map-canvas" aria-label="Mapbox map"/>
