@@ -1,22 +1,66 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
-import { SearchX } from "lucide-react";
-import { DiscoverySearch } from "@/components/discovery-search";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { BookmarkPlus, LayoutGrid, Map as MapIcon, Satellite, SearchX, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { DemoMap } from "@/components/demo-map";
+import { EmptyState } from "@/components/empty-state";
+import { FilterSheet } from "@/components/filter-sheet";
 import { HomeTile } from "@/components/home-tile";
-import { homes, searchHomes } from "@/lib/catalog";
-const querySchema = z.object({ location: z.string().optional(), mode: z.string().optional(), kind: z.string().optional(), max: z.string().optional() });
+import { listings } from "@/lib/catalog";
+import { activeChips, applyFilters, clearFilters, filterSchema, removeChip, type Filters } from "@/lib/filters";
+import { computeMatch } from "@/lib/match";
+import { userActions, useUserData } from "@/lib/user-data";
+
 export const Route = createFileRoute("/properties")({
-  validateSearch: querySchema,
+  validateSearch: filterSchema,
   head: () => ({ meta: [
-    { title: "Explore homes across India — HouseProvider.in" },
-    { name: "description", content: "Browse fictional example homes across India by city, budget, property type and rent or buy." },
-    { property: "og:title", content: "Explore homes across India — HouseProvider.in" },
+    { title: "Explore homes on list or map — HouseProvider.in" },
+    { name: "description", content: "Filter fictional example homes across India by budget, BHK, furnishing and amenities, on a list or map." },
+    { property: "og:title", content: "Explore homes on list or map — HouseProvider.in" },
     { property: "og:description", content: "Find a space that fits the way you live." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }), component: ResultsPage,
 });
+
 function ResultsPage() {
-  const query = Route.useSearch();
-  const results = searchHomes(homes, query);
-  return <main className="results-page"><div className="wrap"><div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1><p>Explore spaces for every new beginning.</p></div><DiscoverySearch initial={query}/><div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2>{results.length} {results.length === 1 ? "space" : "spaces"} found</h2></div><span>Fictional showcase properties</span></div>{results.length ? <div className="home-grid results-grid">{results.map(home => <HomeTile home={home} key={home.slug}/>)}</div> : <div className="empty-result"><SearchX size={34}/><h2>No properties found.</h2><p>Try expanding your budget or location, or choose another property type.</p></div>}</div></main>;
+  const filters = Route.useSearch();
+  const navigate = useNavigate({ from: "/properties" });
+  const { data } = useUserData();
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [place, setPlace] = useState(filters.location ?? "");
+  const view = filters.view === "map" || filters.view === "satellite" ? filters.view : "list";
+  const results = applyFilters(listings, filters);
+  const chips = activeChips(filters);
+  const prefs = data.preferences;
+  const criteria = { location: prefs.location || undefined, max: prefs.max || undefined, beds: prefs.beds || undefined, furnishing: prefs.furnishing || undefined, parking: prefs.parking ? "1" : undefined, ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)) };
+  const go = (next: Filters) => navigate({ search: next });
+  const select = (slug: string) => { setSelected(slug); document.getElementById(`tile-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
+  const grid = results.map(h => <HomeTile key={h.slug} home={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered}/>);
+
+  return <main className={`results-page view-${view}`}><div className="wrap">
+    <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
+    <div className="results-toolbar">
+      <form className="toolbar-search" onSubmit={e => { e.preventDefault(); go({ ...filters, location: place.trim() || undefined }); }}>
+        <div className="mode-toggle" role="group" aria-label="Looking to">{["Rent", "Buy"].map(m => <button type="button" key={m} aria-pressed={filters.mode === m} onClick={() => go({ ...filters, mode: filters.mode === m ? undefined : m, min: undefined, max: undefined })}>{m}</button>)}</div>
+        <input value={place} onChange={e => setPlace(e.target.value)} placeholder="Where do you want to live?" aria-label="City or locality"/>
+      </form>
+      <FilterSheet filters={filters} onApply={go} activeCount={chips.length}/>
+      <select className="sort-select" aria-label="Sort" value={filters.sort ?? ""} onChange={e => go({ ...filters, sort: e.target.value || undefined })}><option value="">Recommended order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="area">Largest area</option><option value="recent">Recently updated</option></select>
+      <div className="view-toggle" role="group" aria-label="View">
+        {([["list", LayoutGrid, "List"], ["map", MapIcon, "Map"], ["satellite", Satellite, "Satellite"]] as const).map(([v, Icon, label]) => <button type="button" key={v} aria-pressed={view === v} onClick={() => go({ ...filters, view: v === "list" ? undefined : v })}><Icon size={15}/><span>{label}</span></button>)}
+      </div>
+    </div>
+    {chips.length > 0 && <div className="chip-row" aria-label="Active filters">{chips.map(c => <button type="button" key={c.key + (c.value ?? "")} className="filter-chip" onClick={() => go(removeChip(filters, c))} aria-label={`Remove ${c.label}`}>{c.label}<X size={13}/></button>)}<button type="button" className="chip-clear" onClick={() => { setPlace(""); go(clearFilters(filters)); }}>Clear all</button></div>}
+    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite">{results.length} {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Fictional showcase properties</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined }); toast("Search saved on this device"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
+    {view === "list" ? (results.length ? <div className="home-grid results-grid">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
+      : <div className="map-layout">
+          <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
+          <div className="map-pane"><DemoMap homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view}/></div>
+        </div>}
+  </div></main>;
+}
+function NoResults({ onClear }: { onClear: () => void }) {
+  return <EmptyState icon={<SearchX size={34}/>} title="No properties found." action={<Button variant="outline" onClick={onClear}>Clear all filters</Button>}>Try expanding your budget or location, or removing a filter.</EmptyState>;
 }
