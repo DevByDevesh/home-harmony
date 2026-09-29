@@ -5,6 +5,7 @@ import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStat
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
+import { LivePropertiesPanel } from "@/components/admin/live-records";
 import { inr } from "@/lib/catalog";
 import type { AdminProperty } from "@/lib/admin/types";
 
@@ -31,6 +32,7 @@ function AdminProperties() {
   const cur = s.properties.find(p => p.id === open); const feat = cur && s.featured.find(f => f.propertyId === cur.id);
   return <>
     <AdminHeader title="Properties" intro="Moderate listings. Approval makes a listing visible — it does not make it verified."/>
+    <LivePropertiesPanel/>
     <AdminDemoNote>Fictional catalog listings. Approving here doesn't change the public demo pages.</AdminDemoNote>
     <AdminDataTable rows={s.properties} ready={ready} caption="Properties" emptyTitle="No properties found." rowLabel={p => p.title} onOpen={p => setOpen(p.id)} actions={actions}
       search={p => `${p.title} ${p.locality} ${p.city} ${l.userName(p.ownerId)} ${l.userName(p.agentId)} ${p.id}`}

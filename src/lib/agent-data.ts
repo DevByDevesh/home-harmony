@@ -5,7 +5,7 @@ export type LeadStatus = "NEW" | "CONTACTED" | "INTERESTED" | "VISIT_SCHEDULED" 
 export const leadStatuses: LeadStatus[] = ["NEW", "CONTACTED", "INTERESTED", "VISIT_SCHEDULED", "NEGOTIATION", "CONVERTED", "LOST"];
 export const leadLabel: Record<LeadStatus, string> = { NEW: "New", CONTACTED: "Contacted", INTERESTED: "Interested", VISIT_SCHEDULED: "Visit scheduled", NEGOTIATION: "Negotiation", CONVERTED: "Converted", LOST: "Lost" };
 export type LeadNote = { id: string; text: string; at: string };
-export type Lead = { id: string; name: string; propertySlug: string; budget: string; location: string; status: LeadStatus; lastContact: string | null; nextFollowUp: string | null; notes: LeadNote[] };
+export type Lead = { id: string; name: string; propertySlug: string; budget: string; location: string; status: LeadStatus; lastContact: string | null; nextFollowUp: string | null; notes: LeadNote[]; propertyTitle?: string; followUpNote?: string | null };
 
 const day = (d: number) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toISOString().slice(0, 10); };
 const seed = (): { leads: Lead[] } => ({ leads: [
