@@ -1,6 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, Bath, BedDouble, Check, MapPin, Maximize2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { HomeTile } from "@/components/home-tile";
 import { useEffect } from "react";
 import { homes, displayPrice, getListing, availabilityLabel, inr } from "@/lib/catalog";
