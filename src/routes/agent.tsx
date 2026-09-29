@@ -29,10 +29,12 @@ async function send(p: Promise<{ ok: boolean; message?: string }>) {
   try { const r = await p; if (!r.ok) toast.error(r.message ?? "Couldn’t save."); } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t save."); }
   await liveQc?.invalidateQueries({ queryKey: ["agent-leads"] });
 }
+/** Updates the on-screen lead immediately so quick repeated clicks build on the latest state. */
+function local(id: string, fn: (l: Lead) => Lead) { liveQc?.setQueryData<Lead[] | null>(["agent-leads"], ls => ls?.map(l => l.id === id ? fn(l) : l) ?? ls); }
 const agentActions = {
-  setStatus(id: string, stage: LeadStatus) { if (liveQc) void send(setLeadStageFn({ data: { id, stage } })); else demoActions.setStatus(id, stage); },
+  setStatus(id: string, stage: LeadStatus) { if (liveQc) local(id, l => ({ ...l, status: stage })); if (liveQc) void send(setLeadStageFn({ data: { id, stage } })); else demoActions.setStatus(id, stage); },
   addNote(id: string, text: string) { if (liveQc) void send(addLeadNoteFn({ data: { id, text: text.trim().slice(0, 500) } })); else demoActions.addNote(id, text); },
-  setFollowUp(id: string, date: string | null, status?: "OPEN" | "DONE") { if (liveQc) void send(setFollowUpFn({ data: { id, date, ...(status ? { status } : {}) } })); else demoActions.setFollowUp(id, date); },
+  setFollowUp(id: string, date: string | null, status?: "OPEN" | "DONE") { if (liveQc) local(id, l => ({ ...l, nextFollowUp: status === "DONE" ? null : date })); if (liveQc) void send(setFollowUpFn({ data: { id, date, ...(status ? { status } : {}) } })); else demoActions.setFollowUp(id, date); },
 };
 
 const tabs = [["leads", "Leads", Users], ["listings", "Listings", Building2], ["clients", "Clients", UserCheck], ["visits", "Visits", CalendarCheck], ["followups", "Follow-ups", CalendarClock], ["messages", "Messages", MessageSquare], ["analytics", "Analytics", BarChart3], ["team", "Team", UsersRound], ["subscription", "Subscription", CreditCard]] as const;
