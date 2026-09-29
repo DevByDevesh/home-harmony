@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentRouteImport } from './routes/agent'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
@@ -22,6 +23,11 @@ import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentRoute = AgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -67,6 +73,7 @@ const PropertySlugRoute = PropertySlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agent': typeof AgentRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/list-property': typeof ListPropertyRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agent'
     | '/compare'
     | '/dashboard'
     | '/list-property'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agent'
     | '/compare'
     | '/dashboard'
     | '/list-property'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agent'
     | '/compare'
     | '/dashboard'
     | '/list-property'
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentRoute: typeof AgentRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   ListPropertyRoute: typeof ListPropertyRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agent': {
+      id: '/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof AgentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -217,6 +237,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentRoute: AgentRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   ListPropertyRoute: ListPropertyRoute,
