@@ -17,3 +17,4 @@ export const previewableRoles: Role[] = ["USER", "OWNER", "AGENT", "ADMIN", "SUP
 const store = createLocalStore<{ role: Role }>("houseprovider.demo-role.v1", () => ({ role: "USER" }));
 export const useDemoRole = () => store.use().data.role;
 export const setDemoRole = (role: Role) => store.update(() => ({ role }));
+export const useDemoRoleState = () => { const { data, ready } = store.use(); return { role: data.role, ready }; };
