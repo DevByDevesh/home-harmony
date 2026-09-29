@@ -4,7 +4,7 @@ import { requireDb } from "../client.server";
 
 export async function recordAudit(entry: { actorId?: string; action: string; entityType: string; entityId?: string; result?: "SUCCESS" | "DENIED"; metadata?: Prisma.InputJsonValue }) {
   const db = await requireDb();
-  return db.auditLog.create({ data: { actorId: entry.actorId ?? null, action: entry.action, entityType: entry.entityType, entityId: entry.entityId ?? null, result: entry.result ?? "SUCCESS", metadata: entry.metadata } });
+  return db.auditLog.create({ data: { actorId: entry.actorId ?? null, action: entry.action, entityType: entry.entityType, entityId: entry.entityId ?? null, result: entry.result ?? "SUCCESS", ...(entry.metadata !== undefined ? { metadata: entry.metadata } : {}) } });
 }
 
 export async function listAudit(take = 50) {

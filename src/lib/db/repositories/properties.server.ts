@@ -2,15 +2,21 @@
  * Database-backed property repository (server-only). Not wired into the UI yet —
  * the demo catalog in src/lib/catalog.ts remains the live source until a later phase.
  */
-import type { Prisma } from "@prisma/client";
+import type { PropertyType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
-export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: Prisma.PropertyWhereInput["propertyType"]; maxPrice?: number; take?: number };
+export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; maxPrice?: number; take?: number };
 
 export async function listPublicProperties(q: PropertySearch = {}) {
   const db = await requireDb();
   return db.property.findMany({
-    where: { status: "ACTIVE", city: q.city, listingType: q.listingType, propertyType: q.propertyType, price: q.maxPrice ? { lte: q.maxPrice } : undefined },
+    where: {
+      status: "ACTIVE",
+      ...(q.city ? { city: q.city } : {}),
+      ...(q.listingType ? { listingType: q.listingType } : {}),
+      ...(q.propertyType ? { propertyType: q.propertyType } : {}),
+      ...(q.maxPrice ? { price: { lte: q.maxPrice } } : {}),
+    },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
     orderBy: { createdAt: "desc" },
     take: Math.min(q.take ?? 24, 100),
