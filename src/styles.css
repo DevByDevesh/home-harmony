@@ -385,7 +385,7 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 .astatus-good::before { background: var(--primary); } .astatus-good { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); }
 .astatus-wait::before { background: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-foreground) 40%, transparent); } .astatus-wait { background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
 .astatus-bad::before { background: var(--destructive); } .astatus-bad { color: var(--destructive); border-color: color-mix(in srgb, var(--destructive) 35%, var(--border)); }
-.admin-table-wrap { display: grid; gap: 12px; }
+.admin-table-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
 .admin-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 4px; }
 .admin-search { position: relative; display: flex; align-items: center; flex: 1 1 220px; max-width: 320px; }
 .admin-search svg { position: absolute; left: 10px; color: var(--muted-foreground); }
