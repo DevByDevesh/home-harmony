@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as PropertiesRouteImport } from './routes/properties'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ListPropertyRoute = ListPropertyRouteImport.update({
@@ -29,6 +36,11 @@ const PropertiesRoute = PropertiesRouteImport.update({
   path: '/properties',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropertySlugRoute = PropertySlugRouteImport.update({
   id: '/property/$slug',
   path: '/property/$slug',
@@ -37,35 +49,62 @@ const PropertySlugRoute = PropertySlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
+  '/saved': typeof SavedRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
+  '/saved': typeof SavedRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/list-property': typeof ListPropertyRoute
   '/properties': typeof PropertiesRoute
+  '/saved': typeof SavedRoute
   '/property/$slug': typeof PropertySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/list-property' | '/properties' | '/property/$slug'
+  fullPaths:
+    | '/'
+    | '/compare'
+    | '/list-property'
+    | '/properties'
+    | '/saved'
+    | '/property/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/list-property' | '/properties' | '/property/$slug'
-  id: '__root__' | '/' | '/list-property' | '/properties' | '/property/$slug'
+  to:
+    | '/'
+    | '/compare'
+    | '/list-property'
+    | '/properties'
+    | '/saved'
+    | '/property/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/compare'
+    | '/list-property'
+    | '/properties'
+    | '/saved'
+    | '/property/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
   ListPropertyRoute: typeof ListPropertyRoute
   PropertiesRoute: typeof PropertiesRoute
+  SavedRoute: typeof SavedRoute
   PropertySlugRoute: typeof PropertySlugRoute
 }
 
@@ -76,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/list-property': {
@@ -92,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertiesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/property/$slug': {
       id: '/property/$slug'
       path: '/property/$slug'
@@ -104,8 +157,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
   ListPropertyRoute: ListPropertyRoute,
   PropertiesRoute: PropertiesRoute,
+  SavedRoute: SavedRoute,
   PropertySlugRoute: PropertySlugRoute,
 }
 export const routeTree = rootRouteImport
