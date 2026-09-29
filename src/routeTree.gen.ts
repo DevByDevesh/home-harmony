@@ -19,6 +19,9 @@ import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
+import { Route as AdminOwnersRouteImport } from './routes/admin.owners'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 
@@ -72,6 +75,21 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAgentsRoute = AdminAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOwnersRoute = AdminOwnersRouteImport.update({
+  id: '/owners',
+  path: '/owners',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const OwnerNewRoute = OwnerNewRouteImport.update({
   id: '/owner_/new',
   path: '/owner/new',
@@ -93,6 +111,9 @@ export interface FileRoutesByFullPath {
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/owners': typeof AdminOwnersRoute
+  '/admin/users': typeof AdminUsersRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -106,6 +127,9 @@ export interface FileRoutesByTo {
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/owners': typeof AdminOwnersRoute
+  '/admin/users': typeof AdminUsersRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin': typeof AdminIndexRoute
@@ -121,6 +145,9 @@ export interface FileRoutesById {
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/admin/agents': typeof AdminAgentsRoute
+  '/admin/owners': typeof AdminOwnersRoute
+  '/admin/users': typeof AdminUsersRoute
   '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -137,6 +164,9 @@ export interface FileRouteTypes {
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/admin/agents'
+    | '/admin/owners'
+    | '/admin/users'
     | '/owner/new'
     | '/property/$slug'
     | '/admin/'
@@ -150,6 +180,9 @@ export interface FileRouteTypes {
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/admin/agents'
+    | '/admin/owners'
+    | '/admin/users'
     | '/owner/new'
     | '/property/$slug'
     | '/admin'
@@ -164,6 +197,9 @@ export interface FileRouteTypes {
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/admin/agents'
+    | '/admin/owners'
+    | '/admin/users'
     | '/owner_/new'
     | '/property/$slug'
     | '/admin/'
@@ -255,6 +291,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/agents': {
+      id: '/admin/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminAgentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/owners': {
+      id: '/admin/owners'
+      path: '/owners'
+      fullPath: '/admin/owners'
+      preLoaderRoute: typeof AdminOwnersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/owner_/new': {
       id: '/owner_/new'
       path: '/owner/new'
@@ -273,10 +330,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAgentsRoute: typeof AdminAgentsRoute
+  AdminOwnersRoute: typeof AdminOwnersRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAgentsRoute: AdminAgentsRoute,
+  AdminOwnersRoute: AdminOwnersRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
