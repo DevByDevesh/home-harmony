@@ -13,6 +13,8 @@ import { ListingStatusPill } from "@/components/role-switcher";
 import { amenityOptions, cities, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
 import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
+import { useServerFn } from "@tanstack/react-start";
+import { createMyListingFn } from "@/lib/owner-listings.functions";
 import { emptyRecord, requestChecks, verificationItems, type VerificationKey } from "@/lib/verification";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
@@ -38,6 +40,9 @@ function Wizard() {
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [savedToDb, setSavedToDb] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const createListing = useServerFn(createMyListingFn);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -48,14 +53,16 @@ function Wizard() {
   useEffect(() => () => uploads.forEach(u => URL.revokeObjectURL(u.url)), [uploads]);
 
   if (submitted) return <Shell><div className="wizard-success" role="status"><CheckCircle2 size={40}/><p className="kicker">STATUS · UNDER REVIEW</p><h2>Listing submitted for review</h2>
-    <p>Your listing is saved on this device with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong>: real moderation and verification need the HouseProvider backend, which isn’t connected yet. No seeker can see it.</p>
-    <div className="wizard-nav"><Button asChild><Link to="/owner" search={{ tab: "listings" }}>Go to my listings</Link></Button><Button variant="outline" onClick={() => { setSubmitted(null); setDraft(null); setStep(0); ownerActions.startDraft(); }}>Create another</Button></div></div></Shell>;
+    {savedToDb ? <p>Your listing is saved to your account with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong> until moderation reviews it. No seeker can see it yet.</p> :
+    <p>Your listing is saved on this device with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong>: real moderation and verification need the HouseProvider backend, which isn’t connected yet. No seeker can see it.</p>}
+    <div className="wizard-nav"><Button asChild><Link to="/owner" search={{ tab: "listings" }}>Go to my listings</Link></Button><Button variant="outline" onClick={() => { setSubmitted(null); setSavedToDb(false); setDraft(null); setStep(0); ownerActions.startDraft(); }}>Create another</Button></div></div></Shell>;
   if (!ready || !draft) return <Shell><div className="wizard-card" aria-busy="true"><Loader2 className="spin" size={22}/> Loading your draft…</div></Shell>;
 
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => { setDraft({ ...draft, [k]: v }); setErrors([]); };
   const toggle = <K extends "amenities" | "photos" | "checks">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
-  const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
+  const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(r => { ownerActions.discardDraft(); setSavedToDb(true); setSubmitted(r.id); toast.success("Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
+    const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
   const home = draftToHome(draft);
 
   return <Shell editing={!!data.editingId}>
@@ -101,7 +108,7 @@ function Wizard() {
         <h3 className="preview-sub">Search card</h3><div className="preview-tile"><HomeTile home={home}/></div>
         <h3 className="preview-sub">Property page</h3>
         <div className="detail-page preview-detail"><PropertyDetailView home={home} imageNote="Owner photo preview" disclaimer="Preview only — this listing has not been reviewed or verified." aside={<div className="detail-summary"><p className="kicker">AT A GLANCE</p><h3>{inr(home.price)}{home.mode === "Rent" && <small> / month</small>}</h3><div><span>Property type</span><strong>{home.kind}</strong></div><div><span>Deposit</span><strong>{inr(Number(draft.deposit) || 0)}</strong></div><div><span>Parking</span><strong>{draft.parking === "0" ? "None listed" : `${draft.parking} listed`}</strong></div><div><span>Availability</span><strong>{draft.availableFrom ? `From ${new Date(draft.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "Available now"}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div></div>}
-      {step === 8 && <div className="publish-step"><h3>Ready to submit?</h3><ul className="publish-list"><li>Status will be <ListingStatusPill status="UNDER_REVIEW"/> — it will not go live automatically.</li><li>No verification is granted on submission; checks are only requested.</li><li>In this demo the listing stays on this device. No marketplace receives it.</li></ul><Button onClick={publish}>Submit for review</Button></div>}
+      {step === 8 && <div className="publish-step"><h3>Ready to submit?</h3><ul className="publish-list"><li>Status will be <ListingStatusPill status="UNDER_REVIEW"/> — it will not go live automatically.</li><li>No verification is granted on submission; checks are only requested.</li><li>In this demo the listing stays on this device. No marketplace receives it.</li></ul><Button onClick={publish} disabled={publishing}>Submit for review</Button></div>}
 
       <div className="wizard-nav"><Button variant="outline" disabled={step === 0} onClick={() => go(step - 1)}><ArrowLeft size={16}/> Previous</Button>
         {step < steps.length - 1 && <Button onClick={() => go(step + 1)}>{step === 6 ? "Preview listing" : step === 7 ? "Continue" : "Next"} <ArrowRight size={16}/></Button>}</div>
