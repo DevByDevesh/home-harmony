@@ -135,7 +135,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
     <img src={h.image} alt="" loading="lazy"/>
     <div className="ol-body"><div className="ol-title"><strong>{h.name}</strong><ListingStatusPill status={status}/></div>
       <small>{h.neighborhood}, {h.city} · {inr(h.price)}{h.mode === "Rent" ? " / month" : ""} · {h.beds} BHK · {h.area.toLocaleString("en-IN")} sq.ft.</small></div>
-    <div className="dash-row-actions">
+    <div className="ol-actions">
       <Dialog><DialogTrigger asChild><Button size="sm" variant="outline"><Eye size={14}/> View</Button></DialogTrigger>
         <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of this listing.</DialogDescription>
           <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Illustrative image" disclaimer="Owner preview. Verification is not implied." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
