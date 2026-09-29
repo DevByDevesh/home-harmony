@@ -30,12 +30,12 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
     map.current = instance;
     instance.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     instance.on("load", () => setReady(true));
-    instance.on("error", e => { if (!instance.isStyleLoaded()) setError(e.error?.message ?? "Map could not load."); });
+    instance.on("error", e => { setError(e.error?.message ?? "Map could not load."); });
     return () => { markers.current.forEach(marker => marker.remove()); markers.current.clear(); map.current = null; instance.remove(); };
     // The map instance is created once; style and markers are updated separately.
   }, []);
 
-  useEffect(() => { if (map.current) map.current.setStyle(styleFor(layer)); }, [layer]);
+  useEffect(() => { if (map.current && ready) { setError(null); map.current.setStyle(styleFor(layer)); } }, [layer, ready]);
 
   useEffect(() => {
     const instance = map.current;
