@@ -45,3 +45,25 @@ export async function approveListing(propertyId: string, actorId: string) {
     db.auditLog.create({ data: { actorId, action: "Listing approved", entityType: "Property", entityId: propertyId } }),
   ]);
 }
+
+/** Owner-scoped read: only listings owned by `ownerId`, any status. */
+export async function listOwnerProperties(ownerId: string) {
+  const db = await requireDb();
+  return db.property.findMany({
+    where: { ownerId },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+  });
+}
+
+/**
+ * Pause/resume guarded by ownership in the WHERE clause itself, so another
+ * owner's id can never match. Resume only from PAUSED (never bypasses review).
+ * Returns the number of rows changed (0 = not yours or not allowed).
+ */
+export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
+  const db = await requireDb();
+  const from = to === "PAUSED" ? "ACTIVE" : "PAUSED";
+  const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: { status: to } });
+  return r.count;
+}
