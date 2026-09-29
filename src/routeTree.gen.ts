@@ -21,6 +21,7 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
 import { Route as AdminOwnersRouteImport } from './routes/admin.owners'
+import { Route as AdminPropertiesRouteImport } from './routes/admin.properties'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
@@ -85,6 +86,11 @@ const AdminOwnersRoute = AdminOwnersRouteImport.update({
   path: '/owners',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPropertiesRoute = AdminPropertiesRouteImport.update({
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/saved': typeof SavedRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/owners': typeof AdminOwnersRoute
+  '/admin/properties': typeof AdminPropertiesRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/saved': typeof SavedRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/owners': typeof AdminOwnersRoute
+  '/admin/properties': typeof AdminPropertiesRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/saved': typeof SavedRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/owners': typeof AdminOwnersRoute
+  '/admin/properties': typeof AdminPropertiesRoute
   '/admin/users': typeof AdminUsersRoute
   '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/admin/agents'
     | '/admin/owners'
+    | '/admin/properties'
     | '/admin/users'
     | '/owner/new'
     | '/property/$slug'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/admin/agents'
     | '/admin/owners'
+    | '/admin/properties'
     | '/admin/users'
     | '/owner/new'
     | '/property/$slug'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/admin/agents'
     | '/admin/owners'
+    | '/admin/properties'
     | '/admin/users'
     | '/owner_/new'
     | '/property/$slug'
@@ -305,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOwnersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/properties': {
+      id: '/admin/properties'
+      path: '/properties'
+      fullPath: '/admin/properties'
+      preLoaderRoute: typeof AdminPropertiesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -332,6 +351,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAgentsRoute: typeof AdminAgentsRoute
   AdminOwnersRoute: typeof AdminOwnersRoute
+  AdminPropertiesRoute: typeof AdminPropertiesRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -339,6 +359,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAgentsRoute: AdminAgentsRoute,
   AdminOwnersRoute: AdminOwnersRoute,
+  AdminPropertiesRoute: AdminPropertiesRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
