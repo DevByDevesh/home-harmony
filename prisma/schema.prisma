@@ -310,7 +310,7 @@ model Session {
 }
 
 /// Email verification / password reset tokens (no email provider connected yet).
-model Verification {
+model AuthVerification {
   id         String   @id @default(cuid())
   identifier String
   value      String
