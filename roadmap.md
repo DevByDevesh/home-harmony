@@ -19,3 +19,10 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Agent CRM with lead pipeline, lead detail, follow-ups, analytics
 - [x] Analytics event seam + reusable charts
 - [ ] Phase 4 — not started
+
+## Phase 4 — AI intelligence layer (done)
+- [x] Smart Search (natural language → existing filters), editable chips, honest errors
+- [x] Match engine with matched/close/unmatched reasons + insufficient-preferences state
+- [x] Listing assistant in wizard step 4 (Details), editable, accept/regenerate/reset
+- [x] Saved-search alerts (device-local): enable, frequency, types, edit, delete
+- [x] AI provider seam (local rules provider only)

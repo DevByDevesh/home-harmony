@@ -46,7 +46,7 @@ export function SmartSearch({ filters, onApply, count }: { filters: Filters; onA
     {status === "error" && error && <div className="smart-error" role="alert"><AlertCircle size={16}/><div><strong>{error}</strong><span>Try: “2BHK in Hinjewadi under ₹30,000”. Nothing was changed.</span></div></div>}
     {status === "done" && shown && <div className="smart-result" aria-live="polite">
       <p><strong>We understood:</strong> {shown.understood.join(" · ")}</p>
-      <p className="smart-meta">{count} matching {count === 1 ? "property" : "properties"} · edit or remove any chip below, or add filters.</p>
+      <p className="smart-meta">{count} matching {count === 1 ? "property" : "properties"} with the criteria in use now · the chips below are the live criteria — edit, remove or add filters.</p>
       {shown.unsure.map(u => <p key={u} className="smart-warn"><AlertCircle size={14}/>{u}</p>)}
       {shown.notes.map(n => <p key={n} className="smart-note"><Info size={14}/>{n}</p>)}
       <div className="smart-actions"><button type="button" className="text-link" onClick={() => document.getElementById("smart-q")?.focus()}>Edit search</button><button type="button" className="text-link" onClick={() => { setResult(null); setStatus("idle"); setText(""); onApply(clearFilters(filters)); }}>Clear extracted criteria</button></div>

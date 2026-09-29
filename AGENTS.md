@@ -15,3 +15,7 @@
 - Verification states come only from `src/lib/verification.ts`; UI may request checks (PENDING) but only a backend may set VERIFIED.
 - Roles in `src/lib/roles.ts` are a demo view switcher only; real authorization must be server-side.
 - Charts render after mount only, because date-based demo series differ between server and browser and break hydration.
+- All AI features go through `getAIProvider()` in `src/lib/ai/provider.ts`; only a local rules provider exists, so UI must label it preview, and a real LLM must run server-side returning the same shapes.
+- Smart Search output is a `Filters` object fed to the existing `applyFilters`, so there is one search engine.
+- The listing assistant (`src/lib/ai/listing-assistant.ts`) may only rephrase owner-entered facts, never add them.
+- Saved-search alerts live in `src/lib/alerts.ts` + user-data; nothing is sent until a notification backend exists.
