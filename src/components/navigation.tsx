@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserData } from "@/lib/user-data";
 import { useCurrentUser, useSignOut } from "@/lib/auth/use-current-user";
-import { AREA_ROLES } from "@/lib/auth/roles";
+import { AREA_ROLES, roleLabel } from "@/lib/auth/roles";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
   const [open, setOpen] = useState(false);
@@ -20,7 +21,16 @@ export function Navigation() {
       <div className="nav-actions">
         <Link to="/saved" className="nav-icon" aria-label={`Saved properties (${data.saved.length})`}><Heart size={18}/>{data.saved.length > 0 && <span className="nav-dot">{data.saved.length}</span>}</Link>
         {user
-          ? <Link to="/account" className="nav-icon nav-account" aria-label={`Your account (${user.name || user.email})`}><User size={18}/></Link>
+          ? <DropdownMenu><DropdownMenuTrigger className="nav-icon nav-account" aria-label={`Account menu for ${user.name || user.email}`}><User size={18}/></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="nav-account-menu">
+                <DropdownMenuLabel>{user.name || user.email}<small>{roleLabel[user.role]}</small></DropdownMenuLabel><DropdownMenuSeparator/>
+                <DropdownMenuItem asChild><Link to="/account">Profile</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/dashboard">Dashboard</Link></DropdownMenuItem>
+                {canOwner && <DropdownMenuItem asChild><Link to="/owner">Owner dashboard</Link></DropdownMenuItem>}
+                {canAgent && <DropdownMenuItem asChild><Link to="/agent">Agent dashboard</Link></DropdownMenuItem>}
+                {canAdmin && <DropdownMenuItem asChild><Link to="/admin">Admin</Link></DropdownMenuItem>}
+                <DropdownMenuSeparator/><DropdownMenuItem onSelect={() => { void signOut(); }}>Sign out</DropdownMenuItem>
+              </DropdownMenuContent></DropdownMenu>
           : <><Link to="/login" className="nav-auth">Sign in</Link><Link to="/signup" className="nav-auth nav-auth-strong">Create account</Link></>}
         <Button asChild variant="outline" className="nav-owner"><Link to="/list-property">List your property <ArrowUpRight size={16}/></Link></Button>
         <Button variant="ghost" size="icon" className="menu-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X/> : <Menu/>}</Button>
