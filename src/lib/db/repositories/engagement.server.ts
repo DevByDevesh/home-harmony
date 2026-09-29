@@ -61,12 +61,13 @@ export async function ownerUpdateVisit(ownerId: string, id: string, to: VisitSta
 
 export async function createEnquiry(userId: string, slug: string, message: string) {
   const db = await requireDb();
-  const p = await db.property.findFirst({ where: { slug, status: "ACTIVE" }, select: { id: true, ownerId: true, title: true } });
+  const p = await db.property.findFirst({ where: { slug, status: "ACTIVE" }, select: { id: true, ownerId: true, agentId: true, title: true } });
   if (!p) return null;
   if (p.ownerId === userId) return "own" as const;
   return db.$transaction(async (tx) => {
-    const e = await tx.enquiry.create({ data: { userId, propertyId: p.id, handlerId: p.ownerId, message, status: "NEW" }, select: { id: true } });
+    const e = await tx.enquiry.create({ data: { userId, propertyId: p.id, handlerId: p.agentId ?? p.ownerId, message, status: "NEW" }, select: { id: true } });
     await notify(tx, p.ownerId, "ENQUIRY_RECEIVED", "New enquiry", p.title, { enquiryId: e.id, slug });
+    if (p.agentId && p.agentId !== p.ownerId) await notify(tx, p.agentId, "LEAD_ASSIGNED", "New lead assigned", p.title, { enquiryId: e.id, slug });
     await notify(tx, userId, "ENQUIRY_SENT", "Enquiry sent", p.title, { enquiryId: e.id, slug });
     return e;
   });
