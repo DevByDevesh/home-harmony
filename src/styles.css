@@ -451,7 +451,7 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 .admin-settings { display: grid; gap: 20px; } .admin-settings-tabs { flex-wrap: wrap; }
 .admin-page .seg-tabs { margin-bottom: 16px; }
 @media (max-width: 960px) {
-  .admin-layout { grid-template-columns: 1fr; } .admin-aside { display: none; } .admin-menu-btn { display: inline-flex; }
+  .admin-layout { grid-template-columns: minmax(0, 1fr); } .admin-aside { display: none; } .admin-menu-btn { display: inline-flex; }
   .admin-grid-2 { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
