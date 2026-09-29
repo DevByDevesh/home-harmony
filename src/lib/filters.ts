@@ -11,6 +11,8 @@ export const filterSchema = z.object({
   beds: str, min: str, max: str, minArea: str,
   furnishing: str, parking: str, baths: str, amenities: str,
   available: str, verified: str, match: str, sort: str, view: str,
+  /** Original natural-language query (Smart Search). Informational; never filtered on directly. */
+  q: str,
 });
 export type Filters = z.output<typeof filterSchema>;
 export type FilterKey = keyof Filters;
@@ -61,3 +63,5 @@ export function removeChip(f: Filters, chip: Chip): Filters {
   return { ...f, [chip.key]: undefined };
 }
 export function clearFilters(f: Filters): Filters { return { view: f.view, sort: f.sort }; }
+/** Combine: later values (e.g. manual edits) override earlier ones (e.g. Smart Search). */
+export function mergeFilters(base: Filters, extra: Filters): Filters { const out: Filters = { ...base }; for (const [k, v] of Object.entries(extra)) if (v) (out as Record<string, string>)[k] = v; return out; }

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { HomeTile } from "@/components/home-tile";
 import { PropertyDetailView } from "@/components/property-detail-view";
+import { ListingAssistant } from "@/components/listing-assistant";
 import { VerificationPanel } from "@/components/verification-panel";
 import { ListingStatusPill } from "@/components/role-switcher";
 import { amenityOptions, cities, inr } from "@/lib/catalog";
@@ -81,6 +82,7 @@ function Wizard() {
         <Field label="Furnishing"><select value={draft.furnishing} onChange={e => set("furnishing", e.target.value)}><option value="">Choose</option>{["Fully furnished", "Semi furnished", "Unfurnished"].map(f => <option key={f}>{f}</option>)}</select></Field>
         <Field label="Listing title (optional)"><input value={draft.title} maxLength={60} onChange={e => set("title", e.target.value)}/></Field>
         <Field label={`Description (${draft.description.length}/1200)`} wide><textarea rows={5} maxLength={1200} value={draft.description} onChange={e => set("description", e.target.value)} placeholder="Describe the light, layout and everyday feel. Only include facts that are true."/></Field></div>}
+      {step === 3 && <ListingAssistant draft={draft} onApply={patch => { setDraft({ ...draft, ...patch }); setErrors([]); }}/>}
       {step === 4 && <div className="choice-grid">{amenityOptions.map(a => <button key={a} type="button" aria-pressed={draft.amenities.includes(a)} className="choice" onClick={() => toggle("amenities", a)}>{draft.amenities.includes(a) && <Check size={14}/>}{a}</button>)}</div>}
       {step === 5 && <>
         <p className="form-hint">Pick sample photos for this demo. The first one becomes the cover.</p>

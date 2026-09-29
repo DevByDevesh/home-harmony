@@ -6,9 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState, TileSkeletons } from "@/components/empty-state";
 import { HomeTile } from "@/components/home-tile";
+import { SavedSearchCard } from "@/components/saved-search-card";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { cities, getListing } from "@/lib/catalog";
-import { activeChips } from "@/lib/filters";
 import { userActions, useUserData, type Preferences } from "@/lib/user-data";
 import { formatVisitDate, statusLabel } from "@/lib/visits";
 
@@ -57,7 +57,7 @@ function Panel({ id }: { id: string }) {
     case "saved": return <Grid slugs={data.saved} empty={<EmptyState icon={<Heart size={30}/>} title="No saved properties yet" action={explore}>Save properties you like and compare them later.</EmptyState>}/>;
     case "recent": return <Grid slugs={data.recent} empty={<EmptyState icon={<Eye size={30}/>} title="Nothing viewed yet" action={explore}>Homes you open will appear here.</EmptyState>}/>;
     case "compared": return <>{data.compare.length > 0 && <Button asChild variant="outline" className="dash-cta"><Link to="/compare">Open comparison</Link></Button>}<Grid slugs={data.compare} empty={<EmptyState icon={<GitCompareArrows size={30}/>} title="No properties to compare" action={explore}>Add up to four homes to compare them side by side.</EmptyState>}/></>;
-    case "searches": return data.searches.length ? <ul className="dash-list">{data.searches.map(s => <li key={s.id}><div><strong>{s.label}</strong><small>{activeChips(s.filters).length} filters · Alerts arrive with accounts</small></div><div className="dash-row-actions"><Button asChild size="sm" variant="outline"><Link to="/properties" search={s.filters}>Open</Link></Button><Button size="sm" variant="ghost" onClick={() => userActions.removeSearch(s.id)}>Remove</Button></div></li>)}</ul>
+    case "searches": return data.searches.length ? <ul className="dash-list search-list">{data.searches.map(s => <SavedSearchCard key={s.id} search={s}/>)}</ul>
       : <EmptyState icon={<Bookmark size={30}/>} title="No saved searches" action={explore}>Apply filters on the search page, then choose “Save search”.</EmptyState>;
     case "visits": return data.visits.length ? <ul className="dash-list">{data.visits.map(v => { const h = getListing(v.slug); return <li key={v.id}><div><strong>{h?.name ?? "Unavailable property"}</strong><small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` · “${v.note}”` : ""}</small><small>Awaiting owner accounts — no owner has been notified.</small></div><div className="dash-row-actions"><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span>{v.status !== "CANCELLED" && v.status !== "COMPLETED" && <Button size="sm" variant="ghost" onClick={() => { userActions.setVisitStatus(v.id, "CANCELLED"); toast("Visit request cancelled"); }}>Cancel</Button>}</div></li>; })}</ul>
       : <EmptyState icon={<CalendarCheck size={30}/>} title="No visits scheduled" action={explore}>Open a property and choose “Schedule a visit”.</EmptyState>;

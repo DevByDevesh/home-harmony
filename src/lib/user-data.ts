@@ -3,12 +3,14 @@ import type { Filters } from "./filters";
 import type { Visit, VisitStatus } from "./visits";
 import { COMPARE_LIMIT } from "./compare";
 import { track } from "./analytics";
+import { defaultAlerts, matchingSlugs, type AlertSettings } from "./alerts";
 
 /**
  * Device-local user data for the demo. The same shape will come from an authenticated API later:
  * swap the load/persist functions for server calls and the hooks keep working.
  */
-export type SavedSearch = { id: string; label: string; filters: Filters; createdAt: string };
+/** `alerts` and `seen` are optional so searches saved before alerts existed still load. */
+export type SavedSearch = { id: string; label: string; filters: Filters; createdAt: string; alerts?: AlertSettings; seen?: string[] };
 export type Activity = { id: string; text: string; at: string };
 export type Preferences = { location: string; max: string; beds: string; furnishing: string; parking: boolean };
 export type UserData = { saved: string[]; compare: string[]; recent: string[]; visits: Visit[]; searches: SavedSearch[]; activity: Activity[]; preferences: Preferences };
@@ -55,7 +57,9 @@ export const userActions = {
     return update(s => ({ ...s, visits: [{ ...v, id: id(), status: "REQUESTED", createdAt: new Date().toISOString() }, ...s.visits], activity: log(s, `Visit request saved for ${name}`) }));
   },
   setVisitStatus(visitId: string, status: VisitStatus) { update(s => ({ ...s, visits: s.visits.map(v => v.id === visitId ? { ...v, status } : v), activity: log(s, `Visit ${status.toLowerCase()}`) })); },
-  saveSearch(label: string, filters: Filters) { track("SEARCH"); update(s => ({ ...s, searches: [{ id: id(), label, filters, createdAt: new Date().toISOString() }, ...s.searches], activity: log(s, `Saved search “${label}”`) })); },
+  saveSearch(label: string, filters: Filters) { track("SEARCH"); update(s => ({ ...s, searches: [{ id: id(), label, filters, createdAt: new Date().toISOString(), alerts: defaultAlerts(), seen: matchingSlugs(filters) }, ...s.searches], activity: log(s, `Saved search “${label}”`) })); },
+  updateSearch(searchId: string, patch: { label?: string; filters?: Filters; alerts?: AlertSettings }) { update(s => ({ ...s, searches: s.searches.map(x => x.id === searchId ? { ...x, ...patch } : x), activity: log(s, patch.alerts ? `Alert settings updated` : `Saved search edited`) })); },
+  markSearchSeen(searchId: string) { update(s => ({ ...s, searches: s.searches.map(x => x.id === searchId ? { ...x, seen: matchingSlugs(x.filters) } : x) })); },
   removeSearch(searchId: string) { update(s => ({ ...s, searches: s.searches.filter(x => x.id !== searchId) })); },
   setPreferences(p: Preferences) { update(s => ({ ...s, preferences: p, activity: log(s, "Updated preferences") })); },
   reset() { update(() => empty); },

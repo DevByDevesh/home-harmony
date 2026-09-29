@@ -18,6 +18,10 @@ export type ListingDraft = {
   kind: Home["kind"] | ""; mode: Home["mode"]; city: string; locality: string; address: string; title: string;
   price: string; deposit: string; availableFrom: string; beds: string; baths: string; area: string;
   furnishing: string; parking: string; amenities: string[]; description: string; photos: DemoPhoto[]; checks: VerificationKey[];
+  /** Owner's own extra points for the listing assistant (optional on drafts saved before Phase 4). */
+  notes?: string;
+  /** Assistant-drafted extras the owner accepted. Never published automatically. */
+  aiExtras?: { highlights: string[]; amenitySummary: string; seoTitle: string; seoDescription: string; social: string };
 };
 export const emptyDraft = (): ListingDraft => ({ kind: "", mode: "Rent", city: "", locality: "", address: "", title: "", price: "", deposit: "", availableFrom: "", beds: "", baths: "", area: "", furnishing: "", parking: "0", amenities: [], description: "", photos: [], checks: [] });
 

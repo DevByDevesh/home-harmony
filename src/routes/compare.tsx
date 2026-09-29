@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { availabilityLabel, displayPrice, getListing, inr, isVerified, type Listing } from "@/lib/catalog";
 import { COMPARE_LIMIT, neutralDifferences } from "@/lib/compare";
-import { computeMatch } from "@/lib/match";
+import { computeMatch, criteriaFrom } from "@/lib/match";
 import { userActions, useUserData } from "@/lib/user-data";
 
 export const Route = createFileRoute("/compare")({
@@ -24,14 +24,14 @@ function ComparePage() {
   const items = data.compare.map(getListing).filter(x => !!x);
   useEffect(() => { document.getElementById("compare-top")?.focus(); }, []);
   const p = data.preferences;
-  const criteria = { location: p.location || undefined, max: p.max || undefined, beds: p.beds || undefined, furnishing: p.furnishing || undefined, parking: p.parking ? "1" : undefined };
+  const criteria = criteriaFrom(p);
   const rows: Row[] = [
     ["Rent / price", l => <>{displayPrice(l)}{l.mode === "Rent" && <small> / month</small>}</>],
     ["Deposit", l => l.deposit ? inr(l.deposit) : "Not applicable"], ["Area", l => `${l.area.toLocaleString("en-IN")} sq.ft.`],
     ["BHK", l => `${l.beds} BHK`], ["Furnishing", l => l.furnishing], ["Parking", l => l.parking ? `${l.parking} listed` : "None listed"],
     ["Bathrooms", l => l.baths], ["Availability", l => availabilityLabel(l)], ["Brokerage", l => l.brokerage], ["Commute", () => "Not listed"],
     ["Amenities", l => l.features.join(", ")], ["Verification", l => isVerified(l) ? "Verified" : "Not verified"],
-    ["Match score", l => { const m = computeMatch(l, criteria); return m ? `${m.score}%` : "Set preferences to see"; }],
+    ["Match score", l => { const m = computeMatch(l, criteria); return m ? <span className="compare-match">{m.score}%<small>{m.matched.length} met{m.warnings.length ? ` · ${m.warnings.length} close` : ""}{m.unmatched.length ? ` · ${m.unmatched.length} not met` : ""}</small></span> : "Add 2+ preferences to see"; }],
   ];
   return <main className="results-page"><div className="wrap">
     <div className="results-intro" id="compare-top" tabIndex={-1}><p className="kicker">SIDE BY SIDE</p><h1>Compare <em>calmly.</em></h1><p>Up to {COMPARE_LIMIT} properties. Facts only — no rankings. You decide what suits you.</p></div>
