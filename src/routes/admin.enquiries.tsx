@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { AdminAuditTimeline, AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, NoteForm, fmtDate, notesToTimeline } from "@/components/admin/admin-kit";
+import { AdminAuditTimeline, AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, NoteForm, fmtDate, notesToTimeline } from "@/components/admin/admin-kit";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
 import { LiveEnquiriesPanel } from "@/components/admin/live-records";
@@ -18,7 +18,7 @@ function AdminEnquiries() {
   return <>
     <AdminHeader title="Enquiries" intro="Operational view of seeker enquiries. Message content will appear once messaging exists."/>
     <LiveEnquiriesPanel/>
-    <AdminDemoNote>Fictional enquiries. No real messages are stored or shown.</AdminDemoNote>
+    <p className="admin-note">Enquiries received through HouseProvider will appear here.</p>
     <AdminDataTable rows={s.enquiries} ready={ready} caption="Enquiries" emptyTitle="No enquiries found." rowLabel={name} onOpen={e => setOpen(e.id)}
       actions={e => [...statuses.filter(x => x !== e.status).map(x => ({ label: `Mark ${x.toLowerCase().replace("_", " ")}`, onSelect: () => setStatus(e, x) })), { label: "Assign to me", hidden: e.assignee === act.who, onSelect: () => act.update("enquiries", e.id, { assignee: act.who }, "Enquiry assigned", name(e), "enquiries.manage") }]}
       search={e => `${l.userName(e.userId)} ${l.propertyTitle(e.propertyId)} ${l.userName(e.handlerId)}`}
@@ -38,3 +38,5 @@ function AdminEnquiries() {
     </AdminDetailPanel>}
   </>;
 }
+
+

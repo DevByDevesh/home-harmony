@@ -1,5 +1,5 @@
 /**
- * Server-only Better Auth instance (email + password, DB-backed sessions).
+ * Server-only Better Auth instance (email + password, optional Google OAuth, DB-backed sessions).
  * Passwords are hashed by the library (scrypt); sessions live in the Session table
  * and the browser only receives a signed HttpOnly cookie.
  */
@@ -16,6 +16,8 @@ async function buildAuth() {
   const db = await requireDb();
   const secret = process.env["BETTER_AUTH_SECRET"];
   if (!secret) throw new Error("BETTER_AUTH_SECRET is not configured on the server.");
+  const googleClientId = process.env["GOOGLE_CLIENT_ID"];
+  const googleClientSecret = process.env["GOOGLE_CLIENT_SECRET"];
   return betterAuth({
     secret,
     baseURL: process.env["BETTER_AUTH_URL"] || undefined,
@@ -25,6 +27,9 @@ async function buildAuth() {
       return list;
     },
     database: prismaAdapter(db, { provider: "postgresql" }),
+    socialProviders: googleClientId && googleClientSecret
+      ? { google: { clientId: googleClientId, clientSecret: googleClientSecret } }
+      : {},
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 10,
@@ -84,6 +89,12 @@ async function buildAuth() {
           const s = ctx.context.newSession;
           if (s) await writeAudit({ actorId: s.user.id, action: "auth.login", entityType: "User", entityId: s.user.id });
           else await writeAudit({ actorId: null, action: "auth.login.failed", entityType: "User", result: "DENIED" });
+        }
+        // Dispatch exposes the endpoint's declared pattern, not the request path, so OAuth callbacks match "/callback/:id".
+        if (ctx.path === "/callback/:id") {
+          const s = ctx.context.newSession;
+          const provider = (ctx.params as { id?: string } | undefined)?.id;
+          if (s) await writeAudit({ actorId: s.user.id, action: "auth.login", entityType: "User", entityId: s.user.id, metadata: { provider: provider ?? "social" } });
         }
       }),
       before: createAuthMiddleware(async (ctx) => {

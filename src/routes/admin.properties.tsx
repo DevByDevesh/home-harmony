@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
+import { AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
@@ -33,7 +33,7 @@ function AdminProperties() {
   return <>
     <AdminHeader title="Properties" intro="Moderate listings. Approval makes a listing visible — it does not make it verified."/>
     <LivePropertiesPanel/>
-    <AdminDemoNote>Fictional catalog listings. Approving here doesn't change the public demo pages.</AdminDemoNote>
+    <p className="admin-note">Manage live property listings and moderation status.</p>
     <AdminDataTable rows={s.properties} ready={ready} caption="Properties" emptyTitle="No properties found." rowLabel={p => p.title} onOpen={p => setOpen(p.id)} actions={actions}
       search={p => `${p.title} ${p.locality} ${p.city} ${l.userName(p.ownerId)} ${l.userName(p.agentId)} ${p.id}`}
       filters={[{ key: "status", label: "Status", options: statuses, get: p => p.status }, { key: "flags", label: "Flag", options: ["REPORTED", "FEATURED"], get: p => p.featured ? "FEATURED" : p.reports ? "REPORTED" : "" }]}
@@ -48,7 +48,7 @@ function AdminProperties() {
       ]}/>
     <section className="admin-section"><h2>Featured placements</h2><p className="form-hint">Featured is a paid/promotional placement only. It never means verified, safer, better or a higher match.</p>
       {s.featured.length ? <ul className="admin-mini-list">{s.featured.map(f => <li key={f.id}><span>{l.propertyTitle(f.propertyId)}</span><small>{fmtDate(f.startsAt)} – {fmtDate(f.endsAt)} · by {f.createdBy}</small></li>)}</ul> : <p className="form-hint">No featured listings.</p>}</section>
-    {cur && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={cur.title} description="Fictional demo listing.">
+    {cur && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={cur.title} description="Property listing.">
       <DetailList items={[["ID", cur.id], ["Location", `${cur.locality}, ${cur.city}`], ["Price", inr(cur.price)], ["Owner", l.userName(cur.ownerId)], ["Agent", l.userName(cur.agentId)], ["Listing status", <AdminStatusBadge key="s" status={cur.status}/>], ["Verification", <AdminStatusBadge key="v" status={cur.verification}/>], ["Reports", cur.reports], ["Moderation note", cur.changesRequested ?? "—"]]}/>
       {cur.featured && feat && <FeaturedDates key={feat.id} start={feat.startsAt} end={feat.endsAt} max={s.settings.featured.maxDurationDays} onSave={(a, b) => act.setFeatured(cur.id, { startsAt: a, endsAt: b }, cur.title)}/>}
       <div className="admin-sheet-actions">{actions(cur).filter(a => !a.hidden).map(a => <Button key={a.label} size="sm" variant={a.destructive ? "outline" : "default"} onClick={a.onSelect}>{a.label}</Button>)}<Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: cur.slug }}>Open public page</Link></Button></div>
@@ -65,3 +65,5 @@ function FeaturedDates({ start, end, max, onSave }: { start: string; end: string
     <label className="admin-field"><span>Until</span><input type="date" value={b} onChange={e => setB(e.target.value)}/></label>
     {err && <p className="admin-field-error" role="alert">{err}</p>}<Button size="sm" type="submit" disabled={!!err}>Save dates</Button></form>;
 }
+
+

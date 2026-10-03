@@ -3,7 +3,7 @@ import { BookmarkPlus, LayoutGrid, Map as MapIcon, Satellite, SearchX } from "lu
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { DemoMap } from "@/components/demo-map";
+import MapboxCanvas from "@/components/mapbox-canvas";
 import { EmptyState } from "@/components/empty-state";
 import { FilterSheet } from "@/components/filter-sheet";
 import { HomeTile } from "@/components/home-tile";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/properties")({
   errorComponent: () => <main className="results-page"><div className="wrap"><EmptyState icon={<SearchX size={34}/>} title="Homes could not be loaded.">Please try again in a moment.</EmptyState></div></main>,
   head: () => ({ meta: [
     { title: "Explore homes on list or map — HouseProvider.in" },
-    { name: "description", content: "Filter fictional example homes across India by budget, BHK, furnishing and amenities, on a list or map." },
+    { name: "description", content: "Discover homes across India by budget, BHK, furnishing and amenities, on a list or map." },
     { property: "og:title", content: "Explore homes on list or map — HouseProvider.in" },
     { property: "og:description", content: "Find a space that fits the way you live." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
@@ -43,7 +43,7 @@ function ResultsPage() {
   const criteria = criteriaFrom(prefs, filters);
   const go = (next: Filters) => navigate({ search: next });
   const select = (slug: string) => { setSelected(slug); document.getElementById(`tile-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
-   const grid = results.map(h => <HomeTile key={h.slug} home={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
+   const grid = results.map(h => <HomeTile key={h.slug} home={h} listing={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
 
   return <main className={`results-page view-${view}`}><div className="wrap">
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
@@ -60,14 +60,17 @@ function ResultsPage() {
       </div>
     </div>
     {chips.length > 0 && <div className="chip-row" aria-label="Active filters">{chips.map(c => <EditableChip key={c.key + (c.value ?? "") + (filters[c.key] ?? "")} chip={c} filters={filters} onChange={next => { setPlace(next.location ?? ""); go(next); }}/>)}<button type="button" className="chip-clear" onClick={() => { setPlace(""); go(clearFilters(filters)); }}>Clear all</button></div>}
-    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Fictional showcase properties</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }); toast("Search saved on this device"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
+    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Property listings</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }, listings); toast("Search saved successfully"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
      {view === "list" ? (results.length ? <div key="list" className="home-grid results-grid results-entrance">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
        : <div key={view} className="map-layout results-entrance">
           <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
-          <div className="map-pane"><DemoMap homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view}/></div>
+          <div className="map-pane"><MapboxCanvas homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view}/></div>
         </div>}
   </div></main>;
 }
 function NoResults({ onClear }: { onClear: () => void }) {
   return <EmptyState icon={<SearchX size={34}/>} title="No properties found." action={<Button variant="outline" onClick={onClear}>Clear all filters</Button>}>Try expanding your budget or location, or removing a filter.</EmptyState>;
 }
+
+
+

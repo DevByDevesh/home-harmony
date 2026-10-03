@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
+import { AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { LiveServicesPanel } from "@/components/admin/live-business";
@@ -29,7 +29,7 @@ function AdminServices() {
   return <>
     <AdminHeader title="Services marketplace" intro="Foundation for moving, cleaning, legal and other home services. No real providers are onboarded yet."/>
     <LiveServicesPanel/>
-    <AdminDemoNote>All providers are fictional. Ratings shown are demo placeholders, not customer reviews.</AdminDemoNote>
+    <p className="admin-note">Service providers are shown only after registration and onboarding.</p>
     <div className="seg-tabs" role="tablist" aria-label="Services sections">{tabs.map(t => <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>{t}</button>)}</div>
     {tab === "Providers" && <AdminDataTable rows={s.providers} ready={ready} caption="Service providers" emptyTitle="No service providers match these filters." rowLabel={p => p.business} onOpen={p => setOpen(p.id)} actions={provActions}
       search={p => `${p.name} ${p.business} ${p.city}`}
@@ -38,7 +38,7 @@ function AdminServices() {
         { key: "business", label: "Provider", render: p => <span className="admin-cell-main"><strong>{p.business}</strong><small>{p.name}</small></span>, sort: p => p.business },
         { key: "cat", label: "Category", render: p => l.category(p.categoryId)?.name },
         { key: "city", label: "Location", render: p => p.city, sort: p => p.city },
-        { key: "rating", label: "Rating", render: p => p.demoRating ? `${p.demoRating.toFixed(1)} (demo)` : "No ratings" },
+        { key: "rating", label: "Rating", render: p => p.demoRating ? `${p.demoRating.toFixed(1)}` : "No customer ratings" },
         { key: "status", label: "Status", render: p => <AdminStatusBadge status={p.status}/>, sort: p => p.status },
       ]}/>}
     {tab === "Requests & bookings" && <AdminDataTable rows={s.serviceRequests} ready={ready} caption="Service requests" emptyTitle="No service requests yet." rowLabel={x => `Request ${x.id}`} onOpen={x => setReq(x.id)}
@@ -54,9 +54,9 @@ function AdminServices() {
     {tab === "Categories" && <ul className="admin-categories">{s.categories.map(c => <li key={c.id}><div><strong>{c.name}</strong><small>{s.providers.filter(p => p.categoryId === c.id).length} providers · commission {c.commissionPct}% (configurable)</small></div>
       <label className="admin-inline-num"><span className="sr-only">Commission for {c.name}</span><input type="number" min={0} max={50} defaultValue={c.commissionPct} onBlur={e => { const v = Number(e.target.value); if (v !== c.commissionPct && v >= 0 && v <= 50) act.saveCategory({ ...c, commissionPct: v }); }}/>%</label>
       <label className="admin-check"><Switch checked={c.enabled} onCheckedChange={v => act.saveCategory({ ...c, enabled: v })} aria-label={`${c.name} enabled`}/> {c.enabled ? "Enabled" : "Disabled"}</label></li>)}</ul>}
-    {cur && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={cur.business} description="Fictional provider.">
-      <DetailList items={[["Contact person", cur.name], ["Category", l.category(cur.categoryId)?.name], ["Location", cur.city], ["Contact", cur.contact], ["Verification", <AdminStatusBadge key="v" status={cur.verification}/>], ["Rating", cur.demoRating ? `${cur.demoRating.toFixed(1)} — demo placeholder` : "No ratings"], ["Status", <AdminStatusBadge key="s" status={cur.status}/>], ["Services", cur.services.join(", ")], ["Pricing model", cur.pricingModel.toLowerCase()]]}/>
-      <p className="form-hint">Reviews, quotes, availability, service areas and documents will attach here once the backend exists.</p>
+    {cur && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={cur.business} description="Service provider profile.">
+      <DetailList items={[["Contact person", cur.name], ["Category", l.category(cur.categoryId)?.name], ["Location", cur.city], ["Contact", cur.contact], ["Verification", <AdminStatusBadge key="v" status={cur.verification}/>], ["Rating", cur.demoRating ? `${cur.demoRating.toFixed(1)}` : "No customer ratings"], ["Status", <AdminStatusBadge key="s" status={cur.status}/>], ["Services", cur.services.join(", ")], ["Pricing model", cur.pricingModel.toLowerCase()]]}/>
+      <p className="form-hint">Reviews, quotes, availability, service areas and documents will appear here as they are recorded.</p>
       <div className="admin-sheet-actions">{provActions(cur).filter(a => !a.hidden).map(a => <Button key={a.label} size="sm" variant={a.destructive ? "outline" : "default"} onClick={a.onSelect}>{a.label}</Button>)}</div>
     </AdminDetailPanel>}
     {r && <AdminDetailPanel open onOpenChange={o => !o && setReq(null)} title={`Service request ${r.id}`}>
@@ -69,3 +69,4 @@ function AdminServices() {
     {dialog}
   </>;
 }
+

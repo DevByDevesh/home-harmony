@@ -49,7 +49,7 @@ function UserDetail({ s, user, open, onOpenChange, actions }: { s: AdminState; u
   const props = s.properties.filter(p => p.ownerId === user.id || p.agentId === user.id);
   const reports = s.reports.filter(r => r.subjectUserId === user.id || r.reporterId === user.id);
   const activity = s.audit.filter(a => a.target === user.name).map(a => ({ at: a.at, by: a.admin, text: a.action }));
-  return <AdminDetailPanel open={open} onOpenChange={onOpenChange} title={user.name} description={`${roleInfo[user.role].label} · fictional demo account`}>
+  return <AdminDetailPanel open={open} onOpenChange={onOpenChange} title={user.name} description={`${roleInfo[user.role].label} · account`}>
     <DetailList items={[["Email", user.email], ["City", user.city], ["Status", <AdminStatusBadge key="s" status={user.status}/>], ["Verification", <AdminStatusBadge key="v" status={user.verification}/>], ...(user.agency ? [["Agency", user.agency] as [string, string]] : []), ["Joined", fmtDate(user.joinedAt)], ["Last active", fmtDateTime(user.lastActiveAt)], ["Subscription", sub ? `${l.plan(sub.planId)?.name} · ${sub.status.toLowerCase()} · renews ${fmtDate(sub.renewsAt)}` : "Free plan"]]}/>
     <label className="admin-field"><span>Role</span>
       <select value={user.role} disabled={!act.can("users.changeRole") || user.role === "SUPER_ADMIN"} onChange={e => act.update("users", user.id, { role: e.target.value as Role }, `Role changed to ${roleInfo[e.target.value as Role].label}`, user.name, e.target.value === "ADMIN" || e.target.value === "SUPER_ADMIN" ? "users.assignAdmin" : "users.changeRole")}>
@@ -61,3 +61,6 @@ function UserDetail({ s, user, open, onOpenChange, actions }: { s: AdminState; u
     <h3>Admin activity</h3><AdminAuditTimeline items={activity}/>
   </AdminDetailPanel>;
 }
+
+
+

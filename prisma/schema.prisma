@@ -1,4 +1,4 @@
-// HouseProvider.in — PostgreSQL schema (Backend Phase 1: foundation only).
+// HouseProvider.in ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â PostgreSQL schema (Backend Phase 1: foundation only).
 // Mirrors domain terms in src/lib/admin/types.ts, src/lib/catalog.ts, src/lib/visits.ts.
 // Rules: listing status and verification status are separate; featured never implies
 // verification or quality; audit/payment/history rows use Restrict/SetNull, never cascade away.
@@ -222,49 +222,52 @@ enum ServiceRequestStatus {
 
 // ---------- Users & profiles ----------
 model User {
-  id            String        @id @default(cuid())
-  email         String?       @unique
-  phone         String?       @unique
-  role          Role          @default(USER)
-  status        AccountStatus @default(PENDING)
+  id             String        @id @default(cuid())
+  email          String?       @unique
+  phone          String?       @unique
+  role           Role          @default(USER)
+  status         AccountStatus @default(PENDING)
   /// Display name used by the auth library (profile keeps the canonical fullName).
   name           String        @default("")
   image          String?
   /// Boolean flag required by the auth library; `emailVerified` keeps the timestamp.
   emailConfirmed Boolean       @default(false)
-  emailVerified DateTime?
-  phoneVerified DateTime?
-  lastActiveAt  DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  emailVerified  DateTime?
+  phoneVerified  DateTime?
+  lastActiveAt   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  authAccounts     AuthAccount[]
-  sessions         Session[]
-  profile          Profile?
-  ownerProfile     OwnerProfile?
-  agentProfile     AgentProfile?
-  ownedProperties  Property[]        @relation("PropertyOwner")
-  agentProperties  Property[]        @relation("PropertyAgent")
-  savedProperties  SavedProperty[]
-  savedSearches    SavedSearch[]
-  searchPreference SearchPreference?
-  comparisons      Comparison[]
-  visits           Visit[]           @relation("VisitRequester")
-  handledVisits    Visit[]           @relation("VisitHandler")
-  enquiries        Enquiry[]         @relation("EnquiryRequester")
-  handledEnquiries Enquiry[]         @relation("EnquiryHandler")
-  notifications    Notification[]
-  verifications    Verification[]    @relation("VerificationSubject")
-  reviewedVerifs   Verification[]    @relation("VerificationReviewer")
-  reportsFiled     Report[]          @relation("Reporter")
-  reportsAbout     Report[]          @relation("ReportSubject")
-  reportsAssigned  Report[]          @relation("ReportAssignee")
-  auditLogs        AuditLog[]
-  subscriptions    Subscription[]
-  payments         Payment[]
-  serviceProvider  ServiceProvider?
-  serviceRequests  ServiceRequest[]
-  featuredCreated  FeaturedListing[]
+  authAccounts             AuthAccount[]
+  sessions                 Session[]
+  profile                  Profile?
+  ownerProfile             OwnerProfile?
+  agentProfile             AgentProfile?
+  ownedProperties          Property[]        @relation("PropertyOwner")
+  agentProperties          Property[]        @relation("PropertyAgent")
+  savedProperties          SavedProperty[]
+  savedSearches            SavedSearch[]
+  searchPreference         SearchPreference?
+  comparisons              Comparison[]
+  visits                   Visit[]           @relation("VisitRequester")
+  handledVisits            Visit[]           @relation("VisitHandler")
+  enquiries                Enquiry[]         @relation("EnquiryRequester")
+  handledEnquiries         Enquiry[]         @relation("EnquiryHandler")
+  notifications            Notification[]
+  verifications            Verification[]    @relation("VerificationSubject")
+  reviewedVerifs           Verification[]    @relation("VerificationReviewer")
+  reportsFiled             Report[]          @relation("Reporter")
+  reportsAbout             Report[]          @relation("ReportSubject")
+  reportsAssigned          Report[]          @relation("ReportAssignee")
+  auditLogs                AuditLog[]
+  subscriptions            Subscription[]
+  payments                 Payment[]
+  serviceProvider          ServiceProvider?
+  serviceRequests          ServiceRequest[]
+  featuredCreated          FeaturedListing[]
+  buyerConversations       Conversation[]    @relation("ConversationBuyer")
+  participantConversations Conversation[]    @relation("ConversationParticipant")
+  sentMessages             Message[]         @relation("MessageSender")
 
   @@index([role])
   @@index([status])
@@ -418,6 +421,7 @@ model Property {
   reports         Report[]
   featured        FeaturedListing[]
   serviceRequests ServiceRequest[]
+  conversations   Conversation[]
 
   @@index([city])
   @@index([locality])
@@ -432,7 +436,7 @@ model Property {
   @@index([city, listingType, status])
 }
 
-/// Stores a storage key/URL only — never binary data.
+/// Stores a storage key/URL only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â never binary data.
 model PropertyImage {
   id         String    @id @default(cuid())
   propertyId String
@@ -577,6 +581,8 @@ model Enquiry {
   user           User          @relation("EnquiryRequester", fields: [userId], references: [id], onDelete: Restrict)
   property       Property      @relation(fields: [propertyId], references: [id], onDelete: Restrict)
   handler        User?         @relation("EnquiryHandler", fields: [handlerId], references: [id], onDelete: SetNull)
+  conversationId String?       @unique
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
 
   @@index([status])
   @@index([propertyId])
@@ -584,7 +590,7 @@ model Enquiry {
   @@index([userId])
 }
 
-/// Storage only — no email/SMS/push provider is connected.
+/// Storage only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no email/SMS/push provider is connected.
 model Notification {
   id        String    @id @default(cuid())
   userId    String
@@ -723,7 +729,7 @@ model Subscription {
   @@index([userId])
 }
 
-/// Provider references only — no card numbers, UPI IDs or secrets.
+/// Provider references only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no card numbers, UPI IDs or secrets.
 model Payment {
   id                String             @id @default(cuid())
   userId            String
@@ -787,7 +793,7 @@ model Transaction {
   @@index([paymentId])
 }
 
-/// Promotional placement only — independent of verification, match score, quality or safety.
+/// Promotional placement only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â independent of verification, match score, quality or safety.
 /// Overlapping active windows per property are prevented in the service layer.
 model FeaturedListing {
   id          String   @id @default(cuid())
@@ -877,4 +883,41 @@ model ServiceBooking {
 
   @@index([providerId, scheduledFor])
   @@index([status])
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  propertyId    String
+  buyerId       String
+  participantId String
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  buyer       User      @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
+  participant User      @relation("ConversationParticipant", fields: [participantId], references: [id], onDelete: Restrict)
+  messages    Message[]
+  enquiries   Enquiry[]
+
+  @@unique([propertyId, buyerId, participantId])
+  @@index([buyerId, lastMessageAt])
+  @@index([participantId, lastMessageAt])
+  @@index([propertyId])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, readAt])
+  @@index([senderId])
 }

@@ -27,6 +27,16 @@ function LoginPage() {
   const navigate = useNavigate(); const qc = useQueryClient();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [ok, setOk] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  // On success the auth client navigates the browser to Google, so busy stays set for the trip.
+  async function google() {
+    setError(null); setGoogleBusy(true);
+    try {
+      const { error: err } = await authClient.signIn.social({ provider: "google", callbackURL: safeRedirect(redirect) });
+      if (err) { setError(authErrorMessage(err)); setGoogleBusy(false); }
+    } catch { setError(authErrorMessage(null)); setGoogleBusy(false); }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(null);
@@ -52,7 +62,7 @@ function LoginPage() {
       <div className="auth-row"><Link to="/forgot-password">Forgot password?</Link></div>
       <Button type="submit" className="auth-submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
     </form>
-    <ProviderRow/>
+    <ProviderRow onGoogle={google} googleBusy={googleBusy}/>
     <p className="auth-switch">New to HouseProvider? <Link to="/signup" search={{ redirect }}>Create an account</Link></p>
   </AuthShell>;
 }

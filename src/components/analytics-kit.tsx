@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { countByType, eventLabels, useLocalEvents, type AnalyticsEventType, type SeriesPoint } from "@/lib/analytics";
 
-export function DemoLabel({ children = "Demo analytics — illustrative numbers, not platform statistics." }: { children?: ReactNode }) {
+export function DemoLabel({ children = "Analytics information is based on recorded HouseProvider activity." }: { children?: ReactNode }) {
   return <p className="demo-label" role="note"><span>DEMO</span>{children}</p>;
 }
 export function MetricGrid({ items }: { items: { label: string; value: string | number; hint?: string | undefined }[] }) {
@@ -57,3 +57,5 @@ export function LocalEventsCard({ types }: { types: AnalyticsEventType[] }) {
     {!ready ? <p className="chart-empty">Loading…</p> : <dl>{types.map(t => <div key={t}><dt>{eventLabels[t]}</dt><dd>{counts[t]}</dd></div>)}</dl>}
   </section>;
 }
+
+

@@ -5,6 +5,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SeriesPoint } from "./analytics";
 
 type Perm = "payments.view" | "payments.refund" | "subscriptions.manage" | "plans.edit" | "services.manage" | "analytics.view";
 function rethrow(e: unknown): never { if (e instanceof Error) throw new Error(e.message); throw e; }
@@ -247,3 +248,51 @@ export const liveCountsFn = createServerFn({ method: "GET" }).handler(async () =
     return { users, properties, visits, enquiries, subscriptions, requests, saved, searches, comparisons, verifications, notifications, paidCount: paid._count._all, paidTotal: paid._sum.amount ?? 0 };
   } catch (e) { rethrow(e); }
 });
+
+/**
+ * Real activity trends: daily counts of records created in the database over the period.
+ * No series is projected or fabricated — days without records show zero. View/search
+ * events aren't collected server-side, so "saved searches" is the closest search signal.
+ */
+export type AdminTrends = { series: Record<string, SeriesPoint[]>; verificationStatuses: Record<string, number> };
+
+export const adminTrendsFn = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ days: z.union([z.literal(7), z.literal(30), z.literal(90)]) }).strict().parse(d))
+  .handler(async ({ data }): Promise<AdminTrends> => {
+    try {
+      await guard("analytics.view");
+      const days = data.days;
+      const since = new Date(Date.now() - days * 864e5);
+      const d = await db();
+      const perDay = (rows: { createdAt: Date }[]): SeriesPoint[] => {
+        const m = new Map<string, number>();
+        for (const r of rows) { const k = r.createdAt.toISOString().slice(0, 10); m.set(k, (m.get(k) ?? 0) + 1); }
+        const out: SeriesPoint[] = []; const today = new Date();
+        for (let i = days - 1; i >= 0; i--) { const dt = new Date(today); dt.setDate(today.getDate() - i); out.push({ label: dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: m.get(dt.toISOString().slice(0, 10)) ?? 0 }); }
+        return out;
+      };
+      const [users, listings, savedSearches, saved, comparisons, visits, enquiries, verifications, reports, subscriptions, payments, requests, verByStatus] = await Promise.all([
+        d.user.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.property.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.savedSearch.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.savedProperty.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.comparison.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.visit.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.enquiry.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.verification.findMany({ where: { submittedAt: { gte: since } }, select: { submittedAt: true } }).then((rows) => rows.map((r) => ({ createdAt: r.submittedAt }))),
+        d.report.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.subscription.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.payment.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.serviceRequest.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
+        d.verification.groupBy({ by: ["status"], _count: { _all: true } }),
+      ]);
+      return {
+        series: {
+          "New accounts": perDay(users), "New listings": perDay(listings), "Saved searches": perDay(savedSearches), "Saved properties": perDay(saved),
+          "Comparisons": perDay(comparisons), "Visit requests": perDay(visits), "Enquiries": perDay(enquiries), "Verification checks": perDay(verifications),
+          "Reports": perDay(reports), "Subscriptions": perDay(subscriptions), "Payments": perDay(payments), "Service requests": perDay(requests),
+        },
+        verificationStatuses: Object.fromEntries(verByStatus.map((v) => [v.status, v._count._all])),
+      };
+    } catch (e) { rethrow(e); }
+  });

@@ -18,11 +18,14 @@ export function RoleSwitcher() {
   });
   if (options.length < 2) return null;
   const current = path.startsWith("/owner") ? "OWNER" : path.startsWith("/agent") ? "AGENT" : path.startsWith("/admin") ? "ADMIN" : "USER";
-  return <div className="role-switch" role="group" aria-label="Switch dashboard view (demo only)">
-    <span>Demo only · view</span>
+  return <div className="role-switch" role="group" aria-label="Switch dashboard view">
+    <span>View</span>
     {options.map(r => <button key={r} type="button" aria-pressed={current === r} onClick={() => { setDemoRole(r); const home = roleInfo[r].home; if (home) navigate({ to: home }); }}>{roleInfo[r].label}</button>)}
   </div>;
 }
 export function ListingStatusPill({ status }: { status: string }) {
   return <span className={`lstatus lstatus-${status.toLowerCase()}`}>{status.replace("_", " ").toLowerCase()}</span>;
 }
+
+
+

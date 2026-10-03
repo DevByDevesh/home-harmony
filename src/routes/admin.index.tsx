@@ -1,36 +1,46 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AdminAuditTimeline, AdminChartCard, AdminDemoNote, AdminHeader, AdminLoadingState, AdminMetricCard, Distribution, count } from "@/components/admin/admin-kit";
-import { useAdminData } from "@/lib/admin/repository";
+import { useQuery } from "@tanstack/react-query";
+import { AdminAuditTimeline, AdminChartCard, AdminHeader, AdminLoadingState, AdminMetricCard, Distribution } from "@/components/admin/admin-kit";
 import { adminHead } from "@/lib/admin/head";
-import { demoSeries } from "@/lib/analytics";
+import { adminTrendsFn, liveCountsFn } from "@/lib/admin-business.functions";
+import { adminListAuditFn } from "@/lib/admin-trust.functions";
 import { inr } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin/")({ head: adminHead("Overview"), component: AdminOverview });
 
+const sum = (o: Record<string, number> | undefined) => o ? Object.values(o).reduce((a, b) => a + b, 0) : 0;
+const lc = (s: string) => s.replaceAll("_", " ").toLowerCase();
+const toDist = (o: Record<string, number> | undefined) => o ? Object.entries(o).map(([k, v]) => ({ label: lc(k), value: v })) : [];
+
 function AdminOverview() {
-  const { data: s, ready } = useAdminData();
-  if (!ready) return <><AdminHeader title="Operations overview" intro="Loading…"/><AdminLoadingState/></>;
-  const revenue = s.payments.filter(p => p.status === "SUCCEEDED").reduce((n, p) => n + p.amount, 0);
+  const counts = useQuery({ queryKey: ["admin", "counts"], queryFn: () => liveCountsFn() });
+  const trends = useQuery({ queryKey: ["admin", "trends", 30], queryFn: () => adminTrendsFn({ data: { days: 30 } }) });
+  const audit = useQuery({ queryKey: ["admin", "audit"], queryFn: () => adminListAuditFn() });
+  if (counts.isPending) return <><AdminHeader title="Operations overview" intro="Loading…"/><AdminLoadingState/></>;
+  if (counts.isError) return <><AdminHeader title="Operations overview" intro="What needs attention across listings, trust and revenue."/><p role="alert">{(counts.error as Error).message}</p></>;
+  const c = counts.data!;
+  const verPending = (trends.data?.verificationStatuses["PENDING"] ?? 0) + (trends.data?.verificationStatuses["IN_REVIEW"] ?? 0);
   return <>
-    <AdminHeader title="Operations overview" intro="What needs attention across listings, trust and revenue."/>
-    <AdminDemoNote>All numbers come from fictional demo records on this device — not real platform statistics.</AdminDemoNote>
+    <AdminHeader title="Operations overview" intro="What needs attention across listings, trust and revenue. All numbers are live database counts."/>
     <AdminMetricCard items={[
-      { label: "Total users", value: s.users.length }, { label: "Active owners", value: s.users.filter(u => u.role === "OWNER" && u.status === "ACTIVE").length },
-      { label: "Active agents", value: s.users.filter(u => u.role === "AGENT" && u.status === "ACTIVE").length }, { label: "Active listings", value: s.properties.filter(p => p.status === "ACTIVE").length },
-      { label: "Listings under review", value: s.properties.filter(p => p.status === "UNDER_REVIEW").length }, { label: "Pending verifications", value: s.verifications.filter(v => v.status === "PENDING" || v.status === "IN_REVIEW").length },
-      { label: "Open reports", value: s.reports.filter(r => r.status === "OPEN" || r.status === "IN_REVIEW").length }, { label: "Pending enquiries", value: s.enquiries.filter(e => e.status === "NEW").length },
-      { label: "Upcoming visits", value: s.visits.filter(v => v.status === "REQUESTED" || v.status === "CONFIRMED" || v.status === "RESCHEDULED").length },
-      { label: "Revenue (demo)", value: inr(revenue), hint: "Succeeded demo transactions" }, { label: "Active subscriptions", value: s.subscriptions.filter(x => x.status === "ACTIVE" || x.status === "TRIAL").length },
+      { label: "Accounts", value: sum(c.users) }, { label: "Owners", value: c.users["OWNER"] ?? 0 }, { label: "Agents", value: c.users["AGENT"] ?? 0 },
+      { label: "Active listings", value: c.properties["ACTIVE"] ?? 0 }, { label: "Listings under review", value: c.properties["UNDER_REVIEW"] ?? 0 },
+      { label: "Verification checks waiting", value: verPending }, { label: "New enquiries", value: c.enquiries["NEW"] ?? 0 },
+      { label: "Visit requests", value: sum(c.visits) }, { label: "Succeeded payments", value: c.paidCount, hint: `${inr(c.paidTotal)} total (payment provider)` },
+      { label: "Subscriptions", value: sum(c.subscriptions) },
     ]}/>
-    <div className="admin-grid-2">
-      <AdminChartCard title="User growth (illustrative)" data={demoSeries(11, 14, 4, 6)}/>
-      <AdminChartCard title="Listing growth (illustrative)" data={demoSeries(17, 14, 2, 4)} kind="bar"/>
-      <AdminChartCard title="Verification activity (illustrative)" data={demoSeries(23, 14, 1, 5)} kind="bar"/>
-      <AdminChartCard title="Revenue overview (illustrative, ₹)" data={demoSeries(31, 14, 900, 2400)}/>
-      <Distribution title="Subscription distribution" data={s.plans.map(p => ({ label: p.name, value: s.subscriptions.filter(x => x.planId === p.id).length }))}/>
-      <Distribution title="Property status" data={count(s.properties, p => p.status, ["ACTIVE", "UNDER_REVIEW", "PAUSED", "RENTED", "SOLD", "EXPIRED", "ARCHIVED"])}/>
-    </div>
+    {trends.isPending ? <p>Loading…</p> : trends.isError ? <p role="alert">{(trends.error as Error).message}</p> :
+      <div className="admin-grid-2">
+        <AdminChartCard title="New accounts (30 days)" data={trends.data.series["New accounts"]!}/>
+        <AdminChartCard title="New listings (30 days)" data={trends.data.series["New listings"]!} kind="bar"/>
+        <Distribution title="Accounts by role" data={toDist(c.users)}/>
+        <Distribution title="Listing status" data={toDist(c.properties)}/>
+      </div>}
     <section className="admin-section"><div className="admin-section-head"><h2>Recent activity</h2><Link to="/admin/audit">Full audit log</Link></div>
-      <AdminAuditTimeline items={s.audit.slice(0, 6).map(a => ({ at: a.at, by: a.admin, text: `${a.action} · ${a.target}` }))}/></section>
+      {audit.isPending ? <p>Loading…</p> : audit.isError ? <p role="alert">{(audit.error as Error).message}</p> :
+        <AdminAuditTimeline items={(audit.data ?? []).slice(0, 6).map(a => ({ at: a.at, by: a.actor, text: `${a.action} · ${a.entityType}` }))}/>}
+    </section>
   </>;
 }
+
+

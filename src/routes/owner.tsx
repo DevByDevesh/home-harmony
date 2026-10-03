@@ -7,19 +7,20 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { PropertyDetailView } from "@/components/property-detail-view";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { DemoLabel, LocalEventsCard, MetricGrid, TrendCard } from "@/components/analytics-kit";
+import { LocalEventsCard, MetricGrid, TrendCard } from "@/components/analytics-kit";
 import { EmptyState } from "@/components/empty-state";
 import { ListingStatusPill, RoleSwitcher } from "@/components/role-switcher";
 import { VerificationPanel } from "@/components/verification-panel";
 import type { ListingStatus } from "@/lib/catalog";
 import { inr } from "@/lib/catalog";
-import { demoSeries, rate, total } from "@/lib/analytics";
+import { dailyCounts } from "@/lib/analytics";
 import { timeAgo } from "@/lib/local-store";
 import { draftToHome, freshness, ownerActions, useOwnerData, type OwnerListing } from "@/lib/owner-data";
 import { formatVisitDate, statusLabel, visitTransitions } from "@/lib/visits";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listMyListingsFn, setMyListingStatusFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
+import { listOwnerEnquiriesFn, listOwnerVisitsFn } from "@/lib/engagement.functions";
 import { toListing } from "@/lib/property-mapper";
 import { OwnerDbEnquiries, OwnerDbVisits } from "@/components/engagement";
 
@@ -45,7 +46,6 @@ function OwnerDashboard() {
   return <main className="dashboard-page"><div className="wrap">
     <div className="results-intro dash-intro"><div><p className="kicker">OWNER SPACE</p><h1>Your <em>properties.</em></h1></div><Button asChild><Link to="/owner/new"><Plus size={16}/> New listing</Link></Button></div>
     <RoleSwitcher/>
-    <div className="demo-banner" role="note"><strong>Demo owner dashboard.</strong> Sample listings, visits and numbers are fictional and stored on this device. Sign-in, real enquiries and moderation arrive with the backend.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Owner sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/owner" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
        <section className="dash-panel" aria-labelledby="owner-title"><h2 id="owner-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</div></section>
@@ -53,34 +53,51 @@ function OwnerDashboard() {
   </div></main>;
 }
 
-function useTotals(listings: OwnerListing[]) {
-  const live = listings.filter(l => !l.archived);
-  const sum = (k: keyof OwnerListing["metrics"]) => live.reduce((n, l) => n + l.metrics[k], 0);
-  return { active: live.filter(l => l.status === "ACTIVE").length, views: sum("views"), saves: sum("saves"), enquiries: sum("enquiries"), visits: sum("visits") };
+function useOwnerLiveStats() {
+  const fetchListings = useServerFn(listMyListingsFn);
+  const fetchVisits = useServerFn(listOwnerVisitsFn);
+  const fetchEnquiries = useServerFn(listOwnerEnquiriesFn);
+  const listings = useQuery({ queryKey: ["owner-db-listings"], queryFn: () => fetchListings() });
+  const visits = useQuery({ queryKey: ["owner-db-visits"], queryFn: () => fetchVisits() });
+  const enquiries = useQuery({ queryKey: ["owner-db-enquiries"], queryFn: () => fetchEnquiries() });
+  return { listings, visits, enquiries };
 }
-function Charts() {
-  const { data } = useOwnerData();
-  const perf = data.listings.filter(l => !l.archived).map(l => ({ label: (l.draft.title || l.draft.locality).slice(0, 14), value: l.metrics.views }));
-  return <div className="chart-grid"><TrendCard title="Views over time" data={demoSeries(3, 14, 18, 16)}/><TrendCard title="Enquiries over time" data={demoSeries(7, 14, 1, 4)} kind="bar"/><TrendCard title="Saves over time" data={demoSeries(11, 14, 2, 5)}/><TrendCard title="Listing performance (views)" data={perf} kind="bar"/></div>;
+
+/** Real stats from the owner's database records. Views and saves aren't tracked server-side, so they aren't shown. */
+function OwnerLiveStats({ events = false }: { events?: boolean }) {
+  const { listings, visits, enquiries } = useOwnerLiveStats();
+  if (listings.isPending || visits.isPending || enquiries.isPending) return <p className="chart-empty">Loading your records…</p>;
+  if (listings.isError) return <p role="alert">{(listings.error as Error).message}</p>;
+  if (visits.isError || enquiries.isError) return <p role="alert">Your visits or enquiries couldn’t be loaded.</p>;
+  const ls = listings.data ?? [];
+  return <>
+    <MetricGrid items={[
+      { label: "Listings", value: ls.length, hint: "All statuses" },
+      { label: "Active listings", value: ls.filter(l => l.status === "ACTIVE").length },
+      { label: "In review", value: ls.filter(l => l.status === "UNDER_REVIEW").length },
+      { label: "Visit requests", value: visits.data?.length ?? 0 },
+      { label: "Enquiries", value: enquiries.data?.length ?? 0 },
+    ]}/>
+    <div className="chart-grid">
+      <TrendCard title="Visit requests (30 days)" data={dailyCounts((visits.data ?? []).map(v => ({ createdAt: v.createdAt })))}/>
+      <TrendCard title="Enquiries (30 days)" data={dailyCounts((enquiries.data ?? []).map(e => ({ createdAt: e.createdAt })))} kind="bar"/>
+    </div>
+    <p className="form-hint">Every number shown here comes from records in your HouseProvider account. Listing views and saves are not tracked yet, so they are not included.</p>
+    {events && <LocalEventsCard types={["LISTING_CREATED", "LISTING_PUBLISHED"]}/>}
+  </>;
 }
 
 function Panel({ id }: { id: string }) {
   const { data } = useOwnerData();
-  const t = useTotals(data.listings);
   const newListing = <Button asChild><Link to="/owner/new"><Plus size={16}/> Create a listing</Link></Button>;
   switch (id) {
     case "listings": return <ListingsPanel/>;
     case "enquiries": return <OwnerDbEnquiries empty={<EmptyState icon={<Send size={30}/>} title="No enquiries yet">Enquiries from seekers about your listings will appear here.</EmptyState>}/>;
-    case "visits": return <><OwnerDbVisits/>{data.visits.length ? <><DemoLabel>Sample visit requests from fictional visitors. Your choice is saved here; no one is notified.</DemoLabel><ul className="dash-list">{data.visits.map(v => { const l = data.listings.find(x => x.id === v.listingId); return <li key={v.id}><div><strong>{v.visitor} · {l ? draftToHome(l.draft).name : "Removed listing"}</strong><small>{formatVisitDate(v.date)} at {v.slot}</small><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span></div><div className="dash-row-actions">{visitTransitions[v.status].map(s => <Button key={s} size="sm" variant={s === "CONFIRMED" ? "default" : "outline"} onClick={() => { ownerActions.setVisitStatus(v.id, s); toast.success(`Marked ${statusLabel[s].toLowerCase()} (demo)`); }}>{s === "CONFIRMED" ? "Accept" : s === "CANCELLED" ? "Decline" : s === "RESCHEDULED" ? "Reschedule" : statusLabel[s]}</Button>)}</div></li>; })}</ul></> : <EmptyState icon={<CalendarCheck size={30}/>} title="No visit requests">Visit requests for your listings will appear here.</EmptyState>}</>;
-    case "analytics": return <><DemoLabel/><MetricGrid items={[{ label: "Total views", value: t.views }, { label: "Saves", value: t.saves }, { label: "Enquiries", value: t.enquiries }, { label: "Visits", value: t.visits }, { label: "Save rate", value: rate(t.saves, t.views) }, { label: "Visit conversion", value: rate(t.visits, t.views) }]}/><Charts/><LocalEventsCard types={["LISTING_CREATED", "LISTING_PUBLISHED"]}/></>;
+    case "visits": return <OwnerDbVisits/>;
+        case "analytics": return <OwnerLiveStats events/>;
     case "verification": { const items = data.listings.filter(l => !l.archived); return items.length ? <div className="verify-list">{items.map(l => <div key={l.id}><h3>{draftToHome(l.draft).name} <ListingStatusPill status={l.status}/></h3><VerificationPanel record={l.verification} compact onRequest={keys => { ownerActions.requestVerification(l.id, keys); toast.success("Checks requested — pending review"); }}/></div>)}</div> : <EmptyState icon={<ShieldCheck size={30}/>} title="No verification requests" action={newListing}>Create a listing to request verification checks.</EmptyState>; }
-    case "profile": return <div className="profile-card"><p><strong>Owner profile</strong></p><p>Sign-in with email, phone OTP or Google will create your owner profile. Until then this dashboard runs in demo mode on this device.</p><Button variant="outline" onClick={() => { ownerActions.reset(); toast("Owner demo data reset"); }}><RotateCcw size={15}/> Reset owner demo data</Button></div>;
-    default: return <>
-      <DemoLabel/>
-      <MetricGrid items={[{ label: "Active listings", value: t.active, hint: "From your listings" }, { label: "Total views", value: t.views }, { label: "Saves", value: t.saves }, { label: "Enquiries", value: t.enquiries }, { label: "Visits", value: t.visits }, { label: "Conversion", value: rate(t.visits, t.views), hint: "Visits ÷ views" }]}/>
-      <Charts/>
-      <p className="form-hint">Chart totals are illustrative ({total(demoSeries(3, 14, 18, 16))} demo views over 14 days).</p>
-    </>;
+    case "profile": return <div className="profile-card"><p><strong>Owner profile</strong></p><p>Sign-in with email, phone OTP or Google will create your owner profile. Until then this dashboard runs in current mode on this device.</p><Button variant="outline" onClick={() => { ownerActions.reset(); toast("Owner local data reset"); }}><RotateCcw size={15}/> Reset owner local data</Button></div>;
+    default: return <OwnerLiveStats/>;
   }
 }
 
@@ -107,7 +124,7 @@ function ListingsPanel() {
         <ViewListing listing={l}/><Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ edit: l.id }}><Pencil size={14}/> Edit</Link></Button>
         {l.archived ? <Button size="sm" variant="outline" onClick={() => { ownerActions.restore(l.id); toast.success("Listing restored"); }}><RotateCcw size={14}/> Restore</Button> : <>
           {l.status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "PAUSED"); toast.success("Listing paused"); }}><Pause size={14}/> Pause</Button>}
-          {l.status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "ACTIVE"); toast.success("Listing resumed (demo)"); }}><Play size={14}/> Resume</Button>}
+          {l.status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "ACTIVE"); toast.success("Listing resumed "); }}><Play size={14}/> Resume</Button>}
           {(l.status === "ACTIVE" || l.status === "PAUSED") && <Button size="sm" variant="outline" onClick={() => { ownerActions.confirmAvailability(l.id); toast.success("Availability confirmed — freshness updated"); }}><CheckCircle2 size={14}/> Confirm availability</Button>}
           {l.status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, l.draft.mode === "Rent" ? "RENTED" : "SOLD"); toast.success(`Marked ${l.draft.mode === "Rent" ? "rented" : "sold"}`); }}>Mark {l.draft.mode === "Rent" ? "rented" : "sold"}</Button>}
           <Button size="sm" variant="ghost" onClick={() => { ownerActions.archive(l.id); toast("Listing archived", { action: { label: "Undo", onClick: () => ownerActions.restore(l.id) } }); }}><Archive size={14}/> Archive</Button></>}
@@ -139,10 +156,14 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
     <div className="ol-actions">
       <Dialog><DialogTrigger asChild><Button size="sm" variant="outline"><Eye size={14}/> View</Button></DialogTrigger>
         <DialogContent className="listing-view-dialog"><DialogTitle className="sr-only">{h.name}</DialogTitle><DialogDescription className="sr-only">Preview of this listing.</DialogDescription>
-          <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Illustrative image" disclaimer="Owner preview. Verification is not implied." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
+          <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Property image" disclaimer="Owner preview. Verification status is shown separately." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
         </DialogContent></Dialog>
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
       {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
       {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
     </div></li>;
 }
+
+
+
+

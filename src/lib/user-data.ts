@@ -4,6 +4,7 @@ import type { Visit, VisitStatus } from "./visits";
 import { COMPARE_LIMIT } from "./compare";
 import { track } from "./analytics";
 import { defaultAlerts, matchingSlugs, type AlertSettings } from "./alerts";
+import type { Listing } from "./catalog";
 import { toast } from "sonner";
 import { useCurrentUser } from "./auth/use-current-user";
 import { cancelVisitFn, deleteSearchFn, getMyUserDataFn, requestVisitFn, saveSearchFn, setCompareFn, setSavedFn } from "./user-data.functions";
@@ -111,9 +112,10 @@ export const userActions = {
     return ok;
   },
   setVisitStatus(visitId: string, status: VisitStatus) { update(s => ({ ...s, visits: s.visits.map(v => v.id === visitId ? { ...v, status } : v), activity: log(s, `Visit ${status.toLowerCase()}`) })); if (serverUser && status === "CANCELLED") remote(cancelVisitFn({ data: { id: visitId } }), errorHandler); },
-  saveSearch(label: string, filters: Filters) { track("SEARCH"); const x: SavedSearch = { id: uuid(), label, filters, createdAt: new Date().toISOString(), alerts: defaultAlerts(), seen: matchingSlugs(filters) }; update(s => ({ ...s, searches: [x, ...s.searches], activity: log(s, `Saved search “${label}”`) })); pushSearch(x.id); },
+  /** `source` is the live listing set the search was run against; without it no baseline is recorded. */
+  saveSearch(label: string, filters: Filters, source?: Listing[]) { track("SEARCH"); const x: SavedSearch = { id: uuid(), label, filters, createdAt: new Date().toISOString(), alerts: defaultAlerts(), ...(source ? { seen: matchingSlugs(filters, source) } : {}) }; update(s => ({ ...s, searches: [x, ...s.searches], activity: log(s, `Saved search “${label}”`) })); pushSearch(x.id); },
   updateSearch(searchId: string, patch: { label?: string; filters?: Filters; alerts?: AlertSettings }) { update(s => ({ ...s, searches: s.searches.map(x => x.id === searchId ? { ...x, ...patch } : x), activity: log(s, patch.alerts ? `Alert settings updated` : `Saved search edited`) })); pushSearch(searchId); },
-  markSearchSeen(searchId: string) { update(s => ({ ...s, searches: s.searches.map(x => x.id === searchId ? { ...x, seen: matchingSlugs(x.filters) } : x) })); pushSearch(searchId); },
+  markSearchSeen(searchId: string, source?: Listing[]) { if (!source) return; update(s => ({ ...s, searches: s.searches.map(x => x.id === searchId ? { ...x, seen: matchingSlugs(x.filters, source) } : x) })); pushSearch(searchId); },
   removeSearch(searchId: string) { update(s => ({ ...s, searches: s.searches.filter(x => x.id !== searchId) })); if (serverUser) remote(deleteSearchFn({ data: { id: searchId } }), errorHandler); },
   setPreferences(p: Preferences) { update(s => ({ ...s, preferences: p, activity: log(s, "Updated preferences") })); },
   reset() { update(() => empty); },

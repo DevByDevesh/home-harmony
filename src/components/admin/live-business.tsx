@@ -141,7 +141,7 @@ export function LiveCountsPanel() {
   const q = useQuery({ queryKey: ["admin", "counts"], queryFn: () => liveCountsFn() });
   const sum = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0);
   const d = q.data;
-  return <Panel id="live-counts" title="Current database counts" hint="Exact counts of records stored today. These are not traffic or market statistics; trend charts below remain illustrative.">
+  return <Panel id="live-counts" title="Current database counts" hint="Exact counts of records currently stored in the database. Historical trend data is shown only when recorded activity is available.">
     {q.isPending ? <p>Loading…</p> : q.isError ? <p role="alert">{(q.error as Error).message}</p> : d && <>
       <div className="table-scroll"><table className="admin-table"><thead><tr><th>Record</th><th>Total</th><th>Breakdown</th></tr></thead><tbody>
         {([["Accounts", d.users], ["Listings", d.properties], ["Visit requests", d.visits], ["Enquiries", d.enquiries], ["Subscriptions", d.subscriptions], ["Service requests", d.requests]] as [string, Record<string, number>][]).map(([label, o]) =>
@@ -151,3 +151,4 @@ export function LiveCountsPanel() {
       </tbody></table></div></>}
   </Panel>;
 }
+

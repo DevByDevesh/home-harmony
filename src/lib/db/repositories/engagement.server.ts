@@ -104,3 +104,303 @@ export async function setRecent(userId: string, slugs: string[]) {
   const extra = { ...((cur?.extra as Record<string, unknown> | null) ?? {}), recent: slugs };
   await db.searchPreference.upsert({ where: { userId }, create: { userId, extra }, update: { extra } });
 }
+// ---- Private chat ----
+
+export async function getOrCreateConversation(userId: string, slug: string, firstMessage: string) {
+  const db = await requireDb();
+
+  const property = await db.property.findFirst({
+    where: { slug, status: "ACTIVE" },
+    select: { id: true, slug: true, title: true, ownerId: true, agentId: true },
+  });
+
+  if (!property) return { ok: false as const, message: "This home is not available." };
+  if (property.ownerId === userId) return { ok: false as const, message: "You cannot message your own listing." };
+
+  const participantId = property.agentId ?? property.ownerId;
+
+  const sender = await db.user.findUnique({
+    where: { id: userId },
+    select: { status: true },
+  });
+
+  if (!sender || sender.status === "SUSPENDED" || sender.status === "DEACTIVATED") {
+    return { ok: false as const, message: "Your account cannot send messages." };
+  }
+
+  return db.$transaction(async (tx) => {
+    let conversation = await tx.conversation.findUnique({
+      where: {
+        propertyId_buyerId_participantId: {
+          propertyId: property.id,
+          buyerId: userId,
+          participantId,
+        },
+      },
+      select: { id: true },
+    });
+
+    let enquiryId: string | null = null;
+
+    if (!conversation) {
+      conversation = await tx.conversation.create({
+        data: {
+          propertyId: property.id,
+          buyerId: userId,
+          participantId,
+          lastMessageAt: new Date(),
+        },
+        select: { id: true },
+      });
+
+      const enquiry = await tx.enquiry.create({
+        data: {
+          userId,
+          propertyId: property.id,
+          handlerId: participantId,
+          message: firstMessage,
+          status: "NEW",
+          conversationId: conversation.id,
+        },
+        select: { id: true },
+      });
+
+      enquiryId = enquiry.id;
+    } else {
+      const existingEnquiry = await tx.enquiry.findUnique({
+        where: { conversationId: conversation.id },
+        select: { id: true },
+      });
+
+      if (existingEnquiry) enquiryId = existingEnquiry.id;
+    }
+
+    await tx.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: userId,
+        body: firstMessage,
+      },
+    });
+
+    await tx.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() },
+    });
+
+    await notify(
+      tx,
+      participantId,
+      "MESSAGE_RECEIVED",
+      "New message",
+      property.title,
+      { conversationId: conversation.id, slug: property.slug }
+    );
+
+    return {
+      ok: true as const,
+      conversationId: conversation.id,
+      enquiryId,
+    };
+  });
+}
+
+export async function listConversations(userId: string) {
+  const db = await requireDb();
+
+  return db.conversation.findMany({
+    where: {
+      OR: [{ buyerId: userId }, { participantId: userId }],
+    },
+    orderBy: { lastMessageAt: "desc" },
+    take: 100,
+    select: {
+      id: true,
+      lastMessageAt: true,
+      createdAt: true,
+      property: {
+        select: {
+          slug: true,
+          title: true,
+          city: true,
+          locality: true,
+        },
+      },
+      buyer: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      participant: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          body: true,
+          createdAt: true,
+          senderId: true,
+          readAt: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getConversation(userId: string, conversationId: string) {
+  const db = await requireDb();
+
+  return db.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [{ buyerId: userId }, { participantId: userId }],
+    },
+    select: {
+      id: true,
+      property: {
+        select: {
+          slug: true,
+          title: true,
+          city: true,
+          locality: true,
+        },
+      },
+      buyer: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      participant: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        take: 500,
+        select: {
+          id: true,
+          senderId: true,
+          body: true,
+          readAt: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+}
+
+export async function sendMessage(userId: string, conversationId: string, body: string) {
+  const db = await requireDb();
+  const clean = body.trim();
+
+  if (!clean || clean.length > 2000) {
+    return { ok: false as const, message: "Message must be between 1 and 2000 characters." };
+  }
+
+  const sender = await db.user.findUnique({
+    where: { id: userId },
+    select: { status: true },
+  });
+
+  if (!sender || sender.status === "SUSPENDED" || sender.status === "DEACTIVATED") {
+    return { ok: false as const, message: "Your account cannot send messages." };
+  }
+
+  return db.$transaction(async (tx) => {
+    const conversation = await tx.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [{ buyerId: userId }, { participantId: userId }],
+      },
+      select: {
+        id: true,
+        property: { select: { title: true, slug: true } },
+        buyerId: true,
+        participantId: true,
+      },
+    });
+
+    if (!conversation) {
+      return { ok: false as const, message: "Conversation not found." };
+    }
+
+    const recipientId =
+      conversation.buyerId === userId
+        ? conversation.participantId
+        : conversation.buyerId;
+
+    const message = await tx.message.create({
+      data: {
+        conversationId,
+        senderId: userId,
+        body: clean,
+      },
+      select: {
+        id: true,
+        senderId: true,
+        body: true,
+        readAt: true,
+        createdAt: true,
+      },
+    });
+
+    await tx.conversation.update({
+      where: { id: conversationId },
+      data: {
+        lastMessageAt: message.createdAt,
+      },
+    });
+
+    await tx.enquiry.updateMany({
+      where: { conversationId },
+      data: { lastActivityAt: message.createdAt },
+    });
+
+    await notify(
+      tx,
+      recipientId,
+      "MESSAGE_RECEIVED",
+      "New message",
+      conversation.property.title,
+      {
+        conversationId,
+        slug: conversation.property.slug,
+      }
+    );
+
+    return { ok: true as const, message };
+  });
+}
+
+export async function markConversationRead(userId: string, conversationId: string) {
+  const db = await requireDb();
+
+  const conversation = await db.conversation.findFirst({
+    where: {
+      id: conversationId,
+      OR: [{ buyerId: userId }, { participantId: userId }],
+    },
+    select: { id: true },
+  });
+
+  if (!conversation) return { ok: false as const };
+
+  await db.message.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: userId },
+      readAt: null,
+    },
+    data: { readAt: new Date() },
+  });
+
+  return { ok: true as const };
+}

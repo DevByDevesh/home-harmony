@@ -80,6 +80,67 @@ export type NewOwnerProperty = {
 const WIZARD_PHOTO_PREFIX = "demo/new-home-";
 
 /** Creates an owner listing. Status is always UNDER_REVIEW; checks are only requested (PENDING) — never approved here. */
+async function autoVerifyOwnerListing(
+  tx: any,
+  propertyId: string,
+  ownerId: string,
+  p: NewOwnerProperty,
+  propCreatedAt: Date,
+) {
+  const now = new Date();
+  const checks = new Set(p.checks);
+
+  const autoVerified = new Set<VerificationType>();
+
+  if (checks.has("PROPERTY") && p.title.trim() && p.description.trim() && p.price > 0 && p.areaSqft > 0) {
+    autoVerified.add("PROPERTY");
+  }
+
+  if (checks.has("PHOTOS") && p.photoKeys.length > 0) {
+    autoVerified.add("PHOTOS");
+  }
+
+  if (checks.has("LOCATION") && p.city.trim() && p.locality.trim() && p.addressLine1?.trim()) {
+    autoVerified.add("LOCATION");
+  }
+
+  if (checks.has("AVAILABILITY") && p.availableFrom instanceof Date && !Number.isNaN(p.availableFrom.getTime())) {
+    autoVerified.add("AVAILABILITY");
+  }
+
+  const owner = await tx.user.findUnique({
+    where: { id: ownerId },
+    select: { phoneVerified: true },
+  });
+
+  if (checks.has("PHONE") && owner?.phoneVerified) {
+    autoVerified.add("PHONE");
+  }
+
+  for (const type of checks) {
+    const verified = autoVerified.has(type);
+    await tx.verification.create({
+      data: {
+        type,
+        status: verified ? "VERIFIED" : "PENDING",
+        userId: ownerId,
+        propertyId,
+        decidedAt: verified ? now : null,
+      },
+    });
+  }
+
+  const pending = [...checks].some((type) => !autoVerified.has(type));
+
+  await tx.property.update({
+    where: { id: propertyId },
+    data: {
+      verificationStatus: pending ? "PENDING" : "VERIFIED",
+    },
+  });
+
+  return { autoVerified: [...autoVerified], pending };
+}
 export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) {
   const db = await requireDb();
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -98,7 +159,7 @@ export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) 
       const a = await tx.amenity.upsert({ where: { name }, update: {}, create: { name, slug: slugify(name) } });
       await tx.propertyAmenity.create({ data: { propertyId: prop.id, amenityId: a.id } });
     }
-    for (const type of new Set(p.checks)) await tx.verification.create({ data: { type, status: "PENDING", userId: ownerId, propertyId: prop.id } });
+    await autoVerifyOwnerListing(tx, prop.id, ownerId, p, prop.createdAt);
     return prop;
   });
 }

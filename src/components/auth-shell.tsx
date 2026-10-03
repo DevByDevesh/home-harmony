@@ -40,10 +40,9 @@ export function AuthField({ label, hint, error, ...input }: { label: string; hin
   </div>;
 }
 
-export function ProviderRow() {
+export function ProviderRow({ onGoogle, googleBusy }: { onGoogle: () => void; googleBusy?: boolean }) {
   return <div className="auth-providers" aria-label="Other sign-in options">
     <div className="auth-divider"><span>Other options</span></div>
-    <button type="button" disabled aria-disabled="true">Continue with Google <small>Not configured yet</small></button>
-    <button type="button" disabled aria-disabled="true">Phone number (OTP) <small>Not configured yet</small></button>
+    <button type="button" onClick={onGoogle} disabled={googleBusy}>{googleBusy ? "Continuing with Google…" : "Continue with Google"}</button>
   </div>;
 }

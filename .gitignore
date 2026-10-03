@@ -33,3 +33,8 @@ dist-ssr
 
 .env
 .env.local
+
+# Local AI/tool files and temporary backups
+.qoder/
+src/components_backup_cleanup/
+src/routes_backup_cleanup/

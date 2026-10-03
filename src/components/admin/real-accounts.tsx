@@ -5,21 +5,22 @@ import { ACCOUNT_STATUSES, ROLES, canAssignRole, roleLabel, type AccountStatus, 
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 
 /** Live accounts from the database. Every change is authorized and audited on the server. */
-export function RealAccountsPanel() {
+export function RealAccountsPanel({ roles, title = "Registered accounts" }: { roles?: AuthRole[]; title?: string }) {
   const { user } = useCurrentUser();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
+  const rows = roles ? q.data?.filter(a => roles.includes(a.role as AuthRole)) : q.data;
   const done = (msg: string) => ({ onSuccess: () => { toast.success(msg); void qc.invalidateQueries({ queryKey: ["admin", "accounts"] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Action failed") });
   const role = useMutation({ mutationFn: (d: { userId: string; role: AuthRole }) => changeUserRole({ data: d }), ...done("Role updated") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
 
   return <section className="admin-accounts dash-panel" aria-labelledby="real-accounts">
     <p className="kicker">LIVE ACCOUNTS</p>
-    <h2 id="real-accounts">Registered accounts</h2>
+    <h2 id="real-accounts">{title}</h2>
     <p className="form-hint">These are real sign-ups stored in the database. Role and status changes take effect immediately and are recorded in the audit log. Accounts are never deleted.</p>
-    {q.isPending ? <p>Loading accounts…</p> : q.isError ? <p role="alert">{(q.error as Error).message}</p> : !q.data?.length ? <p>No accounts yet.</p> :
+    {q.isPending ? <p>Loading accounts…</p> : q.isError ? <p role="alert">{(q.error as Error).message}</p> : !rows?.length ? <p>No accounts yet.</p> :
       <div className="table-scroll"><table className="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead><tbody>
-        {q.data.map(a => {
+        {rows.map(a => {
           const self = a.id === user?.id;
           return <tr key={a.id}>
             <td>{a.name || "—"}{self && " (you)"}</td><td>{a.email}</td>

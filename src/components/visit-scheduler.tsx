@@ -27,7 +27,7 @@ export function VisitScheduler({ home }: { home: Listing }) {
   return <Dialog open={open} onOpenChange={o => { setOpen(o); if (!o) reset(); }}>
     <DialogTrigger asChild><Button className="detail-more"><CalendarCheck size={17}/>Schedule a visit</Button></DialogTrigger>
     <DialogContent className="visit-dialog">
-      {status === "done" ? <div className="visit-done" role="status"><CalendarCheck size={34}/><DialogTitle>Visit request saved</DialogTitle><p>{home.name} · {formatVisitDate(date)} at {slot}</p><p className="demo-note">Demo only: this request is stored on this device. No owner has received it, and it won’t be confirmed until owner accounts are connected.</p><div className="visit-actions"><Button asChild variant="outline"><Link to="/dashboard" search={{ tab: "visits" }}>View my visits</Link></Button><Button onClick={() => setOpen(false)}>Done</Button></div></div> : <>
+      {status === "done" ? <div className="visit-done" role="status"><CalendarCheck size={34}/><DialogTitle>Visit request saved</DialogTitle><p>{home.name} · {formatVisitDate(date)} at {slot}</p><p className="demo-note">Visit request has been recorded. The property owner can respond through HouseProvider.</p><div className="visit-actions"><Button asChild variant="outline"><Link to="/dashboard" search={{ tab: "visits" }}>View my visits</Link></Button><Button onClick={() => setOpen(false)}>Done</Button></div></div> : <>
         <DialogHeader><DialogTitle>Schedule a visit</DialogTitle><DialogDescription>{home.name}, {home.neighborhood}. Demo request — saved on this device only.</DialogDescription></DialogHeader>
         <div className="visit-days" role="group" aria-label="Visit day">
           {(["today", "tomorrow", "pick"] as const).map(d => <button type="button" key={d} className="pill" aria-pressed={day === d} onClick={() => { setDay(d); setSlot(""); }}>{d === "today" ? "Today" : d === "tomorrow" ? "Tomorrow" : "Select date"}</button>)}
@@ -43,3 +43,5 @@ export function VisitScheduler({ home }: { home: Listing }) {
     </DialogContent>
   </Dialog>;
 }
+
+

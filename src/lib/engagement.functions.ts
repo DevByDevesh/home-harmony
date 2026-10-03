@@ -1,5 +1,5 @@
 /**
- * Visits (owner side), enquiries, notifications and recently viewed — PostgreSQL-backed.
+ * Visits (owner side), enquiries, notifications and recently viewed â€” PostgreSQL-backed.
  * Identity always comes from the session; listing ownership is checked in every query.
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -40,7 +40,7 @@ export const createEnquiryFn = createServerFn({ method: "POST" })
     try {
       const u = await me();
       const r = await (await repo()).createEnquiry(u.id, data.slug, data.message);
-      if (!r) return { ok: false as const, message: "This home isn’t accepting enquiries." };
+      if (!r) return { ok: false as const, message: "This home isnâ€™t accepting enquiries." };
       if (r === "own") return { ok: false as const, message: "This is your own listing." };
       return { ok: true as const };
     } catch (e) { rethrow(e); }
@@ -68,3 +68,99 @@ export const setRecentFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try { const u = await me(); await (await repo()).setRecent(u.id, [...new Set(data.slugs)]); return { ok: true as const }; } catch (e) { rethrow(e); }
   });
+export type ConversationRow = {
+  id: string
+  property: { slug: string; title: string; city: string; locality: string }
+  buyer: { id: string; name: string }
+  participant: { id: string; name: string }
+  lastMessageAt: string | null
+  lastMessage: { body: string; createdAt: string; senderId: string; readAt: string | null } | null
+}
+
+export type MessageRow = {
+  id: string
+  senderId: string
+  body: string
+  readAt: string | null
+  createdAt: string
+}
+
+export const startConversationFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    slug,
+    message: z.string().trim().min(1).max(2000),
+  }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me()
+      return await (await repo()).getOrCreateConversation(u.id, data.slug, data.message)
+    } catch (e) { rethrow(e) }
+  })
+
+export const listConversationsFn = createServerFn({ method: "GET" })
+  .handler(async (): Promise<ConversationRow[]> => {
+    try {
+      const u = await me()
+      return (await (await repo()).listConversations(u.id)).map((c) => ({
+        id: c.id,
+        property: c.property,
+        buyer: c.buyer,
+        participant: c.participant,
+        lastMessageAt: c.lastMessageAt?.toISOString() ?? null,
+        lastMessage: c.messages[0] ? {
+          body: c.messages[0].body,
+          createdAt: c.messages[0].createdAt.toISOString(),
+          senderId: c.messages[0].senderId,
+          readAt: c.messages[0].readAt?.toISOString() ?? null,
+        } : null,
+      }))
+    } catch (e) { rethrow(e) }
+  })
+
+export const getConversationFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ conversationId: cuid }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me()
+      const c = await (await repo()).getConversation(u.id, data.conversationId)
+      if (!c) return null
+      return {
+        ...c,
+        messages: c.messages.map((m) => ({
+          ...m,
+          createdAt: m.createdAt.toISOString(),
+          readAt: m.readAt?.toISOString() ?? null,
+        })),
+      }
+    } catch (e) { rethrow(e) }
+  })
+
+export const sendMessageFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    conversationId: cuid,
+    body: z.string().trim().min(1).max(2000),
+  }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me()
+      const result = await (await repo()).sendMessage(u.id, data.conversationId, data.body)
+      if (!result.ok) return result
+      return {
+        ok: true as const,
+        message: {
+          ...result.message,
+          createdAt: result.message.createdAt.toISOString(),
+          readAt: result.message.readAt?.toISOString() ?? null,
+        },
+      }
+    } catch (e) { rethrow(e) }
+  })
+
+export const markConversationReadFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ conversationId: cuid }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me()
+      return await (await repo()).markConversationRead(u.id, data.conversationId)
+    } catch (e) { rethrow(e) }
+  })

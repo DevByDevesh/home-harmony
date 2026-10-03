@@ -9,8 +9,9 @@ import { EmptyState, TileSkeletons } from "@/components/empty-state";
 import { HomeTile } from "@/components/home-tile";
 import { SavedSearchCard } from "@/components/saved-search-card";
 import { RoleSwitcher } from "@/components/role-switcher";
-import { MyEnquiries, MyNotifications } from "@/components/engagement";
+import { ChatPanel, MyEnquiries, MyNotifications } from "@/components/engagement";
 import { cities, getListing } from "@/lib/catalog";
+import { useLiveListings } from "@/lib/use-live-listings";
 import { userActions, useUserData, type Preferences } from "@/lib/user-data";
 import { formatVisitDate, statusLabel } from "@/lib/visits";
 
@@ -40,7 +41,6 @@ function Dashboard() {
   return <main className="dashboard-page"><div className="wrap">
     <div className="results-intro"><p className="kicker">YOUR SPACE</p><h1>Welcome <em>home.</em></h1></div>
     <RoleSwitcher/>
-    <div className="demo-banner" role="note"><strong>Demo dashboard.</strong> Everything here is stored on this device only. Accounts, messaging and owner responses arrive when sign-in is connected.</div>
     <div className="dashboard-layout">
       <nav className="dash-nav" aria-label="Dashboard sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/dashboard" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
       <section className="dash-panel" aria-labelledby="dash-title"><h2 id="dash-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]}/> : <TileSkeletons count={2}/>}</div></section>
@@ -49,23 +49,26 @@ function Dashboard() {
 }
 
 function Grid({ slugs, empty }: { slugs: string[]; empty: ReactNode }) {
-  const items = slugs.map(getListing).filter(x => !!x);
-  return items.length ? <div className="home-grid dash-grid">{items.map(h => <HomeTile key={h.slug} home={h}/>)}</div> : <>{empty}</>;
+  const live = useLiveListings();
+  const items = slugs.map(s => live.data?.find(l => l.slug === s) ?? getListing(s)).filter(x => !!x);
+  return items.length ? <div className="home-grid dash-grid">{items.map(h => <HomeTile key={h.slug} home={h} listing={h}/>)}</div> : <>{empty}</>;
 }
 const explore = <Button asChild><Link to="/properties">Explore homes</Link></Button>;
 
 function Panel({ id }: { id: string }) {
   const { data } = useUserData();
+  const live = useLiveListings();
+  const findHome = (slug: string) => live.data?.find(l => l.slug === slug) ?? getListing(slug);
   switch (id) {
     case "saved": return <Grid slugs={data.saved} empty={<EmptyState icon={<Heart size={30}/>} title="No saved properties yet" action={explore}>Save properties you like and compare them later.</EmptyState>}/>;
     case "recent": return <Grid slugs={data.recent} empty={<EmptyState icon={<Eye size={30}/>} title="Nothing viewed yet" action={explore}>Homes you open will appear here.</EmptyState>}/>;
     case "compared": return <>{data.compare.length > 0 && <Button asChild variant="outline" className="dash-cta"><Link to="/compare">Open comparison</Link></Button>}<Grid slugs={data.compare} empty={<EmptyState icon={<GitCompareArrows size={30}/>} title="No properties to compare" action={explore}>Add up to four homes to compare them side by side.</EmptyState>}/></>;
     case "searches": return data.searches.length ? <ul className="dash-list search-list">{data.searches.map(s => <SavedSearchCard key={s.id} search={s}/>)}</ul>
       : <EmptyState icon={<Bookmark size={30}/>} title="No saved searches" action={explore}>Apply filters on the search page, then choose “Save search”.</EmptyState>;
-    case "visits": return data.visits.length ? <ul className="dash-list">{data.visits.map(v => { const h = getListing(v.slug); return <li key={v.id}><div><strong>{h?.name ?? "Unavailable property"}</strong><small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` · “${v.note}”` : ""}</small><small>Awaiting owner accounts — no owner has been notified.</small></div><div className="dash-row-actions"><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span>{v.status !== "CANCELLED" && v.status !== "COMPLETED" && <Button size="sm" variant="ghost" onClick={() => { userActions.setVisitStatus(v.id, "CANCELLED"); toast("Visit request cancelled"); }}>Cancel</Button>}</div></li>; })}</ul>
+    case "visits": return data.visits.length ? <ul className="dash-list">{data.visits.map(v => { const h = findHome(v.slug); return <li key={v.id}><div><strong>{h?.name ?? "Unavailable property"}</strong><small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` · “${v.note}”` : ""}</small><small>Visit request is awaiting owner response.</small></div><div className="dash-row-actions"><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span>{v.status !== "CANCELLED" && v.status !== "COMPLETED" && <Button size="sm" variant="ghost" onClick={() => { userActions.setVisitStatus(v.id, "CANCELLED"); toast("Visit request cancelled"); }}>Cancel</Button>}</div></li>; })}</ul>
       : <EmptyState icon={<CalendarCheck size={30}/>} title="No visits scheduled" action={explore}>Open a property and choose “Schedule a visit”.</EmptyState>;
     case "enquiries": return <MyEnquiries empty={<EmptyState icon={<Send size={30}/>} title="No enquiries yet">Open a home and choose “Send an enquiry” while signed in.</EmptyState>}/>;
-    case "messages": return <EmptyState icon={<MessageSquare size={30}/>} title="No messages">In-app messaging arrives in a later phase.</EmptyState>;
+    case "messages": return <ChatPanel />;
     case "notifications": return <><MyNotifications/>{data.activity.length ? <ul className="dash-list activity">{data.activity.map(a => <li key={a.id}><div><strong>{a.text}</strong><small>{new Date(a.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></div></li>)}</ul>
       : <EmptyState icon={<Bell size={30}/>} title="No notifications">Activity on this device will appear here. Price and availability alerts arrive with accounts.</EmptyState>}</>;
     case "profile": return <div className="profile-card"><span className="avatar" aria-hidden="true"><User size={26}/></span><div><strong>Guest on this device</strong><p>Sign-in with email, phone or Google arrives in a later phase. Until then your data stays in this browser.</p><Button variant="outline" size="sm" onClick={() => { userActions.reset(); toast("Device data cleared"); }}>Clear data on this device</Button></div></div>;
@@ -100,3 +103,5 @@ function PreferencesForm() {
     <Button type="submit">Save preferences</Button>
   </form>;
 }
+
+

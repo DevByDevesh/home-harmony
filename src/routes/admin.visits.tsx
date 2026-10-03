@@ -18,14 +18,14 @@ function AdminVisits() {
   const name = (v: AdminVisit) => `Visit ${v.id} · ${l.propertyTitle(v.propertyId)}`;
   const move = (v: AdminVisit, to: VisitStatus) => {
     const go = () => act.update("visits", v.id, { status: to }, `Visit ${statusLabel[to].toLowerCase()}`, name(v), "visits.manage");
-    if (to === "CANCELLED") ask({ title: "Cancel this visit?", description: "Nobody is notified in demo mode.", confirm: "Cancel visit", onConfirm: go }); else go();
+    if (to === "CANCELLED") ask({ title: "Cancel this visit?", description: "The property owner will be notified when visit notifications are connected.", confirm: "Cancel visit", onConfirm: go }); else go();
   };
   const actions = (v: AdminVisit) => visitTransitions[v.status].map(to => ({ label: verbs[to], destructive: to === "CANCELLED", onSelect: () => move(v, to) }));
   const cur = s.visits.find(v => v.id === open);
   return <>
     <AdminHeader title="Visits" intro="Visit requests across the platform, using the same statuses and rules as seekers and owners."/>
     <LiveVisitsPanel/>
-    <AdminDemoNote>Fictional visits. Seeker visits you request elsewhere stay on your device and aren't shown here.</AdminDemoNote>
+    <AdminDemoNote>Visit requests. Seeker visits you request elsewhere stay on your device and aren't shown here.</AdminDemoNote>
     <AdminDataTable rows={s.visits} ready={ready} caption="Visits" emptyTitle="No visits found." rowLabel={name} onOpen={v => setOpen(v.id)} actions={actions}
       search={v => `${l.propertyTitle(v.propertyId)} ${l.userName(v.userId)} ${l.userName(v.handlerId)}`}
       filters={[{ key: "status", label: "Status", options: Object.keys(statusLabel), get: v => v.status }]}
@@ -45,3 +45,5 @@ function AdminVisits() {
     {dialog}
   </>;
 }
+
+

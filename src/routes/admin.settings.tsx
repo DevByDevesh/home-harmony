@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AdminDemoNote, AdminHeader, AdminLoadingState } from "@/components/admin/admin-kit";
+import { AdminHeader, AdminLoadingState } from "@/components/admin/admin-kit";
 import { useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
 import { notificationChannels, notificationEvents, type PlatformSettings } from "@/lib/admin/config";
@@ -17,7 +17,7 @@ function AdminSettings() {
   const editable = act.can("settings.edit");
   return <>
     <AdminHeader title="Settings" intro="Platform rules live in one configuration object so a backend can own them later."/>
-    <AdminDemoNote>{editable ? "Changes are saved on this device only." : "Read-only for Admin. A Super admin can change settings."} Payment and notification providers are not connected; no secrets are stored here.</AdminDemoNote>
+    <p className="admin-note">Payment and notification providers are not connected. No provider credentials are stored here.</p>
     <div className="admin-settings">
       <div className="seg-tabs admin-settings-tabs" role="tablist" aria-label="Settings sections">{sections.map(([k, label]) => <button key={k} role="tab" aria-selected={sec === k} onClick={() => setSec(k)}>{label}</button>)}</div>
       {!ready ? <AdminLoadingState/> : <SectionForm key={sec + JSON.stringify(s.settings[sec])} section={sec} value={s.settings[sec]} disabled={!editable} onSave={v => act.saveSettings(sec, v)}/>}
@@ -40,8 +40,9 @@ function SectionForm({ section, value, disabled, onSave }: { section: keyof Plat
       const id = `set-${section}-${k}`;
       if (typeof val === "boolean") return <label key={k} className="admin-check"><Switch id={id} checked={val} disabled={disabled} onCheckedChange={c => setV({ ...v, [k]: c })}/> {human(k)}</label>;
       if (Array.isArray(val)) return <label key={k} className="admin-field" htmlFor={id}><span>{human(k)} (one per line)</span><textarea id={id} rows={5} disabled={disabled} value={val.join("\n")} onChange={e => setV({ ...v, [k]: e.target.value.split("\n") })}/></label>;
-      if (k === "provider") return <label key={k} className="admin-field" htmlFor={id}><span>Payment provider</span><select id={id} disabled={disabled} value={String(val)} onChange={e => setV({ ...v, [k]: e.target.value })}><option value="demo">Demo (no gateway)</option><option value="razorpay">Razorpay — requires server setup</option><option value="stripe">Stripe — requires server setup</option></select><small>Selecting a provider here doesn't connect it; credentials must be added server-side.</small></label>;
+      if (k === "provider") return <label key={k} className="admin-field" htmlFor={id}><span>Payment provider</span><select id={id} disabled={disabled} value={String(val)} onChange={e => setV({ ...v, [k]: e.target.value })}><option value="demo">Not connected</option><option value="razorpay">Razorpay — requires server setup</option><option value="stripe">Stripe — requires server setup</option></select><small>Selecting a provider here doesn't connect it; credentials must be added server-side.</small></label>;
       return <label key={k} className="admin-field" htmlFor={id}><span>{human(k)}</span><input id={id} disabled={disabled || k === "currency"} type={typeof val === "number" ? "number" : "text"} min={0} value={String(val)} onChange={e => setV({ ...v, [k]: typeof val === "number" ? Math.max(0, Number(e.target.value)) : e.target.value })}/></label>;
     })}
     <Button type="submit" disabled={disabled}>Save {human(section).toLowerCase()} settings</Button></form>;
 }
+

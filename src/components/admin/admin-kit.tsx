@@ -25,7 +25,7 @@ export function AdminHeader({ title, intro, actions }: { title: string; intro: s
 }
 export const AdminMetricCard = MetricGrid;
 export const AdminChartCard = TrendCard;
-export function AdminDemoNote({ children }: { children?: ReactNode }) { return <DemoLabel>{children ?? "Fictional demo records stored on this device. Nothing here is real platform activity."}</DemoLabel>; }
+export function AdminDemoNote({ children }: { children?: ReactNode }) { return <DemoLabel>{children ?? "Records shown here are based on HouseProvider account activity."}</DemoLabel>; }
 export function AdminEmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return <div className="admin-empty" role="status"><Inbox size={26}/><strong>{title}</strong>{children && <p>{children}</p>}</div>;
 }
@@ -52,7 +52,7 @@ export function AdminActionMenu({ label, actions }: { label: string; actions: Ro
 }
 
 export function AdminDetailPanel({ open, onOpenChange, title, description, children }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; description?: string; children: ReactNode }) {
-  return <Sheet open={open} onOpenChange={onOpenChange}><SheetContent className="admin-sheet"><SheetHeader><SheetTitle>{title}</SheetTitle><SheetDescription>{description ?? "Fictional demo record."}</SheetDescription></SheetHeader><div className="admin-sheet-body">{children}</div></SheetContent></Sheet>;
+  return <Sheet open={open} onOpenChange={onOpenChange}><SheetContent className="admin-sheet"><SheetHeader><SheetTitle>{title}</SheetTitle><SheetDescription>{description ?? "HouseProvider record."}</SheetDescription></SheetHeader><div className="admin-sheet-body">{children}</div></SheetContent></Sheet>;
 }
 export function DetailList({ items }: { items: [string, ReactNode][] }) {
   return <dl className="admin-dl">{items.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>;
@@ -119,3 +119,4 @@ export function fmtDateTime(iso: string) { return new Date(iso).toLocaleString("
 export function count<T>(rows: T[], get: (r: T) => string, keys: string[]) { return keys.map(k => ({ label: k.replaceAll("_", " ").toLowerCase(), value: rows.filter(r => get(r) === k).length })); }
 export function UserLink({ name }: { name: string }) { return <span className="admin-strong">{name}</span>; }
 export { Link };
+

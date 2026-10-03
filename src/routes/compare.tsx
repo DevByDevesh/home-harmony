@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { availabilityLabel, displayPrice, getListing, inr, isVerified, type Listing } from "@/lib/catalog";
 import { COMPARE_LIMIT, neutralDifferences } from "@/lib/compare";
 import { computeMatch, criteriaFrom } from "@/lib/match";
+import { useLiveListings } from "@/lib/use-live-listings";
 import { userActions, useUserData } from "@/lib/user-data";
 import { commuteLabel } from "@/lib/commute";
 
@@ -22,7 +23,8 @@ export const Route = createFileRoute("/compare")({
 type Row = [string, (l: Listing) => ReactNode];
 function ComparePage() {
   const { data, ready } = useUserData();
-  const items = data.compare.map(getListing).filter(x => !!x);
+  const live = useLiveListings();
+  const items = data.compare.map(s => live.data?.find(l => l.slug === s) ?? getListing(s)).filter(x => !!x);
   useEffect(() => { document.getElementById("compare-top")?.focus(); }, []);
   const p = data.preferences;
   const criteria = criteriaFrom(p);
@@ -42,7 +44,8 @@ function ComparePage() {
         <thead><tr><th scope="col"><span className="sr-only">Detail</span><button type="button" className="chip-clear" onClick={() => userActions.clearCompare()}>Clear all</button></th>{items.map(i => <th scope="col" key={i.slug}><div className="compare-head"><img src={i.image} alt="" width={200} height={150}/><button type="button" aria-label={`Remove ${i.name}`} onClick={() => userActions.toggleCompare(i.slug)}><X size={14}/></button></div><Link to="/property/$slug" params={{ slug: i.slug }}>{i.name}</Link><small>{i.neighborhood}, {i.city}</small></th>)}</tr></thead>
         <tbody>{rows.map(([label, fn]) => <tr key={label}><th scope="row">{label}</th>{items.map(i => <td key={i.slug}>{fn(i)}</td>)}</tr>)}</tbody>
       </table></div>
-      <p className="disclaimer">All values are fictional showcase data and illustrative only.</p>
+      <p className="disclaimer">All values are Property data and for reference.</p>
     </>}
   </div></main>;
 }
+

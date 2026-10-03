@@ -23,15 +23,13 @@ export function countByType(events: AnalyticsEvent[]) {
 }
 
 export type SeriesPoint = { label: string; value: number };
-/** Deterministic demo series — clearly illustrative, never presented as platform statistics. */
-export function demoSeries(seed: number, days = 14, base = 20, spread = 14): SeriesPoint[] {
-  let x = seed;
-  const rand = () => { x = (x * 9301 + 49297) % 233280; return x / 233280; };
-  const today = new Date();
-  return Array.from({ length: days }, (_, i) => {
-    const d = new Date(today); d.setDate(today.getDate() - (days - 1 - i));
-    return { label: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: Math.round(base + rand() * spread + i * (spread / days)) };
-  });
+/** Real daily counts from record timestamps (0-filled), over the last `days` days. Never fabricates data. */
+export function dailyCounts(rows: { createdAt: string }[], days = 30): SeriesPoint[] {
+  const byDay = new Map<string, number>();
+  for (const r of rows) { const k = r.createdAt.slice(0, 10); byDay.set(k, (byDay.get(k) ?? 0) + 1); }
+  const out: SeriesPoint[] = []; const today = new Date();
+  for (let i = days - 1; i >= 0; i--) { const dt = new Date(today); dt.setDate(today.getDate() - i); const k = dt.toISOString().slice(0, 10); out.push({ label: dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: byDay.get(k) ?? 0 }); }
+  return out;
 }
 export const total = (s: SeriesPoint[]) => s.reduce((n, p) => n + p.value, 0);
 export const rate = (num: number, den: number) => den ? `${((num / den) * 100).toFixed(1)}%` : "—";

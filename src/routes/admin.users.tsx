@@ -10,3 +10,4 @@ export const Route = createFileRoute("/admin/users")({ head: adminHead("Users"),
   <AdminDemoNote/>
   <PeopleTable caption="All users" emptyTitle="No users found."/>
 </> });
+

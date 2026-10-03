@@ -37,7 +37,17 @@ function SignupPage() {
   const [f, setF] = useState<Form>(empty);
   const [errs, setErrs] = useState<Partial<Record<keyof Form, string>>>({});
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [ok, setOk] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement>) => setF(s => ({ ...s, [k]: e.target.value }));
+
+  // On success the auth client navigates the browser to Google, so busy stays set for the trip.
+  async function google() {
+    setError(null); setGoogleBusy(true);
+    try {
+      const { error: err } = await authClient.signIn.social({ provider: "google", callbackURL: safeRedirect(redirect) });
+      if (err) { setError(authErrorMessage(err)); setGoogleBusy(false); }
+    } catch { setError(authErrorMessage(null)); setGoogleBusy(false); }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(null);
@@ -68,7 +78,7 @@ function SignupPage() {
       <Button type="submit" className="auth-submit" disabled={busy}>{busy ? "Creating account…" : "Create account"}</Button>
       <p className="auth-fine">Email verification isn't switched on yet, so we won't send you an email right now.</p>
     </form>
-    <ProviderRow/>
+    <ProviderRow onGoogle={google} googleBusy={googleBusy}/>
     <p className="auth-switch">Already have an account? <Link to="/login" search={{ redirect }}>Sign in</Link></p>
   </AuthShell>;
 }

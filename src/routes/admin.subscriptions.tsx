@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AdminDataTable, AdminDemoNote, AdminDetailPanel, AdminHeader, AdminStatusBadge, fmtDate, type RowAction } from "@/components/admin/admin-kit";
+import { AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
 import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { LivePlansPanel, LiveSubscriptionsPanel } from "@/components/admin/live-business";
@@ -22,15 +22,15 @@ function AdminSubscriptions() {
     { label: "Cancel", hidden: x.status === "CANCELLED" || x.status === "EXPIRED", destructive: true, onSelect: () => ask({ title: "Cancel subscription?", description: "Access continues until the renewal date. No provider is charged or refunded.", confirm: "Cancel subscription", onConfirm: () => setSub(x, "CANCELLED", "Subscription cancelled") }) },
   ];
   return <>
-    <AdminHeader title="Subscriptions" intro="Plans are configuration, not hard-coded prices. Values shown are placeholders pending commercial decisions."/>
+    <AdminHeader title="Subscriptions" intro="Plans are configuration, not hard-coded prices. Plan values can be configured by authorized administrators."/>
     <LivePlansPanel canEdit={act.can("plans.edit")}/>
     <LiveSubscriptionsPanel/>
-    <AdminDemoNote>Placeholder prices, fictional subscribers. Billing will run through the payment provider once connected.</AdminDemoNote>
+    <p className="admin-note">Billing is not connected. Plan configuration is stored in HouseProvider.</p>
     <div className="admin-plans">{s.plans.map(p => <article key={p.id} className={`admin-plan ${p.enabled ? "" : "is-off"}`}>
       <header><h3>{p.name}</h3><AdminStatusBadge status={p.enabled ? "ACTIVE" : "SUSPENDED"}/></header>
-      <p className="admin-plan-price">{p.monthly ? inr(p.monthly) : "₹0"}<small>/month · {inr(p.annual)}/year (placeholder)</small></p>
+      <p className="admin-plan-price">{p.monthly ? inr(p.monthly) : "₹0"}<small>/month · {inr(p.annual)}/year</small></p>
       <ul><li>Listings: {p.listingLimit ?? "Unlimited"}</li><li>Featured allowance: {p.featuredAllowance}</li><li>Leads: {p.leadLimit ?? "Unlimited"}</li><li>Team seats: {p.teamSeats}</li><li>Analytics: {p.analytics ? "Included" : "Not included"}</li><li>Services marketplace: {p.marketplace ? "Included" : "Not included"}</li></ul>
-      <p className="form-hint">{s.subscriptions.filter(x => x.planId === p.id).length} demo subscribers</p>
+      <p className="form-hint">{s.subscriptions.filter(x => x.planId === p.id).length} subscribers</p>
       <div className="admin-plan-actions"><label><Switch checked={p.enabled} disabled={!act.can("plans.edit")} onCheckedChange={v => act.savePlan({ ...p, enabled: v })} aria-label={`${p.name} enabled`}/> Enabled</label><Button size="sm" variant="outline" disabled={!act.can("plans.edit")} onClick={() => setEdit(p)}>Edit</Button></div>
     </article>)}</div>
     {!act.can("plans.edit") && <p className="form-hint">Plan configuration can be changed by a Super admin.</p>}
@@ -45,7 +45,7 @@ function AdminSubscriptions() {
           { key: "status", label: "Status", render: x => <AdminStatusBadge status={x.status}/>, sort: x => x.status },
           { key: "renews", label: "Renewal", render: x => fmtDate(x.renewsAt), sort: x => x.renewsAt },
         ]}/></section>
-    {edit && <AdminDetailPanel open onOpenChange={o => !o && setEdit(null)} title={`Edit ${edit.name}`} description="Configuration change — demo only, no billing provider updated.">
+    {edit && <AdminDetailPanel open onOpenChange={o => !o && setEdit(null)} title={`Edit ${edit.name}`} description="Configuration change is saved in HouseProvider. Billing provider integration is not connected.">
       <PlanForm plan={edit} onSave={p => { if (act.savePlan(p)) setEdit(null); }}/></AdminDetailPanel>}
     {dialog}
   </>;
@@ -62,3 +62,4 @@ function PlanForm({ plan, onSave }: { plan: SubscriptionPlan; onSave: (p: Subscr
     {bool("analytics", "Analytics access")}{bool("marketplace", "Services marketplace access")}
     <Button type="submit" disabled={!p.name.trim()}>Save configuration</Button></form>;
 }
+

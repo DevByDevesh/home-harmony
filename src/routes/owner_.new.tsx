@@ -68,11 +68,11 @@ function Wizard() {
 
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => { setDraft({ ...draft, [k]: v }); setErrors([]); };
   const toggle = <K extends "amenities" | "photos" | "checks">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
-  const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
-  const publish = () => { for (let s = 0; s < 7; s++) { const e = validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
+  const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
+  const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => { ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]); setSavedToDb(true); setSubmitted(r.id); toast.success(failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
-  const home = draftToHome(draft);
+  const home = draftToHome(draft, "preview", staged[0] ? URL.createObjectURL(staged[0]) : undefined);
 
   return <Shell editing={!!data.editingId || !!dbEdit}>
     <ol className="wizard-progress" aria-label="Listing steps">{steps.map((s, i) => <li key={s} aria-current={i === step ? "step" : undefined} className={i < step ? "done" : ""}><button type="button" onClick={() => go(i)}><span>{i < step ? <Check size={12}/> : i + 1}</span>{s}</button></li>)}</ol>
@@ -103,8 +103,7 @@ function Wizard() {
       {step === 3 && <ListingAssistant draft={draft} onApply={patch => { setDraft({ ...draft, ...patch }); setErrors([]); }}/>}
       {step === 4 && <div className="choice-grid">{amenityOptions.map(a => <button key={a} type="button" aria-pressed={draft.amenities.includes(a)} className="choice" onClick={() => toggle("amenities", a)}>{draft.amenities.includes(a) && <Check size={14}/>}{a}</button>)}</div>}
       {step === 5 && <>
-        <p className="form-hint">Pick sample photos for this demo. The first one becomes the cover.</p>
-        <div className="photo-grid">{(Object.keys(demoPhotos) as DemoPhoto[]).map(p => { const i = draft.photos.indexOf(p); return <button key={p} type="button" aria-pressed={i >= 0} className="photo-pick" onClick={() => toggle("photos", p)}><img src={demoPhotos[p]} alt="" loading="lazy"/><span>{i === 0 ? "Cover · " : i > 0 ? `${i + 1} · ` : ""}{photoLabels[p]}</span></button>; })}</div>
+        <p className="form-hint">Pick property photos for your listing. The first one becomes the cover.</p>
         {dbEdit ? <SavedPhotoUploader propertyId={dbEdit}/> : !data.editingId ? <StagedPhotoUploader files={staged} onChange={setStaged}/> : <>
         <label className="upload-drop"><ImagePlus size={20}/><span>Try uploading your own (preview only)</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => { const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith("image/") && f.size < 10_000_000).slice(0, 8); setUploads(u => [...u, ...files.map(f => ({ name: f.name, url: URL.createObjectURL(f) }))]); }}/></label>
         {uploads.length > 0 && <div className="upload-list">{uploads.map(u => <figure key={u.url}><img src={u.url} alt={u.name}/><figcaption>{u.name}</figcaption></figure>)}</div>}
@@ -117,7 +116,7 @@ function Wizard() {
         <p className="demo-label"><span>PREVIEW</span>This is exactly how seekers would see your listing once approved.</p>
         <h3 className="preview-sub">Search card</h3><div className="preview-tile"><HomeTile home={home}/></div>
         <h3 className="preview-sub">Property page</h3>
-        <div className="detail-page preview-detail"><PropertyDetailView home={home} imageNote="Owner photo preview" disclaimer="Preview only — this listing has not been reviewed or verified." aside={<div className="detail-summary"><p className="kicker">AT A GLANCE</p><h3>{inr(home.price)}{home.mode === "Rent" && <small> / month</small>}</h3><div><span>Property type</span><strong>{home.kind}</strong></div><div><span>Deposit</span><strong>{inr(Number(draft.deposit) || 0)}</strong></div><div><span>Parking</span><strong>{draft.parking === "0" ? "None listed" : `${draft.parking} listed`}</strong></div><div><span>Availability</span><strong>{draft.availableFrom ? `From ${new Date(draft.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "Available now"}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div></div>}
+        <div className="detail-page preview-detail"><PropertyDetailView home={home} images={staged.map(f => URL.createObjectURL(f))} imageNote="Owner photo preview" disclaimer="Preview only — this listing has not been reviewed or verified." aside={<div className="detail-summary"><p className="kicker">AT A GLANCE</p><h3>{inr(home.price)}{home.mode === "Rent" && <small> / month</small>}</h3><div><span>Property type</span><strong>{home.kind}</strong></div><div><span>Deposit</span><strong>{inr(Number(draft.deposit) || 0)}</strong></div><div><span>Parking</span><strong>{draft.parking === "0" ? "None listed" : `${draft.parking} listed`}</strong></div><div><span>Availability</span><strong>{draft.availableFrom ? `From ${new Date(draft.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "Available now"}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div></div>}
       {step === 8 && <div className="publish-step"><h3>Ready to submit?</h3><ul className="publish-list"><li>Status will be <ListingStatusPill status="UNDER_REVIEW"/> — it will not go live automatically.</li><li>No verification is granted on submission; checks are only requested.</li><li>In this demo the listing stays on this device. No marketplace receives it.</li></ul><Button onClick={publish} disabled={publishing}>Submit for review</Button></div>}
 
       <div className="wizard-nav"><Button variant="outline" disabled={step === 0} onClick={() => go(step - 1)}><ArrowLeft size={16}/> Previous</Button>
@@ -132,8 +131,9 @@ function Shell({ children, editing }: { children: ReactNode; editing?: boolean }
   return <main className="dashboard-page wizard-page"><div className="wrap narrow">
     <Link to="/owner" className="text-link"><ArrowLeft size={16}/> Owner dashboard</Link>
     <div className="results-intro"><p className="kicker">FOR OWNERS</p><h1>{editing ? <>Edit your <em>listing.</em></> : <>List your <em>property.</em></>}</h1></div>
-    <div className="demo-banner" role="note"><strong>Demo mode.</strong> Drafts and submissions are stored on this device only. Nothing is published to the marketplace.</div>
+    <div className="demo-banner" role="note"><strong>Listing workspace.</strong> Drafts and submissions are linked to your HouseProvider account until you publish the listing.</div>
     {children}
   </div></main>;
 }
+
 

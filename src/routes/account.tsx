@@ -37,7 +37,8 @@ function AccountPage() {
       <div><dt>Email verified</dt><dd>{user.emailVerified ? "Yes" : "Not yet — email verification isn't switched on"}</dd></div>
       <div><dt>Member since</dt><dd>{fmt(user.createdAt)}</dd></div>
     </dl>
-    <AuthNotice tone="info">Your saved homes, comparisons and visit plans are still stored on this device for now. They'll move to your account in a later update.</AuthNotice>
+    <AuthNotice tone="info">Your saved homes, comparisons and visit plans are linked to your HouseProvider account.</AuthNotice>
     <div className="account-actions"><Button asChild><Link to="/dashboard">Go to dashboard</Link></Button><Button variant="outline" onClick={signOut}>Sign out</Button></div>
   </main>;
 }
+
