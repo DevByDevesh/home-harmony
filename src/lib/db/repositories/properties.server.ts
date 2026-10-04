@@ -33,7 +33,7 @@ export async function getPublicProperty(idOrSlug: string) {
   const db = await requireDb();
   return db.property.findFirst({
     where: { status: "ACTIVE", OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
   });
 }
 
