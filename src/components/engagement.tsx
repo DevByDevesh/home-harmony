@@ -104,16 +104,44 @@ export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: 
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  if (!user) return <Button asChild variant="outline" className="detail-more"><Link to="/login"><Send size={17}/>Sign in to send an enquiry</Link></Button>;
-  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
-    <DialogContent className="visit-dialog"><DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Your message goes to the listing ownerâ€™s account. No email or phone is shared.</DialogDescription></DialogHeader>
-      <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>
-      <Button disabled={busy || msg.trim().length < 5} onClick={async () => {
-        setBusy(true);
-        try { const r = await send({ data: { slug, message: msg.trim() } }); if (!r.ok) toast.error(r.message); else { toast.success("Enquiry sent to the owner"); setMsg(""); setOpen(false); qc.invalidateQueries({ queryKey: ["my-enquiries"] }); qc.invalidateQueries({ queryKey: ["my-notifications"] }); } }
-        catch (e) { toast.error(e instanceof Error ? e.message : "Couldnâ€™t send the enquiry."); } finally { setBusy(false); }
-      }}>Send message</Button>
-    </DialogContent></Dialog>;
+  const phone = ownerPhone?.replace(/[^+\\d]/g, "");
+  const channels = ownerContactChannels?.map((channel) => channel.toUpperCase()) ?? [];
+  const canCall = !!phone && channels.some((channel) => channel.includes("PHONE") || channel.includes("CALL") || channel.includes("BOTH"));
+  const canWhatsApp = !!phone && channels.some((channel) => channel.includes("WHATSAPP") || channel.includes("BOTH"));
+
+  const messageButton = user
+    ? <DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
+    : <Button asChild variant="outline" className="detail-more"><Link to="/login"><MessageCircle size={17}/>Message Owner</Link></Button>;
+
+  return <div className="detail-contact-actions">
+    {user ? <Dialog open={open} onOpenChange={setOpen}>
+      {messageButton}
+      <DialogContent className="visit-dialog"><DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Your message goes to the listing owner’s account. No email or phone is shared.</DialogDescription></DialogHeader>
+        <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>
+        <Button disabled={busy || msg.trim().length < 5} onClick={async () => {
+          setBusy(true);
+          try {
+            const r = await send({ data: { slug, message: msg.trim() } });
+            if (!r.ok) toast.error(r.message);
+            else {
+              toast.success("Message sent to the owner");
+              setMsg("");
+              setOpen(false);
+              qc.invalidateQueries({ queryKey: ["my-enquiries"] });
+              qc.invalidateQueries({ queryKey: ["my-notifications"] });
+              qc.invalidateQueries({ queryKey: ["conversations"] });
+            }
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Couldn’t send the message.");
+          } finally {
+            setBusy(false);
+          }
+        }}>Send message</Button>
+      </DialogContent>
+    </Dialog> : messageButton}
+    {canCall && <Button asChild variant="outline" className="detail-more"><a href={`tel:${phone}`}><Phone size={17}/>Call</a></Button>}
+    {canWhatsApp && <Button asChild variant="outline" className="detail-more"><a href={`https://wa.me/${phone.replace(/^\\+/, "")}`} target="_blank" rel="noreferrer"><MessageCircle size={17}/>WhatsApp</a></Button>}
+  </div>;
 }
 
 /** Seeker: own enquiries; falls back to `empty` when signed out or none. */
