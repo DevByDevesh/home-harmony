@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
+import modernUiCss from "../modern-ui.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
 }
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({ meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }], links: [
-    { rel: "stylesheet", href: appCss }, { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+    { rel: "stylesheet", href: appCss }, { rel: "stylesheet", href: modernUiCss }, { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     { rel: "preconnect", href: "https://fonts.googleapis.com" }, { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
     { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" }
   ] }),
@@ -30,4 +31,3 @@ function RootApp() {
   const pathname = useRouterState({ select: s => s.location.pathname });
   return <QueryClientProvider client={queryClient}><Navigation/><PageEntrance pageKey={pathname}><Outlet/></PageEntrance><CompareTray/><SupportChat/><Toaster position="top-center"/><footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/saved">Saved</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">For property owners</Link><Link to="/account">Your account</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>Property information, pricing and availability are subject to owner confirmation.</span></div></footer></QueryClientProvider>;
 }
-
