@@ -264,6 +264,7 @@ model User {
   payments                 Payment[]
   serviceProvider          ServiceProvider?
   serviceRequests          ServiceRequest[]
+  propertyReviews          PropertyReview[]
   featuredCreated          FeaturedListing[]
   buyerConversations       Conversation[]    @relation("ConversationBuyer")
   participantConversations Conversation[]    @relation("ConversationParticipant")
