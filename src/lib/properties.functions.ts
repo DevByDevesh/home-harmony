@@ -30,7 +30,9 @@ function toPublic(p: Row): PublicProperty {
     verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null, updatedAt: p.updatedAt.toISOString(),
     brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
     images: p.images.map((i) => ({ url: i.url, storageKey: i.storageKey, altText: i.altText, type: i.type })),
-    amenities: p.amenities.map((a) => a.amenity.name),\n    ownerPhone: p.owner?.ownerProfile?.contactPhone ?? null,\n    ownerContactChannels: p.owner?.ownerProfile?.preferredContact ? [p.owner.ownerProfile.preferredContact] : [],
+    amenities: p.amenities.map((a) => a.amenity.name),
+    ownerPhone: p.owner?.ownerProfile?.contactPhone ?? null,
+    ownerContactChannels: p.owner?.ownerProfile?.preferredContact ? [p.owner.ownerProfile.preferredContact] : [],
   };
 }
 
