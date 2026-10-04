@@ -4,6 +4,7 @@ import { displayPrice, type Home } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Reveal } from "@/components/cinematic-motion";
+import { PropertyIntelligence, PropertySectionNav } from "@/components/property-intelligence";
 
 /** Shared property presentation used by the public detail page and the owner listing preview. */
 export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer, images }: { home: Home; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] }) {
@@ -12,14 +13,16 @@ export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer
   const currentPhoto = galleryImages[Math.min(activePhoto, galleryImages.length - 1)] ?? home.image;
 
   return <>
+    <PropertySectionNav home={home} />
     <div className="detail-heading"><div><p className="kicker">{home.mode === "Rent" ? "FOR RENT" : "FOR SALE"} / {home.kind.toUpperCase()}</p><h1>{home.name}<span className="peach-stop">.</span></h1><p><MapPin size={16}/>{home.neighborhood}, {home.city}</p></div>
       <div className="detail-price">{actions && <div className="detail-actions">{actions}</div>}<strong>{displayPrice(home)}</strong><span>{home.mode === "Rent" ? "per month" : "asking price"}</span></div></div>
     <div className="detail-image"><div className="detail-gallery"><img className="detail-main-photo" src={currentPhoto} alt={`Property view ${activePhoto + 1} of ${home.name}`} width={1008} height={768}/>{galleryImages.length > 1 && <><button type="button" className="detail-gallery-nav detail-gallery-prev" aria-label="Previous photo" onClick={() => setActivePhoto((activePhoto - 1 + galleryImages.length) % galleryImages.length)}><ChevronLeft size={22}/></button><button type="button" className="detail-gallery-nav detail-gallery-next" aria-label="Next photo" onClick={() => setActivePhoto((activePhoto + 1) % galleryImages.length)}><ChevronRight size={22}/></button><span className="detail-photo-count">{activePhoto + 1} / {galleryImages.length}</span></>}<span>{imageNote}</span></div>{galleryImages.length > 1 && <div className="detail-thumbnails" aria-label="Property photos">{galleryImages.map((src, i) => <button key={`${src}-thumb-${i}`} type="button" className={`detail-thumbnail ${i === activePhoto ? "active" : ""}`} aria-label={`View photo ${i + 1}`} aria-current={i === activePhoto ? "true" : undefined} onClick={() => setActivePhoto(i)}><img src={src} alt="" width={120} height={90}/></button>)}</div>}<Dialog><DialogTrigger asChild><Button variant="secondary" className="detail-expand"><Expand size={16}/> View photos</Button></DialogTrigger><DialogContent className="photo-dialog"><DialogTitle>{home.name}</DialogTitle><DialogDescription>{imageNote} · Photo {activePhoto + 1} of {galleryImages.length}</DialogDescription><img src={currentPhoto} alt={`Property view ${activePhoto + 1} of ${home.name}`} width={1008} height={768}/></DialogContent></Dialog></div>
     <div className="detail-layout"><div>
-      <div className="fact-row"><span><BedDouble size={22}/><strong>{home.beds}</strong> Bedrooms</span><span><Bath size={22}/><strong>{home.baths}</strong> Bathrooms</span><span><Maximize2 size={22}/><strong>{home.area.toLocaleString("en-IN")}</strong> sq.ft.</span></div>
-      <Reveal><section className="detail-block"><p className="kicker">THE SPACE</p><h2>A closer look.</h2><p>{home.description}</p><p className="disclaimer">{disclaimer}</p></section></Reveal>
-      <Reveal><section className="detail-block"><p className="kicker">WHAT’S INCLUDED</p><h2>The everyday details.</h2><div className="features-grid">{[home.furnishing, ...home.features].map(feature => <span key={feature}><Check size={17}/>{feature}</span>)}</div></section></Reveal>
+      <div id="details" className="fact-row"><span><BedDouble size={22}/><strong>{home.beds}</strong> Bedrooms</span><span><Bath size={22}/><strong>{home.baths}</strong> Bathrooms</span><span><Maximize2 size={22}/><strong>{home.area.toLocaleString("en-IN")}</strong> sq.ft.</span></div>
+      <Reveal><section id="overview" className="detail-block"><p className="kicker">THE SPACE</p><h2>A closer look.</h2><p>{home.description}</p><p className="disclaimer">{disclaimer}</p></section></Reveal>
+      <Reveal><section id="amenities" className="detail-block"><p className="kicker">WHAT’S INCLUDED</p><h2>The everyday details.</h2><div className="features-grid">{[home.furnishing, ...home.features].map(feature => <span key={feature}><Check size={17}/>{feature}</span>)}</div></section></Reveal>
     </div><aside className="detail-aside">{aside}</aside></div>
+    <PropertyIntelligence home={home} />
   </>;
 }
 
