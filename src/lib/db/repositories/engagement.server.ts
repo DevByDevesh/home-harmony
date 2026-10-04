@@ -116,6 +116,40 @@ export async function ownerUpdateVisit(ownerId: string, id: string, to: VisitSta
   });
 }
 
+export async function listMyVisits(userId: string) {
+  const db = await requireDb();
+  return db.visit.findMany({
+    where: { userId },
+    orderBy: [{ requestedDate: "asc" }, { requestedTime: "asc" }],
+    take: 200,
+    select: {
+      id: true, requestedDate: true, requestedTime: true, notes: true, status: true, createdAt: true,
+      property: { select: { slug: true, title: true } },
+    },
+  });
+}
+
+export async function cancelMyVisit(userId: string, id: string): Promise<string | null> {
+  const db = await requireDb();
+  return db.$transaction(async (tx) => {
+    const v = await tx.visit.findFirst({
+      where: { id, userId },
+      select: { status: true, property: { select: { ownerId: true, title: true, slug: true } } },
+    });
+    if (!v) return "Visit not found.";
+    if (!visitTransitions[v.status].includes("CANCELLED")) return "This visit can no longer be cancelled.";
+
+    const upd = await tx.visit.updateMany({
+      where: { id, userId, status: v.status },
+      data: { status: "CANCELLED" },
+    });
+    if (!upd.count) return "This visit changed meanwhile. Refresh and try again.";
+
+    await notify(tx, v.property.ownerId, "VISIT_CANCELLED", "Visit cancelled", v.property.title, { visitId: id, slug: v.property.slug });
+    return null;
+  });
+}
+
 // ---- Enquiries ----
 
 export async function createEnquiry(userId: string, slug: string, message: string) {
