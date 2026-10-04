@@ -8,6 +8,7 @@ export type Home = {
   mode: "Rent" | "Buy"; kind: "Apartment" | "House" | "Room" | "PG" | "Commercial";
   price: number; beds: number; baths: number; area: number; furnishing: string;
   image: string; description: string; features: string[];
+  galleryImages?: string[]; floorPlanImages?: string[];
 };
 
 // Entirely fictional editorial examples. No real availability, ownership or verification is implied.
