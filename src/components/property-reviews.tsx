@@ -48,7 +48,7 @@ export function PropertyReviews({ slug }: { slug: string }) {
 
   const data = reviews.data;
   return <section className="property-reviews" aria-labelledby="reviews-title">
-    <div className="feature-heading">
+    <div className="feature-heading review-heading">
       <div>
         <p className="kicker">REAL EXPERIENCES</p>
         <h2 id="reviews-title">Reviews</h2>
@@ -56,7 +56,7 @@ export function PropertyReviews({ slug }: { slug: string }) {
       {data?.count ? <strong>{data.average?.toFixed(1)} / 5 · {data.count} review{data.count === 1 ? "" : "s"}</strong> : null}
     </div>
 
-    {user && eligibility.data?.eligible && <div className="profile-card">
+    {user && eligibility.data?.eligible && <div className="profile-card review-form-card">
       <strong>How was your visit?</strong>
       <div className="review-stars" role="radiogroup" aria-label="Your rating">
         {[1, 2, 3, 4, 5].map(value => <button
