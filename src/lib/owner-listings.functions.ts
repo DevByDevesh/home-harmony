@@ -57,7 +57,7 @@ const photoKey = { living: "demo/new-home-pune.jpg", city: "demo/new-home-mumbai
 const numStr = (min: number, max: number) => z.string().trim().refine((v) => { const n = Number(v); return Number.isInteger(n) && n >= min && n <= max; }).transform(Number);
 const createSchema = z.object({
   kind: z.enum(["Apartment", "House", "Room", "PG", "Commercial"]), mode: z.enum(["Rent", "Buy"]),
-  city: z.string().trim().min(1).max(80), locality: z.string().trim().min(1).max(120), address: z.string().trim().max(300),
+  country: z.string().trim().min(1).max(80), state: z.string().trim().min(1).max(80), city: z.string().trim().min(1).max(80), locality: z.string().trim().min(1).max(120), address: z.string().trim().max(300),
   title: z.string().trim().max(160), price: numStr(1, 10_000_000_000), deposit: z.string().trim().max(15),
   availableFrom: z.string().trim().max(10), beds: numStr(0, 50), baths: numStr(0, 50), area: numStr(1, 1_000_000),
   furnishing: z.enum(["Fully furnished", "Semi furnished", "Unfurnished"]), parking: numStr(0, 50),
@@ -81,7 +81,7 @@ function toPropertyInput(d: WizardInput) {
     furnishing: d.furnishing === "Fully furnished" ? ("FULLY_FURNISHED" as const) : d.furnishing === "Semi furnished" ? ("SEMI_FURNISHED" as const) : ("UNFURNISHED" as const),
     availableFrom: from, city: d.city, locality: d.locality, addressLine1: d.address || null,
     amenities: [...new Set(d.amenities)], photoKeys: [...new Set(d.photos)].map((p) => photoKey[p]),
-    checks: [...new Set([...d.checks, "listingReview", "photos"] as const)].map((c) => checkType[c]),
+    checks: [...new Set([...d.checks, "listingReview", "photos"] as const)].map((c) => checkType[c]), country: d.country, state: d.state,
   };
 }
 
@@ -119,7 +119,7 @@ export const getMyListingDraftFn = createServerFn({ method: "GET" })
       const furn = p.furnishing === "FULLY_FURNISHED" ? "Fully furnished" : p.furnishing === "SEMI_FURNISHED" ? "Semi furnished" : "Unfurnished";
       return {
         kind: (fromKind as Record<string, string>)[p.propertyType] ?? "", mode: p.listingType === "BUY" ? "Buy" : "Rent",
-        city: p.city, locality: p.locality, address: p.addressLine1 ?? "", title: p.title,
+        country: "India", state: p.state ?? "", city: p.city, locality: p.locality, address: p.addressLine1 ?? "", title: p.title,
         price: String(p.price), deposit: p.deposit == null ? "" : String(p.deposit),
         availableFrom: p.availableFrom ? p.availableFrom.toISOString().slice(0, 10) : "",
         beds: String(p.bedrooms), baths: String(p.bathrooms), area: String(p.areaSqft), furnishing: furn, parking: String(p.parking),
