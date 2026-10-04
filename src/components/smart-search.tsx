@@ -35,7 +35,7 @@ export function SmartSearch({ filters, onApply, count }: { filters: Filters; onA
   };
 
   return <section className="smart-search" aria-labelledby="smart-title">
-    <div className="smart-head"><h2 id="smart-title"><ScanSearch size={18} aria-hidden/> Smart Search</h2><span className="smart-tag" title={provider.label}>{provider.isDemo ? "Preview · local rules, no AI model" : "AI"}</span></div>
+    <div className="smart-head"><h2 id="smart-title"><ScanSearch size={18} aria-hidden/> Smart Search</h2></div>
     <form className="smart-form" onSubmit={e => { e.preventDefault(); void run(text); }}>
       <label className="sr-only" htmlFor="smart-q">Describe the home you want</label>
       <input id="smart-q" value={text} maxLength={300} onChange={e => setText(e.target.value)} placeholder="Tell us what you’re looking for… e.g. furnished 2BHK near Hinjewadi under ₹30,000 with parking" autoComplete="off"/>
