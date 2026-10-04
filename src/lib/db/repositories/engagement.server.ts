@@ -20,8 +20,8 @@ export async function createVisit(userId: string, slug: string, date: string, ti
   const db = await requireDb();
   const cleanDate = date.trim();
   const cleanTime = time.trim();
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(cleanDate)) return { ok: false as const, message: "Choose a valid visit date." };
-  if (!/^\\d{2}:\\d{2}$/.test(cleanTime)) return { ok: false as const, message: "Choose a valid visit time." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate)) return { ok: false as const, message: "Choose a valid visit date." };
+  if (!/^\d{2}:\d{2}$/.test(cleanTime)) return { ok: false as const, message: "Choose a valid visit time." };
 
   const requestedDate = new Date(`${cleanDate}T00:00:00Z`);
   if (Number.isNaN(requestedDate.getTime())) return { ok: false as const, message: "Choose a valid visit date." };
