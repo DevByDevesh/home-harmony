@@ -1,4 +1,4 @@
-import { Bell, CalendarCheck, MessageSquare, Send, UserRound } from "lucide-react";
+import { Bell, CalendarCheck, MessageCircle, MessageSquare, Phone, Send, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -97,7 +97,7 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
+export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: { slug: string; name: string; ownerPhone?: string | null; ownerContactChannels?: string[] }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
   const qc = useQueryClient();
@@ -105,14 +105,14 @@ export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   if (!user) return <Button asChild variant="outline" className="detail-more"><Link to="/login"><Send size={17}/>Sign in to send an enquiry</Link></Button>;
-  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button variant="outline" className="detail-more"><Send size={17}/>Send an enquiry</Button></DialogTrigger>
-    <DialogContent className="visit-dialog"><DialogHeader><DialogTitle>Send an enquiry</DialogTitle><DialogDescription>{name}. Your message goes to the listing ownerâ€™s account. No email or phone is shared.</DialogDescription></DialogHeader>
+  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
+    <DialogContent className="visit-dialog"><DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Your message goes to the listing ownerâ€™s account. No email or phone is shared.</DialogDescription></DialogHeader>
       <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>
       <Button disabled={busy || msg.trim().length < 5} onClick={async () => {
         setBusy(true);
         try { const r = await send({ data: { slug, message: msg.trim() } }); if (!r.ok) toast.error(r.message); else { toast.success("Enquiry sent to the owner"); setMsg(""); setOpen(false); qc.invalidateQueries({ queryKey: ["my-enquiries"] }); qc.invalidateQueries({ queryKey: ["my-notifications"] }); } }
         catch (e) { toast.error(e instanceof Error ? e.message : "Couldnâ€™t send the enquiry."); } finally { setBusy(false); }
-      }}>Send enquiry</Button>
+      }}>Send message</Button>
     </DialogContent></Dialog>;
 }
 
