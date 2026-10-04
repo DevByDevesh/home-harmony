@@ -140,10 +140,10 @@ function OwnerContactForm({
     }
   };
 
-  return <div className="profile-card">
-    <p><strong>Owner contact settings</strong></p>
+  return <div className="profile-card owner-contact-card">
+    <div className="owner-contact-heading"><div><p className="kicker">PUBLIC CONTACT</p><h3>Owner contact settings</h3></div><span className="owner-contact-badge">Optional</span></div>
     <p>These details control the optional Call and WhatsApp actions shown on your published property pages. Your private chat continues to work separately.</p>
-    <label className="visit-note">Phone number
+    <label className="owner-contact-field">Phone number
       <input
         type="tel"
         inputMode="tel"
@@ -154,7 +154,7 @@ function OwnerContactForm({
         maxLength={32}
       />
     </label>
-    <label className="visit-note">Preferred contact
+    <label className="owner-contact-field">Preferred contact
       <select className="filter-select" value={preferredContact ?? ""} onChange={e => setPreferredContact((e.target.value || null) as OwnerContactProfile["preferredContact"])}>
         <option value="">No direct contact</option>
         <option value="CALL">Call</option>
@@ -162,8 +162,8 @@ function OwnerContactForm({
         <option value="BOTH">Call + WhatsApp</option>
       </select>
     </label>
-    <p className="form-hint"><Phone size={14}/> Call and <MessageCircle size={14}/> WhatsApp appear only when a phone number and a matching preference are saved.</p>
-    <div className="dash-row-actions">
+    <div className="owner-contact-hint"><Phone size={15}/><span>Call</span><MessageCircle size={15}/><span>WhatsApp</span><p>These buttons appear on your published property only when a phone number and preference are saved.</p></div>
+    <div className="owner-contact-actions">
       <Button disabled={busy} onClick={submit}><Save size={15}/>{busy ? "Saving…" : "Save contact settings"}</Button>
       <Button variant="outline" disabled={busy} onClick={() => { setPhone(profile.phone ?? ""); setPreferredContact(profile.preferredContact); }}><RotateCcw size={15}/> Reset</Button>
     </div>
