@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test": "node --test",
     "format": "prettier --write .",
     "postinstall": "prisma generate",
     "db:validate": "prisma validate",
