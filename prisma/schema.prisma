@@ -421,6 +421,7 @@ model Property {
   reports         Report[]
   featured        FeaturedListing[]
   serviceRequests ServiceRequest[]
+  reviews         PropertyReview[]
   conversations   Conversation[]
 
   @@index([city])
@@ -437,6 +438,22 @@ model Property {
 }
 
 /// Stores a storage key/URL only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â never binary data.
+model PropertyReview {
+  id         String   @id @default(cuid())
+  propertyId String
+  userId     String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([propertyId, userId])
+  @@index([propertyId, createdAt])
+  @@index([userId])
+}
+
 model PropertyImage {
   id         String    @id @default(cuid())
   propertyId String
