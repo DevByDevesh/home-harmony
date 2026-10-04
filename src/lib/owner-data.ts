@@ -15,7 +15,7 @@ export type DemoPhoto = keyof typeof demoPhotos;
 export const photoLabels: Record<DemoPhoto, string> = { living: "Living room", city: "City view", dining: "Dining", exterior: "Exterior" };
 
 export type ListingDraft = {
-  kind: Home["kind"] | ""; mode: Home["mode"]; city: string; locality: string; address: string; title: string;
+  kind: Home["kind"] | ""; mode: Home["mode"]; country: string; state: string; city: string; locality: string; address: string; title: string;
   price: string; deposit: string; availableFrom: string; beds: string; baths: string; area: string;
   furnishing: string; parking: string; amenities: string[]; description: string; photos: DemoPhoto[]; checks: VerificationKey[];
   /** Owner's own extra points for the listing assistant (optional on drafts saved before Phase 4). */
@@ -23,13 +23,13 @@ export type ListingDraft = {
   /** Assistant-drafted extras the owner accepted. Never published automatically. */
   aiExtras?: { highlights: string[]; amenitySummary: string; seoTitle: string; seoDescription: string; social: string };
 };
-export const emptyDraft = (): ListingDraft => ({ kind: "", mode: "Rent", city: "", locality: "", address: "", title: "", price: "", deposit: "", availableFrom: "", beds: "", baths: "", area: "", furnishing: "", parking: "0", amenities: [], description: "", photos: [], checks: [] });
+export const emptyDraft = (): ListingDraft => ({ kind: "", mode: "Rent", country: "India", state: "", city: "", locality: "", address: "", title: "", price: "", deposit: "", availableFrom: "", beds: "", baths: "", area: "", furnishing: "", parking: "0", amenities: [], description: "", photos: [], checks: [] });
 
 const num = (label: string, min = 0) => z.string().trim().min(1, `${label} is required`).refine(v => Number.isFinite(Number(v)) && Number(v) >= min, `${label} must be a number${min ? ` of at least ${min}` : ""}`);
 /** Per-step validation for the 9-step wizard. Steps without a schema have no required fields. */
 export const stepSchemas: Record<number, z.ZodTypeAny> = {
   0: z.object({ kind: z.string().min(1, "Choose a property type") }),
-  1: z.object({ city: z.string().min(1, "Choose a city"), locality: z.string().trim().min(2, "Enter a locality").max(60), address: z.string().trim().max(160) }),
+  1: z.object({ country: z.string().min(1, "Choose a country"), state: z.string().trim().min(1, "Enter a state").max(80), city: z.string().trim().min(1, "Enter a city").max(80), locality: z.string().trim().min(2, "Enter a locality").max(60), address: z.string().trim().max(160) }),
   2: z.object({ price: num("Price", 1000), deposit: num("Deposit"), availableFrom: z.string() }),
   3: z.object({ beds: num("BHK", 0), baths: num("Bathrooms", 0), area: num("Area", 50), furnishing: z.string().min(1, "Choose furnishing"), title: z.string().trim().max(60), description: z.string().trim().min(30, "Describe the home in at least 30 characters").max(1200) }),
   5: z.object({ photos: z.array(z.string()).min(1, "Pick at least one photo") }),
