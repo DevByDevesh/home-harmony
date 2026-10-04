@@ -1932,3 +1932,14 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 .homepage-v2 .story-match .story-index span {
   color: rgba(255,255,255,.9);
 }
+
+/* Final control-state guard: the results toolbar has a later transparent
+   button rule, so explicitly restore the active Rent/Buy state. */
+.results-page .toolbar-search .mode-toggle button[aria-pressed="true"]{
+  background:var(--primary)!important;
+  color:var(--primary-foreground)!important;
+}
+.results-page .toolbar-search .mode-toggle button[aria-pressed="false"]{
+  background:transparent;
+  color:var(--muted-foreground);
+}
