@@ -113,12 +113,14 @@ export function ChatPanel() {
   const conversations = useQuery({
     queryKey: ["conversations"],
     queryFn: () => fetchConversations(),
+    refetchInterval: 5000,
   });
 
   const conversation = useQuery({
     queryKey: ["conversation", selected],
     queryFn: () => fetchConversation({ data: { conversationId: selected! } }),
     enabled: !!selected,
+    refetchInterval: 3000,
   });
 
   useEffect(() => {
