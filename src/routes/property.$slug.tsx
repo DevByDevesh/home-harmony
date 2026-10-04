@@ -9,6 +9,7 @@ import { toListing } from "@/lib/property-mapper";
 import { CompareButton, SaveButton } from "@/components/listing-actions";
 import { VisitScheduler } from "@/components/visit-scheduler";
 import { EnquiryButton } from "@/components/engagement";
+import { PropertyReviews } from "@/components/property-reviews";
 import { userActions, useUserData } from "@/lib/user-data";
 import { MatchPanel } from "@/components/match-badge";
 import { criteriaFrom, evaluateMatch } from "@/lib/match";
