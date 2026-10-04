@@ -1,4 +1,4 @@
-import { Bell, CalendarCheck, MessageSquare, Send } from "lucide-react";
+import { Bell, CalendarCheck, MessageSquare, Send, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -140,16 +140,20 @@ export function ChatPanel() {
   return <div className="chat-layout">
     <div className="chat-conversations">
       {rows.map(c => {
-        const other = c.buyer.id === getCurrentConversationUserId(c, rows) ? c.participant : c.buyer;
+        const other = c.buyer.id === user?.id ? c.participant : c.buyer;
+        const unread = !!c.lastMessage && c.lastMessage.senderId !== user?.id && !c.lastMessage.readAt;
         return <button
           type="button"
           key={c.id}
           className={`chat-conversation ${selected === c.id ? "active" : ""}`}
           onClick={() => setSelected(c.id)}
         >
-          <strong>{c.property.title}</strong>
-          <small>{c.property.locality}, {c.property.city}</small>
-          {c.lastMessage && <small>{c.lastMessage.body}</small>}
+          <span className="chat-avatar" aria-hidden="true">{other.name?.trim()?.charAt(0)?.toUpperCase() || <UserRound size={15}/>}</span>
+          <span className="chat-conversation-copy">
+            <span className="chat-conversation-top"><strong>{other.name || "HouseProvider user"}</strong>{unread && <i aria-label="Unread"/>}</span>
+            <small>{c.property.title}</small>
+            {c.lastMessage && <small className="chat-preview">{c.lastMessage.body}</small>}
+          </span>
         </button>;
       })}
     </div>
