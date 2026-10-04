@@ -48,6 +48,32 @@ export const ownerUpdateVisitFn = createServerFn({ method: "POST" })
     } catch (e) { rethrow(e); }
   });
 
+export type MyVisitRow = {
+  id: string; slug: string; title: string; date: string; slot: string;
+  note: string | null; status: VisitStatus; createdAt: string;
+};
+
+export const listMyVisitsFn = createServerFn({ method: "GET" }).handler(async (): Promise<MyVisitRow[]> => {
+  try {
+    const u = await me();
+    return (await (await repo()).listMyVisits(u.id)).map((v) => ({
+      id: v.id, slug: v.property.slug, title: v.property.title,
+      date: v.requestedDate.toISOString().slice(0, 10), slot: v.requestedTime,
+      note: v.notes, status: v.status, createdAt: v.createdAt.toISOString(),
+    }));
+  } catch (e) { rethrow(e); }
+});
+
+export const cancelMyVisitFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: cuid }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me();
+      const err = await (await repo()).cancelMyVisit(u.id, data.id);
+      return err ? { ok: false as const, message: err } : { ok: true as const };
+    } catch (e) { rethrow(e); }
+  });
+
 export const createEnquiryFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ slug, message: z.string().trim().min(5).max(1000) }).strict().parse(d))
   .handler(async ({ data }) => {
