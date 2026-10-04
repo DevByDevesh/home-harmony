@@ -106,6 +106,23 @@ const fromPhoto = Object.fromEntries(Object.entries(photoKey).map(([k, v]) => [v
 const fromCheck = Object.fromEntries(Object.entries(checkType).map(([k, v]) => [v, k])) as Record<string, string>;
 
 /** Loads the signed-in owner's DB listing as a wizard draft. Returns null when missing or not theirs. */
+/** Runs the automatic marketplace review after owner uploads are attached. */
+export const autoReviewMyListingFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.auto-review");
+      const { requireDb } = await import("./db/client.server");
+      const db = await requireDb();
+      const owned = await db.property.findFirst({ where: { id: data.id, ownerId: me.id }, select: { id: true } });
+      if (!owned) return { published: false as const, reason: "NOT_FOUND" as const };
+      const { autoReviewAndPublishListing } = await import("./db/repositories/properties.server");
+      return await autoReviewAndPublishListing(data.id);
+    } catch (e) { rethrow(e); }
+  });
+
 export const getMyListingDraftFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).strict().parse(d))
   .handler(async ({ data }) => {
