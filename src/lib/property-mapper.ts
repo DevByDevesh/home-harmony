@@ -29,6 +29,8 @@ export function toListing(p: PublicProperty): Listing {
     price: p.price, beds: p.bedrooms, baths: p.bathrooms, area: p.areaSqft,
     furnishing: furnishings[p.furnishing] ?? "Unfurnished",
     image: img?.url || (img ? demoImages[img.storageKey] : undefined) || house,
+    galleryImages: p.images.filter((i) => i.type === "PHOTO" && i.url).map((i) => i.url as string),
+    floorPlanImages: p.images.filter((i) => i.type === "FLOOR_PLAN" && i.url).map((i) => i.url as string),
     description: p.description, features: p.amenities,
     lat: p.latitude ?? 0, lng: p.longitude ?? 0, deposit: p.deposit ?? 0,
     brokerage: (brokerages as readonly string[]).includes(p.brokerage ?? "") ? (p.brokerage as Listing["brokerage"]) : "None",
