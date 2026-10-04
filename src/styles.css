@@ -1616,3 +1616,23 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .homepage-v2 .neighborhood-link{min-height:145px}
   .homepage-v2 .story-map-frame,.homepage-v2 .story-map-frame .property-map{min-height:340px}
 }
+
+
+/* HOUSEPROVIDER HELP CHAT */
+.support-fab{position:fixed;right:22px;bottom:24px;z-index:80;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 17px;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:#542a52;color:#fff;box-shadow:0 14px 34px rgba(46,28,43,.22);font:600 13px/1 inherit;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.support-fab:hover{transform:translateY(-2px);box-shadow:0 18px 42px rgba(46,28,43,.28)}
+.support-fab.open{width:48px;padding:0;justify-content:center}
+.support-chat{position:fixed;right:22px;bottom:82px;z-index:81;width:min(390px,calc(100vw - 28px));height:min(590px,calc(100vh - 110px));display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(84,42,82,.14);border-radius:18px;background:#fff;box-shadow:0 28px 80px rgba(46,28,43,.2)}
+.support-chat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;background:#542a52;color:#fff}
+.support-chat-title{display:flex;align-items:center;gap:10px}.support-chat-title>div{display:flex;flex-direction:column;gap:2px}.support-chat-title strong{font-size:14px}.support-chat-title small{font-size:11px;color:rgba(255,255,255,.7)}
+.support-bot-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.13)}
+.support-close{display:grid;place-items:center;width:34px;height:34px;border:0;background:transparent;color:#fff;border-radius:9px;cursor:pointer}.support-close:hover{background:rgba(255,255,255,.1)}
+.support-chat-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:13px;background:#fbf8f6}
+.support-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:9px;padding-right:2px}
+.support-message{max-width:88%;padding:10px 12px;border-radius:13px;font-size:13px;line-height:1.5;color:#3f353b}
+.support-message.bot{align-self:flex-start;background:#fff;border:1px solid rgba(84,42,82,.1);border-top-left-radius:5px}
+.support-message.user{align-self:flex-end;background:#542a52;color:#fff;border-top-right-radius:5px}
+.support-suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}.support-suggestions button{border:1px solid rgba(84,42,82,.16);background:#fff;color:#542a52;border-radius:999px;padding:7px 10px;font-size:11px;cursor:pointer;text-align:left}.support-suggestions button:hover{background:#f5ece9}
+.support-feedback{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid rgba(84,42,82,.1);font-size:10px;color:#82757c}.support-feedback button{width:27px;height:27px;display:grid;place-items:center;border:1px solid rgba(84,42,82,.12);border-radius:7px;background:#fff;color:#6e6269;cursor:pointer}.support-feedback button.selected{background:#f1e6e3;color:#542a52;border-color:#542a52}.support-feedback a{margin-left:auto;color:#542a52;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.support-chat-input{display:flex;gap:8px;padding:11px;border-top:1px solid rgba(84,42,82,.1);background:#fff}.support-chat-input input{min-width:0;flex:1;height:40px;border:1px solid rgba(84,42,82,.16);border-radius:10px;padding:0 12px;outline:none;font:500 13px inherit}.support-chat-input input:focus{border-color:#542a52;box-shadow:0 0 0 3px rgba(84,42,82,.08)}.support-chat-input button{background:#542a52;color:#fff;border-radius:10px}
+@media(max-width:640px){.support-fab{right:14px;bottom:78px}.support-chat{right:14px;bottom:134px;width:calc(100vw - 28px);height:min(570px,calc(100vh - 165px))}}
