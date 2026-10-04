@@ -10,7 +10,7 @@ import { PropertyDetailView } from "@/components/property-detail-view";
 import { ListingAssistant } from "@/components/listing-assistant";
 import { VerificationPanel } from "@/components/verification-panel";
 import { ListingStatusPill } from "@/components/role-switcher";
-import { amenityOptions, cities, inr } from "@/lib/catalog";
+import { amenityOptions, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
 import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
 import { useServerFn } from "@tanstack/react-start";
@@ -84,7 +84,9 @@ function Wizard() {
       {step === 0 && <><div className="pill-row" role="radiogroup" aria-label="Intent">{(["Rent", "Buy"] as const).map(m => <button key={m} type="button" role="radio" aria-checked={draft.mode === m} className="pill" onClick={() => set("mode", m)}>{m === "Rent" ? "For rent" : "For sale"}</button>)}</div>
         <div className="choice-grid" role="radiogroup" aria-label="Property type">{kinds.map(k => <button key={k} type="button" role="radio" aria-checked={draft.kind === k} className="choice" onClick={() => set("kind", k)}>{k}</button>)}</div></>}
       {step === 1 && <div className="form-grid">
-        <Field label="City"><select value={draft.city} onChange={e => set("city", e.target.value)}><option value="">Choose a city</option>{cities.map(c => <option key={c}>{c}</option>)}</select></Field>
+        <Field label="Country"><input value={draft.country} onChange={e => set("country", e.target.value)} placeholder="India" maxLength={80}/></Field>
+        <Field label="State / Province"><input value={draft.state} onChange={e => set("state", e.target.value)} placeholder="e.g. Maharashtra" maxLength={80}/></Field>
+        <Field label="City"><input value={draft.city} onChange={e => set("city", e.target.value)} placeholder="e.g. Pune" maxLength={80}/></Field>
         <Field label="Locality"><input value={draft.locality} maxLength={60} placeholder="e.g. Wakad" onChange={e => set("locality", e.target.value)}/></Field>
         <Field label="Street address (optional, never shown publicly)" wide><input value={draft.address} maxLength={160} onChange={e => set("address", e.target.value)}/></Field>
         <p className="form-hint wide">A map pin will be added when a map service is connected.</p></div>}
