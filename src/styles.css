@@ -1871,3 +1871,23 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .detail-contact-actions .detail-more:first-child { grid-column:auto; }
   .review-card-top { align-items:flex-start; flex-direction:column; gap:4px; }
 }
+
+@media (max-width: 900px) {
+  .dashboard-layout { grid-template-columns: 1fr; gap: 22px; }
+  .dash-nav { position:relative; top:auto; display:flex; gap:7px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+  .dash-nav a { flex:none; white-space:nowrap; padding:9px 11px; border:1px solid var(--border); background:var(--card); }
+  .dash-nav a[aria-current="page"] { border-color:var(--primary); }
+  .dash-panel > h2 { font-size:26px; margin-bottom:18px; }
+  .owner-listings li { grid-template-columns:90px 1fr; }
+  .owner-listings img { width:90px; height:82px; }
+}
+@media (max-width: 560px) {
+  .dash-intro { gap:14px; }
+  .dash-intro > a { width:100%; justify-content:center; }
+  .owner-listings li { grid-template-columns:1fr; }
+  .owner-listings img { width:100%; height:190px; }
+  .ol-actions { display:grid; grid-template-columns:1fr 1fr; }
+  .ol-actions > * { min-width:0; width:100%; }
+  .seg-tabs { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+  .metric-grid,.stat-grid { grid-template-columns:1fr 1fr; }
+}
