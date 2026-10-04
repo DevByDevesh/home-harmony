@@ -20,7 +20,7 @@ export type AppPermission =
   | "manager.access"
   | AdminPermission;
 
-const USER: AppPermission[] = ["profile.manage", "saved.manage", "searches.manage", "comparisons.manage", "visits.own", "enquiries.own"];
+const USER: AppPermission[] = ["profile.manage", "saved.manage", "searches.manage", "comparisons.manage", "visits.own", "enquiries.own", "owner.access", "listings.own", "verification.request"];
 const OWNER: AppPermission[] = [...USER, "owner.access", "listings.own", "verification.request"];
 const AGENT: AppPermission[] = [...USER, "agent.access", "listings.own", "leads.manage", "clients.manage", "followups.manage"];
 // Property managers: architecture only — no extra product capability exists yet.
@@ -43,7 +43,7 @@ export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent:
 /** Route-area access used by route guards (and mirrored server-side). */
 export const AREA_ROLES = {
   dashboard: ROLES as readonly AuthRole[],
-  owner: ["OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
+  owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
   agent: ["AGENT", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
   admin: ADMIN_ROLES,
 } as const;
