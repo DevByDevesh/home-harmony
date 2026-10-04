@@ -17,7 +17,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.propertyType ? { propertyType: q.propertyType } : {}),
       ...(q.maxPrice ? { price: { lte: q.maxPrice } } : {}),
     },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: Math.min(q.take ?? 24, 100),
   });
