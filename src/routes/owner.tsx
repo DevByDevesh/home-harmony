@@ -104,23 +104,21 @@ function Panel({ id }: { id: string }) {
 
 function OwnerContactPanel() {
   const fetchProfile = useServerFn(getMyOwnerContactFn);
-  const saveProfile = useServerFn(updateMyOwnerContactFn);
   const profile = useQuery({ queryKey: ["owner-contact-profile"], queryFn: () => fetchProfile() });
 
   if (profile.isPending) return <p className="chart-empty">Loading your contact settings…</p>;
   if (profile.isError) return <p role="alert">{(profile.error as Error).message}</p>;
-  return <OwnerContactForm profile={profile.data} onSaved={() => profile.refetch()} save={saveProfile}/>;
+  return <OwnerContactForm profile={profile.data} onSaved={() => profile.refetch()}/>;
 }
 
 function OwnerContactForm({
   profile,
-  save,
   onSaved,
 }: {
   profile: OwnerContactProfile;
-  save: ReturnType<typeof useServerFn<typeof updateMyOwnerContactFn>>;
   onSaved: () => Promise<unknown>;
 }) {
+  const save = useServerFn(updateMyOwnerContactFn);
   const [phone, setPhone] = useState(profile.phone ?? "");
   const [preferredContact, setPreferredContact] = useState<OwnerContactProfile["preferredContact"]>(profile.preferredContact);
   const [busy, setBusy] = useState(false);
