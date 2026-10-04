@@ -1,7 +1,7 @@
 import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { Archive, BarChart3, CalendarCheck, CheckCircle2, Eye, LayoutDashboard, Pause, Pencil, Play, Plus, RotateCcw, Send, ShieldCheck, User } from "lucide-react";
+import { Archive, BarChart3, CalendarCheck, CheckCircle2, Eye, LayoutDashboard, MessageCircle, Pause, Pencil, Phone, Play, Plus, RotateCcw, Save, Send, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PropertyDetailView } from "@/components/property-detail-view";
@@ -21,6 +21,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listMyListingsFn, setMyListingStatusFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
 import { listOwnerEnquiriesFn, listOwnerVisitsFn } from "@/lib/engagement.functions";
+import { getMyOwnerContactFn, updateMyOwnerContactFn, type OwnerContactProfile } from "@/lib/owner-profile.functions";
 import { toListing } from "@/lib/property-mapper";
 import { OwnerDbEnquiries, OwnerDbVisits } from "@/components/engagement";
 
@@ -96,9 +97,79 @@ function Panel({ id }: { id: string }) {
     case "visits": return <OwnerDbVisits/>;
         case "analytics": return <OwnerLiveStats events/>;
     case "verification": { const items = data.listings.filter(l => !l.archived); return items.length ? <div className="verify-list">{items.map(l => <div key={l.id}><h3>{draftToHome(l.draft).name} <ListingStatusPill status={l.status}/></h3><VerificationPanel record={l.verification} compact onRequest={keys => { ownerActions.requestVerification(l.id, keys); toast.success("Checks requested — pending review"); }}/></div>)}</div> : <EmptyState icon={<ShieldCheck size={30}/>} title="No verification requests" action={newListing}>Create a listing to request verification checks.</EmptyState>; }
-    case "profile": return <div className="profile-card"><p><strong>Owner profile</strong></p><p>Sign-in with email, phone OTP or Google will create your owner profile. Until then this dashboard runs in current mode on this device.</p><Button variant="outline" onClick={() => { ownerActions.reset(); toast("Owner local data reset"); }}><RotateCcw size={15}/> Reset owner local data</Button></div>;
+    case "profile": return <OwnerContactPanel/>;
     default: return <OwnerLiveStats/>;
   }
+}
+
+function OwnerContactPanel() {
+  const fetchProfile = useServerFn(getMyOwnerContactFn);
+  const saveProfile = useServerFn(updateMyOwnerContactFn);
+  const profile = useQuery({ queryKey: ["owner-contact-profile"], queryFn: () => fetchProfile() });
+
+  if (profile.isPending) return <p className="chart-empty">Loading your contact settings…</p>;
+  if (profile.isError) return <p role="alert">{(profile.error as Error).message}</p>;
+  return <OwnerContactForm profile={profile.data} onSaved={() => profile.refetch()} save={saveProfile}/>;
+}
+
+function OwnerContactForm({
+  profile,
+  save,
+  onSaved,
+}: {
+  profile: OwnerContactProfile;
+  save: ReturnType<typeof useServerFn<typeof updateMyOwnerContactFn>>;
+  onSaved: () => Promise<unknown>;
+}) {
+  const [phone, setPhone] = useState(profile.phone ?? "");
+  const [preferredContact, setPreferredContact] = useState<OwnerContactProfile["preferredContact"]>(profile.preferredContact);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const result = await save({ data: { phone, preferredContact } });
+      if (!result.ok) {
+        toast.error("Couldn’t save contact settings.");
+        return;
+      }
+      await onSaved();
+      toast.success("Contact settings saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn’t save contact settings.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return <div className="profile-card">
+    <p><strong>Owner contact settings</strong></p>
+    <p>These details control the optional Call and WhatsApp actions shown on your published property pages. Your private chat continues to work separately.</p>
+    <label className="visit-note">Phone number
+      <input
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        value={phone}
+        onChange={e => setPhone(e.target.value)}
+        placeholder="+91 98765 43210"
+        maxLength={32}
+      />
+    </label>
+    <label className="visit-note">Preferred contact
+      <select className="filter-select" value={preferredContact ?? ""} onChange={e => setPreferredContact((e.target.value || null) as OwnerContactProfile["preferredContact"])}>
+        <option value="">No direct contact</option>
+        <option value="CALL">Call</option>
+        <option value="WHATSAPP">WhatsApp</option>
+        <option value="BOTH">Call + WhatsApp</option>
+      </select>
+    </label>
+    <p className="form-hint"><Phone size={14}/> Call and <MessageCircle size={14}/> WhatsApp appear only when a phone number and a matching preference are saved.</p>
+    <div className="dash-row-actions">
+      <Button disabled={busy} onClick={submit}><Save size={15}/>{busy ? "Saving…" : "Save contact settings"}</Button>
+      <Button variant="outline" disabled={busy} onClick={() => { setPhone(profile.phone ?? ""); setPreferredContact(profile.preferredContact); }}><RotateCcw size={15}/> Reset</Button>
+    </div>
+  </div>;
 }
 
 function ListingsPanel() {
