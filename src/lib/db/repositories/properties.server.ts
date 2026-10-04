@@ -151,135 +151,139 @@ export async function autoReviewAndPublishListing(propertyId: string) {
   return db.$transaction(async (tx) => {
     const property = await tx.property.findUnique({
       where: { id: propertyId },
-      include: { images: { orderBy: { sortOrder: "asc" } }, owner: { select: { status: true, emailVerified: true } } },
+      include: {
+        images: { orderBy: { sortOrder: "asc" } },
+        owner: { select: { status: true, emailVerified: true } },
+      },
     });
-    if (!property || property.status !== "UNDER_REVIEW") return { published: false, reason: "NOT_REVIEWABLE" as const };
 
-    const deterministicIssues: string[] = [];
-    if (property.title.trim().length < 5) deterministicIssues.push("title_too_short");
-    if (property.description.trim().length < 30) deterministicIssues.push("description_too_short");
-    if (property.price <= 0) deterministicIssues.push("invalid_price");
-    if (property.areaSqft < 50) deterministicIssues.push("invalid_area");
-    if (!property.city.trim()) deterministicIssues.push("missing_city");
-    if (!(property.state ?? "").trim()) deterministicIssues.push("missing_state");
-    if (!property.locality.trim()) deterministicIssues.push("missing_locality");
-    if (!property.addressLine1?.trim()) deterministicIssues.push("missing_address");
-    if (!property.images.length) deterministicIssues.push("missing_photos");
-    if (property.owner.status !== "ACTIVE") deterministicIssues.push("owner_not_active");
-    if (!property.owner.emailVerified) deterministicIssues.push("owner_email_not_verified");
-
-    if (deterministicIssues.length) {
-      await tx.property.update({ where: { id: propertyId }, data: { verificationStatus: "PENDING" } });
-      return { published: false, reason: "MANUAL_REVIEW" as const, issues: deterministicIssues };
+    if (!property || property.status !== "UNDER_REVIEW") {
+      return { published: false, reason: "NOT_REVIEWABLE" as const };
     }
 
-    const apiKey = process.env.OPENAI_API_KEY?.trim();
-    const model = process.env.OPENAI_MODERATION_MODEL?.trim() || "gpt-6-luna";
-    let ai: { decision: "approve" | "review" | "reject"; riskScore: number; reasons: string[]; duplicateImageIndexes: number[] } | null = null;
+    const issues: string[] = [];
+    const text = `${property.title} ${property.description}`.toLowerCase();
+    const description = property.description.toLowerCase();
 
-    if (apiKey) {
-      try {
-        const imageInputs = property.images
-          .filter((image) => image.url)
-          .slice(0, 8)
-          .map((image) => ({ type: "input_image", image_url: image.url!, detail: "low" }));
+    if (property.title.trim().length < 5) issues.push("title_too_short");
+    if (property.description.trim().length < 30) issues.push("description_too_short");
+    if (property.price <= 0) issues.push("invalid_price");
+    if (property.areaSqft < 50) issues.push("invalid_area");
+    if (!property.city.trim()) issues.push("missing_city");
+    if (!(property.state ?? "").trim()) issues.push("missing_state");
+    if (!property.locality.trim()) issues.push("missing_locality");
+    if (!property.addressLine1?.trim()) issues.push("missing_address");
+    if (!property.images.length) issues.push("missing_photos");
+    if (property.owner.status !== "ACTIVE") issues.push("owner_not_active");
+    if (!property.owner.emailVerified) issues.push("owner_email_not_verified");
 
-        const input = [{
-          role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: [
-                "You are HouseProvider's marketplace safety reviewer.",
-                "Review this real-estate listing for obvious scam, misleading, spam, unsafe, fabricated or suspicious marketplace patterns.",
-                "Do not claim ownership, legal title, address authenticity or physical availability can be proven from this data.",
-                "Approve only when the listing appears normal and low-risk. Otherwise send it to human review.",
-                "Look for: unrealistic or contradictory details, bait pricing, pressure/scam language, requests to pay outside the platform, suspicious contact/payment instructions, copied-looking descriptions, impossible property details, and duplicate/repeated photos.",
-                JSON.stringify({
-                  title: property.title, description: property.description, country: "India",
-                  state: property.state, city: property.city, locality: property.locality,
-                  address: property.addressLine1, listingType: property.listingType,
-                  propertyType: property.propertyType, price: property.price,
-                  areaSqft: property.areaSqft, bedrooms: property.bedrooms,
-                  bathrooms: property.bathrooms, parking: property.parking,
-                  furnishing: property.furnishing, imageCount: property.images.length,
-                }),
-              ].join("\n"),
-            },
-            ...imageInputs,
-          ],
-        }];
+    // Free, deterministic marketplace-safety rules.
+    const scamPatterns = [
+      /pay\\s+(?:now|first|advance|deposit)\\b/i,
+      /send\\s+(?:money|payment|upi)\\b/i,
+      /upi\\s*(?:id|payment)/i,
+      /bank\\s+(?:transfer|details|account)/i,
+      /registration\\s+fee/i,
+      /processing\\s+fee/i,
+      /security\\s+deposit\\s+before/i,
+      /guaranteed\\s+(?:deal|rent|approval)/i,
+      /urgent(?:ly)?\\s+(?:pay|transfer|book)/i,
+      /whatsapp\\s+(?:only|me)/i,
+      /telegram\\s+(?:only|me)/i,
+      /no\\s+visit/i,
+    ];
+    const matchedScamPatterns = scamPatterns.filter((pattern) => pattern.test(text)).length;
+    if (matchedScamPatterns >= 2) issues.push("suspicious_payment_or_pressure_language");
+    else if (matchedScamPatterns === 1) issues.push("review_payment_or_pressure_language");
 
-        const response = await fetch("https://api.openai.com/v1/responses", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model,
-            input,
-            max_output_tokens: 500,
-            text: {
-              format: {
-                type: "json_schema",
-                name: "listing_safety_review",
-                strict: true,
-                schema: {
-                  type: "object",
-                  additionalProperties: false,
-                  properties: {
-                    decision: { type: "string", enum: ["approve", "review", "reject"] },
-                    riskScore: { type: "integer", minimum: 0, maximum: 100 },
-                    reasons: { type: "array", items: { type: "string" }, maxItems: 8 },
-                    duplicateImageIndexes: { type: "array", items: { type: "integer", minimum: 0, maximum: 7 }, maxItems: 8 },
-                  },
-                  required: ["decision", "riskScore", "reasons", "duplicateImageIndexes"],
-                },
-              },
-            },
-          }),
-        });
-
-        if (!response.ok) throw new Error(`OpenAI moderation request failed: ${response.status}`);
-        const payload = await response.json() as { output_text?: string };
-        ai = JSON.parse(payload.output_text ?? "") as typeof ai;
-      } catch {
-        // AI is an additional safety layer. A provider outage must never publish a listing
-        // on the basis of an invented AI result.
-        ai = null;
-      }
+    // Contradictory/implausible structural values.
+    if (property.bedrooms > 0 && property.areaSqft / property.bedrooms < 80) {
+      issues.push("unusually_small_area_for_bedrooms");
+    }
+    if (property.bathrooms > Math.max(property.bedrooms + 2, 4)) {
+      issues.push("unusual_bathroom_count");
+    }
+    if (property.price > 0 && property.listingType === "RENT" && property.price < 1000) {
+      issues.push("suspiciously_low_rent");
     }
 
-    if (apiKey && (!ai || ai.decision !== "approve" || ai.riskScore > 20 || ai.duplicateImageIndexes.length > 0)) {
-      await tx.property.update({ where: { id: propertyId }, data: { verificationStatus: "PENDING" } });
+    // Exact duplicate photos and repeated image URLs/storage keys.
+    const imageKeys = property.images.map((image) => image.url ?? image.storageKey);
+    const duplicateImages = imageKeys.filter((key, index) => imageKeys.indexOf(key) !== index).length;
+    if (duplicateImages > 0) issues.push("duplicate_photos");
+
+    // Detect obvious copy-paste/spam descriptions using repeated sentence/phrase patterns.
+    const normalizedDescription = description.replace(/[^a-z0-9\\s]/g, " ").replace(/\\s+/g, " ").trim();
+    const words = normalizedDescription.split(" ").filter(Boolean);
+    const uniqueWords = new Set(words);
+    if (words.length >= 20 && uniqueWords.size / words.length < 0.35) {
+      issues.push("repetitive_description");
+    }
+    if (/(.)\\1{5,}/i.test(normalizedDescription) || /https?:\\/\\//i.test(description)) {
+      issues.push("spam_like_description");
+    }
+
+    // A small deterministic risk score keeps the decision explainable and free.
+    const riskScore = Math.min(
+      100,
+      matchedScamPatterns * 30 +
+        duplicateImages * 25 +
+        (issues.includes("spam_like_description") ? 25 : 0) +
+        (issues.includes("repetitive_description") ? 20 : 0) +
+        (issues.includes("suspiciously_low_rent") ? 20 : 0) +
+        (issues.includes("unusually_small_area_for_bedrooms") ? 15 : 0) +
+        (issues.includes("unusual_bathroom_count") ? 10 : 0),
+    );
+
+    const blockingIssues = issues.filter((issue) => !issue.startsWith("review_"));
+    if (blockingIssues.length || riskScore > 20) {
+      await tx.property.update({
+        where: { id: propertyId },
+        data: { verificationStatus: "PENDING" },
+      });
       await tx.auditLog.create({
         data: {
           actorId: property.ownerId,
-          action: "Listing AI safety review",
+          action: "Listing automated safety review",
           entityType: "Property",
           entityId: propertyId,
           result: "DENIED",
-          metadata: { decision: ai?.decision ?? "AI_UNAVAILABLE", riskScore: ai?.riskScore ?? null, reasons: ai?.reasons ?? ["AI review unavailable"], duplicateImageIndexes: ai?.duplicateImageIndexes ?? [] },
+          metadata: { riskScore, issues },
         },
       });
-      return { published: false, reason: "MANUAL_REVIEW" as const, ai };
+      return {
+        published: false,
+        reason: "MANUAL_REVIEW" as const,
+        issues,
+        riskScore,
+      };
     }
 
     const now = new Date();
     await tx.property.update({
       where: { id: propertyId },
-      data: { status: "ACTIVE", verificationStatus: "VERIFIED", publishedAt: now },
+      data: {
+        status: "ACTIVE",
+        verificationStatus: "VERIFIED",
+        publishedAt: now,
+      },
     });
 
     await tx.auditLog.create({
       data: {
         actorId: property.ownerId,
-        action: apiKey ? "Listing auto-approved by AI safety review" : "Listing auto-approved by structural review",
+        action: "Listing auto-approved by structural safety review",
         entityType: "Property",
         entityId: propertyId,
-        metadata: { riskScore: ai?.riskScore ?? null, reasons: ai?.reasons ?? [], aiReview: !!apiKey },
+        metadata: { riskScore: 0, issues: [] },
       },
     });
 
-    return { published: true, reason: apiKey ? "AI_AUTO_APPROVED" as const : "AUTO_APPROVED" as const, ai };
+    return {
+      published: true,
+      reason: "AUTO_APPROVED" as const,
+      riskScore: 0,
+    };
   });
 }
 
