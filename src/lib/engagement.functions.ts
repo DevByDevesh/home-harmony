@@ -17,6 +17,20 @@ export type OwnerVisit = { id: string; slug: string; title: string; visitor: str
 export type EnquiryRow = { id: string; slug: string; title: string; message: string; status: string; createdAt: string; from?: string };
 export type NotificationRow = { id: string; type: string; title: string; message: string; read: boolean; createdAt: string };
 
+export const createVisitFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    slug,
+    date: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/),
+    time: z.string().regex(/^\\d{2}:\\d{2}$/),
+    note: z.string().trim().max(240).optional(),
+  }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me();
+      return await (await repo()).createVisit(u.id, data.slug, data.date, data.time, data.note);
+    } catch (e) { rethrow(e); }
+  });
+
 export const listOwnerVisitsFn = createServerFn({ method: "GET" }).handler(async (): Promise<OwnerVisit[]> => {
   try {
     const u = await me();
