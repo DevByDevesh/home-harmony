@@ -213,13 +213,13 @@ export async function autoReviewAndPublishListing(propertyId: string) {
     if (duplicateImages > 0) issues.push("duplicate_photos");
 
     // Detect obvious copy-paste/spam descriptions using repeated sentence/phrase patterns.
-    const normalizedDescription = description.replace(/[^a-z0-9\\s]/g, " ").replace(/\\s+/g, " ").trim();
+    const normalizedDescription = description.replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
     const words = normalizedDescription.split(" ").filter(Boolean);
     const uniqueWords = new Set(words);
     if (words.length >= 20 && uniqueWords.size / words.length < 0.35) {
       issues.push("repetitive_description");
     }
-    if (/(.)\\1{5,}/i.test(normalizedDescription) || /https?:\\/\\//i.test(description)) {
+    if (/(.)\1{5,}/i.test(normalizedDescription) || /https?:\/\//i.test(description)) {
       issues.push("spam_like_description");
     }
 
