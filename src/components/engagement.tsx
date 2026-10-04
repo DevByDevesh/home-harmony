@@ -62,6 +62,40 @@ export function OwnerDbEnquiries({ empty }: { empty: ReactNode }) {
   return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.from} Â· {e.title}</strong><small>â€œ{e.message}â€</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
 }
 
+export function MyDbVisits() {
+  const fetch = useServerFn(listMyVisitsFn);
+  const cancel = useServerFn(cancelMyVisitFn);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["my-db-visits"], queryFn: () => fetch() });
+  const rows = q.data ?? [];
+
+  if (!rows.length) {
+    return <EmptyState icon={<CalendarCheck size={30}/>} title="No visits scheduled">
+      Open a property and choose “Schedule a visit”.
+    </EmptyState>;
+  }
+
+  return <ul className="dash-list">{rows.map(v => (
+    <li key={v.id}>
+      <div>
+        <strong>{v.title}</strong>
+        <small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` · “${v.note}”` : ""}</small>
+        <small>{statusLabel[v.status]}</small>
+      </div>
+      <div className="dash-row-actions">
+        <span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span>
+        {visitTransitions[v.status].includes("CANCELLED") && (
+          <Button size="sm" variant="ghost" onClick={async () => {
+            const result = await cancel({ data: { id: v.id } });
+            if (!result.ok) toast.error(result.message);
+            else { toast.success("Visit request cancelled"); qc.invalidateQueries({ queryKey: ["my-db-visits"] }); }
+          }}>Cancel</Button>
+        )}
+      </div>
+    </li>
+  ))}</ul>;
+}
+
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
 export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
   const { user } = useCurrentUser();
