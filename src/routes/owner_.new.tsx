@@ -16,7 +16,7 @@ import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, valid
 import { useServerFn } from "@tanstack/react-start";
 import { SavedPhotoUploader, StagedPhotoUploader, uploadAll } from "@/components/photo-uploader";
 import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
-import { emptyRecord, requestChecks, verificationItems, type VerificationKey } from "@/lib/verification";
+import { type VerificationKey } from "@/lib/verification";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
 const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
@@ -111,9 +111,22 @@ function Wizard() {
         {uploads.length > 0 && <div className="upload-list">{uploads.map(u => <figure key={u.url}><img src={u.url} alt={u.name}/><figcaption>{u.name}</figcaption></figure>)}</div>}
         <p className="form-hint">Uploaded files stay in this browser tab only and disappear on refresh. Nothing is stored until a storage service is connected.</p></>}</>}
       {step === 6 && <>
-        <p className="form-hint">Choose which checks you’d like to request. Listing review and photo checks are always requested on submission.</p>
-        <div className="choice-grid">{verificationItems.filter(i => i.key !== "listingReview" && i.key !== "photos").map(i => <button key={i.key} type="button" aria-pressed={draft.checks.includes(i.key)} className="choice" onClick={() => toggle("checks", i.key as VerificationKey)}>{draft.checks.includes(i.key) && <Check size={14}/>}{i.label}</button>)}</div>
-        <VerificationPanel record={requestChecks(emptyRecord(), [...draft.checks, "listingReview", "photos"])}/></>}
+        <p className="form-hint">Your listing will go through HouseProvider’s verification process before it goes live. You don’t need to choose individual checks.</p>
+        <div className="verification-auto-card">
+          <div className="kicker">HOUSEPROVIDER VERIFICATION</div>
+          <h3>We’ll check the important details automatically.</h3>
+          <p>These checks help protect seekers from misleading or fraudulent listings.</p>
+          <ul className="verification-auto-list">
+            <li><strong>Listing details</strong><span>Checked for completeness and accuracy.</span></li>
+            <li><strong>Photos</strong><span>Checked for relevance and duplicate or misleading images.</span></li>
+            <li><strong>Location</strong><span>Checked using the location information you provide.</span></li>
+            <li><strong>Phone</strong><span>Confirmed with OTP when phone verification is required.</span></li>
+            <li><strong>Owner identity</strong><span>May require identity/KYC verification for trust and safety.</span></li>
+            <li><strong>Availability</strong><span>Checked from the availability information you provide.</span></li>
+          </ul>
+          <p className="form-hint">Submitting a listing starts the review process. A listing is not published until the required checks and moderation are complete.</p>
+        </div>
+      </>}
       {step === 7 && <div className="preview-stage">
         <p className="demo-label"><span>PREVIEW</span>This is exactly how seekers would see your listing once approved.</p>
         <h3 className="preview-sub">Search card</h3><div className="preview-tile"><HomeTile home={home}/></div>
