@@ -15,6 +15,8 @@ export type PublicProperty = {
   brokerage: string | null; latitude: number | null; longitude: number | null;
   images: { url: string | null; storageKey: string; altText: string; type: string }[];
   amenities: string[];
+  ownerPhone: string | null;
+  ownerContactChannels: string[];
 };
 
 type Row = Awaited<ReturnType<typeof import("./db/repositories/properties.server").listPublicProperties>>[number];
