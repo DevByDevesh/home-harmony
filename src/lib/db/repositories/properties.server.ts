@@ -141,6 +141,59 @@ async function autoVerifyOwnerListing(
 
   return { autoVerified: [...autoVerified], pending };
 }
+/**
+ * Automatically reviews a submitted listing using deterministic marketplace safety rules.
+ * This is a structural/content gate, not proof of ownership, address or real-world availability.
+ * Listings that pass are published immediately; anything incomplete stays UNDER_REVIEW.
+ */
+export async function autoReviewAndPublishListing(propertyId: string) {
+  const db = await requireDb();
+  return db.$transaction(async (tx) => {
+    const property = await tx.property.findUnique({
+      where: { id: propertyId },
+      include: { images: true, owner: { select: { status: true, emailVerified: true } } },
+    });
+    if (!property || property.status !== "UNDER_REVIEW") return { published: false, reason: "NOT_REVIEWABLE" as const };
+
+    const checks = [
+      property.title.trim().length >= 5,
+      property.description.trim().length >= 30,
+      property.price > 0,
+      property.areaSqft >= 50,
+      property.city.trim().length > 0,
+      (property.state ?? "").trim().length > 0,
+      property.locality.trim().length >= 2,
+      !!property.addressLine1?.trim(),
+      property.images.length > 0,
+      property.owner.status === "ACTIVE",
+      property.owner.emailVerified === true,
+    ];
+
+    if (!checks.every(Boolean)) {
+      await tx.property.update({ where: { id: propertyId }, data: { verificationStatus: "PENDING" } });
+      return { published: false, reason: "MANUAL_REVIEW" as const };
+    }
+
+    const now = new Date();
+    await tx.property.update({
+      where: { id: propertyId },
+      data: { status: "ACTIVE", verificationStatus: "VERIFIED", publishedAt: now },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        actorId: property.ownerId,
+        action: "Listing auto-approved",
+        entityType: "Property",
+        entityId: propertyId,
+        metadata: { checks: "automatic_structural_review" },
+      },
+    });
+
+    return { published: true, reason: "AUTO_APPROVED" as const };
+  });
+}
+
 export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) {
   const db = await requireDb();
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
