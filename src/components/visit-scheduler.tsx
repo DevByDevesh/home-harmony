@@ -26,6 +26,7 @@ export function VisitScheduler({ home }: { home: Listing }) {
   const date = day === "today" ? toISODate(now) : day === "tomorrow" ? toISODate(tomorrow) : picked;
   const slots = date ? slotsFor(date, now) : [];
   function reset() { setDay("tomorrow"); setPicked(""); setSlot(""); setNote(""); setStatus("idle"); }
+  if (!user) return <Button asChild className="detail-more"><Link to="/login"><CalendarCheck size={17}/>Sign in to schedule a visit</Link></Button>;
   async function submit() {
     if (!date || !slot || busy) { setStatus("error"); return; }
     if (!user) return;
@@ -42,7 +43,7 @@ export function VisitScheduler({ home }: { home: Listing }) {
     } finally { setBusy(false); }
   }
   return <Dialog open={open} onOpenChange={o => { setOpen(o); if (!o) reset(); }}>
-    <DialogTrigger asChild><Button className="detail-more"><CalendarCheck size={17}/>{user ? "Schedule a visit" : "Sign in to schedule a visit"}</Button></DialogTrigger>
+    <DialogTrigger asChild><Button className="detail-more"><CalendarCheck size={17}/>Schedule a visit</Button></DialogTrigger>
     <DialogContent className="visit-dialog">
       {status === "done" ? <div className="visit-done" role="status"><CalendarCheck size={34}/><DialogTitle>Visit request saved</DialogTitle><p>{home.name} · {formatVisitDate(date)} at {slot}</p><p className="demo-note">Visit request has been recorded. The property owner can respond through HouseProvider.</p><div className="visit-actions"><Button asChild variant="outline"><Link to="/dashboard" search={{ tab: "visits" }}>View my visits</Link></Button><Button onClick={() => setOpen(false)}>Done</Button></div></div> : <>
         <DialogHeader><DialogTitle>Schedule a visit</DialogTitle><DialogDescription>{home.name}, {home.neighborhood}. Choose a time that works for you; the owner will receive your request.</DialogDescription></DialogHeader>
@@ -54,8 +55,8 @@ export function VisitScheduler({ home }: { home: Listing }) {
         {date && (slots.length ? <div className="slot-grid" role="group" aria-label="Time slot">{slots.map(s => <button type="button" key={s} className="pill" aria-pressed={slot === s} onClick={() => { setSlot(s); setStatus("idle"); }}>{s}</button>)}</div>
           : <div className="no-slots"><CalendarX size={20}/>No available visit slots on this day. Try another date.</div>)}
         <label className="visit-note">Note (optional)<textarea maxLength={240} value={note} onChange={e => setNote(e.target.value)} placeholder="Anything you’d like to see?"/></label>
-        {status === "error" && <p className="form-error" role="alert">{!date ? "Choose a date first." : !slot ? "Choose a time slot." : "Couldn’t save on this device. Check your browser storage settings."}</p>}
-        <Button onClick={submit} disabled={!user || busy} className="visit-submit">{busy ? "Sending…" : "Request visit"}</Button>
+        {status === "error" && <p className="form-error" role="alert">{!date ? "Choose a date first." : !slot ? "Choose a time slot." : "Couldn’t submit the visit request. Please try again."}</p>}
+        <Button onClick={submit} disabled={busy} className="visit-submit">{busy ? "Sending…" : "Request visit"}</Button>
       </>}
     </DialogContent>
   </Dialog>;
