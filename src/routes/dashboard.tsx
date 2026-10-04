@@ -9,11 +9,10 @@ import { EmptyState, TileSkeletons } from "@/components/empty-state";
 import { HomeTile } from "@/components/home-tile";
 import { SavedSearchCard } from "@/components/saved-search-card";
 import { RoleSwitcher } from "@/components/role-switcher";
-import { ChatPanel, MyEnquiries, MyNotifications } from "@/components/engagement";
+import { ChatPanel, MyDbVisits, MyEnquiries, MyNotifications } from "@/components/engagement";
 import { cities, getListing } from "@/lib/catalog";
 import { useLiveListings } from "@/lib/use-live-listings";
 import { userActions, useUserData, type Preferences } from "@/lib/user-data";
-import { formatVisitDate, statusLabel } from "@/lib/visits";
 
 const tabs = [
   ["overview", "Overview", LayoutDashboard], ["saved", "Saved properties", Heart], ["searches", "Saved searches", Bookmark],
