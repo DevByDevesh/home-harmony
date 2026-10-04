@@ -16,6 +16,65 @@ const day = (d: Date) => d.toISOString().slice(0, 10);
 
 // ---- Visits ----
 
+export async function createVisit(userId: string, slug: string, date: string, time: string, notes?: string) {
+  const db = await requireDb();
+  const cleanDate = date.trim();
+  const cleanTime = time.trim();
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(cleanDate)) return { ok: false as const, message: "Choose a valid visit date." };
+  if (!/^\\d{2}:\\d{2}$/.test(cleanTime)) return { ok: false as const, message: "Choose a valid visit time." };
+
+  const requestedDate = new Date(`${cleanDate}T00:00:00Z`);
+  if (Number.isNaN(requestedDate.getTime())) return { ok: false as const, message: "Choose a valid visit date." };
+
+  const today = new Date();
+  const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  if (requestedDate < todayUtc) return { ok: false as const, message: "Visit date cannot be in the past." };
+
+  const property = await db.property.findFirst({
+    where: { slug, status: "ACTIVE" },
+    select: { id: true, ownerId: true, title: true, slug: true },
+  });
+  if (!property) return { ok: false as const, message: "This home is not available." };
+  if (property.ownerId === userId) return { ok: false as const, message: "You cannot request a visit for your own listing." };
+
+  const user = await db.user.findUnique({ where: { id: userId }, select: { status: true } });
+  if (!user || user.status === "SUSPENDED" || user.status === "DEACTIVATED") {
+    return { ok: false as const, message: "Your account cannot request visits." };
+  }
+
+  const visit = await db.visit.create({
+    data: {
+      userId,
+      propertyId: property.id,
+      requestedDate,
+      requestedTime: cleanTime,
+      notes: notes?.trim() || null,
+      status: "REQUESTED",
+    },
+    select: { id: true },
+  });
+
+  await notify(
+    db,
+    property.ownerId,
+    "VISIT_REQUESTED",
+    "New visit request",
+    `${property.title} · ${cleanDate} at ${cleanTime}`,
+    { visitId: visit.id, slug: property.slug },
+  );
+
+  await notify(
+    db,
+    userId,
+    "VISIT_SUBMITTED",
+    "Visit request sent",
+    property.title,
+    { visitId: visit.id, slug: property.slug },
+  );
+
+  return { ok: true as const, visitId: visit.id };
+}
+
 export async function notifyVisitRequested(visitId: string) {
   const db = await requireDb();
   const v = await db.visit.findUnique({ where: { id: visitId }, select: { requestedDate: true, requestedTime: true, property: { select: { ownerId: true, title: true, slug: true } } } });
