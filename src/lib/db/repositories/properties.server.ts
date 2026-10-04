@@ -72,7 +72,7 @@ export type NewOwnerProperty = {
   title: string; description: string; propertyType: PropertyType; listingType: "RENT" | "BUY";
   price: number; deposit: number | null; areaSqft: number; bedrooms: number; bathrooms: number; parking: number;
   furnishing: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; availableFrom: Date | null;
-  city: string; locality: string; addressLine1: string | null; amenities: string[]; photoKeys: string[];
+  country: string; state: string; city: string; locality: string; addressLine1: string | null; amenities: string[]; photoKeys: string[];
   /** Verification checks requested (always PENDING; never decided here). */
   checks: VerificationType[];
 };
@@ -150,7 +150,7 @@ export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) 
       data: {
         slug, title: p.title, description: p.description, propertyType: p.propertyType, listingType: p.listingType,
         price: p.price, deposit: p.deposit, areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking,
-        furnishing: p.furnishing, availableFrom: p.availableFrom, city: p.city, locality: p.locality, addressLine1: p.addressLine1,
+        furnishing: p.furnishing, availableFrom: p.availableFrom, city: p.city, state: p.state, locality: p.locality, addressLine1: p.addressLine1,
         status: "UNDER_REVIEW", verificationStatus: p.checks.length ? "PENDING" : "NOT_REQUESTED", ownerId,
         images: { create: p.photoKeys.map((storageKey, i) => ({ storageKey, altText: `${p.title} (owner-selected illustrative photo)`, sortOrder: i })) },
       },
