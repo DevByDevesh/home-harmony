@@ -1891,3 +1891,44 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .seg-tabs { overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
   .metric-grid,.stat-grid { grid-template-columns:1fr 1fr; }
 }
+
+
+/* ---------- Homepage contrast correction ---------- */
+.homepage-v2 .story-match .button {
+  background: #fff;
+  color: #542a52;
+  border-color: rgba(255,255,255,.72);
+  font-weight: 800;
+}
+.homepage-v2 .story-match .button:hover {
+  background: #ffb39a;
+  color: #3e213b;
+  border-color: #ffb39a;
+}
+.homepage-v2 .story-trust {
+  background: #f4ece8;
+  color: #342c32;
+}
+.homepage-v2 .story-trust .kicker,
+.homepage-v2 .story-trust em,
+.homepage-v2 .story-trust svg {
+  color: #542a52;
+}
+.homepage-v2 .story-trust p:not(.kicker) {
+  color: #5f555b;
+  opacity: 1;
+}
+.homepage-v2 .story-trust .text-link {
+  color: #542a52;
+  border-color: rgba(84,42,82,.35);
+}
+.homepage-v2 .story-trust .text-link:hover {
+  color: #342c32;
+  border-color: #542a52;
+}
+.homepage-v2 .story-match .story-index {
+  color: #fff;
+}
+.homepage-v2 .story-match .story-index span {
+  color: rgba(255,255,255,.9);
+}
