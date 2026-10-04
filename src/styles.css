@@ -1756,3 +1756,15 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .nearby-grid { grid-template-columns: 1fr; }
 }
 \n.detail-contact-actions { display: grid; gap: 8px; margin-top: 16px; }\n.detail-contact-actions .detail-more { margin-top: 0; }\n
+
+.property-reviews { margin-top: 3rem; }
+.property-reviews .feature-heading { align-items: end; }
+.review-stars { display: flex; gap: .25rem; align-items: center; margin: .75rem 0; }
+.star-button { display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; padding: .35rem; cursor: pointer; opacity: .35; color: inherit; }
+.star-button.selected { opacity: 1; }
+.review-input { width: 100%; min-height: 110px; resize: vertical; margin: .75rem 0; }
+.review-list { display: grid; gap: .75rem; margin-top: 1rem; }
+.review-card { padding: 1rem; border: 1px solid var(--line, #ddd); border-radius: 14px; }
+.review-card-top { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+.review-card-top span { font-size: .8rem; opacity: .65; }
+.review-stars.static { margin: .45rem 0; }
