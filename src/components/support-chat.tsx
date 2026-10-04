@@ -14,12 +14,12 @@ const QUICK = [
 ];
 
 const ANSWERS: Array<{ test: RegExp; text: string }> = [
-  { test: /sign|login|log in|password|google/i, text: "Try signing in again and make sure your email/password are correct. If you use Google, use “Continue with Google”. If the account is suspended or deactivated, the message on screen will tell you what to do." },
-  { test: /post|list|owner|property.*add|add.*property/i, text: "You can post a property from “List your property”. A normal HouseProvider account can also post its own listings. Complete the details and photos, then submit — the listing is automatically checked before it goes live." },
-  { test: /review|approval|approve|under review|pending/i, text: "Under Review means HouseProvider's automatic safety checks found something that needs attention, or the listing is incomplete. It is not visible as a live listing until the checks pass." },
-  { test: /save|saved|favourite|favorite/i, text: "Open a live property and tap the heart icon to save it. You need to be signed in for your saved homes to stay with your account." },
   { test: /suspicious|fake|scam|fraud|report/i, text: "Don't send money or payment details to a property contact just because they ask. Use the property/report controls when available and avoid moving a transaction off-platform until the listing and owner are verified." },
+  { test: /review|approval|approve|under review|pending/i, text: "Under Review means HouseProvider's automatic safety checks found something that needs attention, or the listing is incomplete. It is not visible as a live listing until the checks pass." },
   { test: /contact|owner|message|enquir/i, text: "Open a live property's detail page and use “Message Owner” / “Send an enquiry”. Your conversation stays connected to that property so you can continue from your dashboard." },
+  { test: /sign|login|log in|password|google/i, text: "Try signing in again and make sure your email/password are correct. If you use Google, use “Continue with Google”. If the account is suspended or deactivated, the message on screen will tell you what to do." },
+  { test: /\bpost\b|\badd\b.*\bproperty\b|\bcreate\b.*\blisting\b|list your property/i, text: "You can post a property from “List your property”. A normal HouseProvider account can also post its own listings. Complete the details and photos, then submit — the listing is automatically checked before it goes live." },
+  { test: /save|saved|favourite|favorite/i, text: "Open a live property and tap the heart icon to save it. You need to be signed in for your saved homes to stay with your account." },
   { test: /compare/i, text: "Use Compare on property cards to add homes and review them side by side. HouseProvider supports up to four properties in a comparison." },
   { test: /visit|schedule/i, text: "Open a live property and choose the visit option to request a viewing. Only live homes can be used for visit requests." },
   { test: /photo|image|upload/i, text: "For a listing, upload clear property photos in the Photos step. The first photo is used as the cover. If an upload fails, check the file type/size and try again." },
@@ -51,7 +51,7 @@ export function SupportChat() {
   return <>
     {open && <section className="support-chat" aria-label="HouseProvider Help">
       <div className="support-chat-head">
-        <div className="support-chat-title"><span className="support-bot-icon"><Bot size={17}/></span><div><strong>HouseProvider Help</strong><small>Instant help · no AI credits</small></div></div>
+        <div className="support-chat-title"><span className="support-bot-icon"><Bot size={17}/></span><div><strong>HouseProvider Help</strong><small>Quick help &amp; feedback</small></div></div>
         <button type="button" className="support-close" onClick={() => setOpen(false)} aria-label="Close help"><X size={18}/></button>
       </div>
       <div className="support-chat-body">
