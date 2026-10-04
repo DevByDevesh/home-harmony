@@ -46,6 +46,7 @@ export type Verification = { ownerIdentity: boolean; phone: boolean; location: b
 export type ListingDetails = {
   lat: number; lng: number; deposit: number; brokerage: "None" | "Half month" | "One month" | "1% of price";
   parking: number; availableFrom: string | null; updatedAt: string; status: ListingStatus; verification: Verification;
+  ownerPhone?: string | null; ownerContactChannels?: string[];
 };
 export type Listing = Home & ListingDetails;
 
