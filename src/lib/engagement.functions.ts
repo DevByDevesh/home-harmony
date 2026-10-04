@@ -20,8 +20,8 @@ export type NotificationRow = { id: string; type: string; title: string; message
 export const createVisitFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     slug,
-    date: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/),
-    time: z.string().regex(/^\\d{2}:\\d{2}$/),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    time: z.string().regex(/^\d{2}:\d{2}$/),
     note: z.string().trim().max(240).optional(),
   }).strict().parse(d))
   .handler(async ({ data }) => {
