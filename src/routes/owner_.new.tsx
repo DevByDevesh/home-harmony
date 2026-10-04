@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { HomeTile } from "@/components/home-tile";
 import { PropertyDetailView } from "@/components/property-detail-view";
 import { ListingAssistant } from "@/components/listing-assistant";
-import { VerificationPanel } from "@/components/verification-panel";
 import { ListingStatusPill } from "@/components/role-switcher";
 import { amenityOptions, inr } from "@/lib/catalog";
 import { timeAgo } from "@/lib/local-store";
@@ -16,7 +15,6 @@ import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, valid
 import { useServerFn } from "@tanstack/react-start";
 import { SavedPhotoUploader, StagedPhotoUploader, uploadAll } from "@/components/photo-uploader";
 import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
-import { type VerificationKey } from "@/lib/verification";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
 const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
@@ -67,7 +65,7 @@ function Wizard() {
   if (!ready || !draft) return <Shell><div className="wizard-card" aria-busy="true"><Loader2 className="spin" size={22}/> Loading your draft…</div></Shell>;
 
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => { setDraft({ ...draft, [k]: v }); setErrors([]); };
-  const toggle = <K extends "amenities" | "photos" | "checks">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
+  const toggle = <K extends "amenities" | "photos">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
   const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => { ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]); setSavedToDb(true); setSubmitted(r.id); toast.success(failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
