@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { CompareTray } from "@/components/compare-tray";
 import { PageEntrance } from "@/components/cinematic-motion";
+import { SupportChat } from "@/components/support-chat";
 
 function NotFoundPage() { return <main className="fallback wrap"><p className="kicker">NOT FOUND</p><h1>That place isn’t here.</h1><p>The page may have moved, but there are more homes to explore.</p><Button asChild><Link to="/properties">Explore homes</Link></Button></main>; }
 function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
@@ -27,6 +28,6 @@ function RootShell({ children }: { children: ReactNode }) { return <html lang="e
 function RootApp() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: s => s.location.pathname });
-  return <QueryClientProvider client={queryClient}><Navigation/><PageEntrance pageKey={pathname}><Outlet/></PageEntrance><CompareTray/><Toaster position="top-center"/><footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/saved">Saved</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">For property owners</Link><Link to="/account">Your account</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>Property information, pricing and availability are subject to owner confirmation.</span></div></footer></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><Navigation/><PageEntrance pageKey={pathname}><Outlet/></PageEntrance><CompareTray/><SupportChat/><Toaster position="top-center"/><footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/saved">Saved</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">For property owners</Link><Link to="/account">Your account</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>Property information, pricing and availability are subject to owner confirmation.</span></div></footer></QueryClientProvider>;
 }
 
