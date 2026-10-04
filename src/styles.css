@@ -1755,3 +1755,4 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
 @media (max-width: 520px) {
   .nearby-grid { grid-template-columns: 1fr; }
 }
+\n.detail-contact-actions { display: grid; gap: 8px; margin-top: 16px; }\n.detail-contact-actions .detail-more { margin-top: 0; }\n
