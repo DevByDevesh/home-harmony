@@ -15,12 +15,9 @@
 html{scroll-behavior:smooth}
 body{
   background:var(--hp-cream);
-  color:var(--hp-ink);
   text-rendering:optimizeLegibility;
 }
 ::selection{background:var(--hp-coral);color:var(--hp-plum-deep)}
-a,button{transition:color .2s ease,background-color .2s ease,border-color .2s ease,transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s ease}
-button{font-family:inherit}
 
 /* Global navigation */
 .navigation{
@@ -45,29 +42,47 @@ button{font-family:inherit}
 .nav-owner{border-radius:999px!important}
 .nav-owner:hover{transform:translateY(-1px)}
 
-/* Shared surfaces */
-.home-tile,.property-card,.listing-card,.dashboard-card,.card,.panel{
-  border-radius:18px;
+/* Scoped interaction polish
+   Intentionally scoped to HouseProvider page shells so existing controls and
+   component-level styling are not globally overridden. */
+.homepage-v2 a,.homepage-v2 button,
+.results-page a,.results-page button,
+.detail-page a,.detail-page button,
+.saved-page a,.saved-page button,
+.compare-match a,.compare-match button,
+.dashboard-page a,.dashboard-page button,
+.account-page a,.account-page button,
+.owners-page a,.owners-page button,
+.messages-page a,.messages-page button{
+  transition:color .2s ease,background-color .2s ease,border-color .2s ease,
+    transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s ease;
 }
-.home-tile,.property-card,.listing-card{
-  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease;
-}
-.home-tile:hover,.property-card:hover,.listing-card:hover{
-  transform:translateY(-5px);
-  box-shadow:var(--hp-shadow);
-}
-button,.button,[role="button"]{border-radius:10px}
-button:hover,.button:hover,[role="button"]:hover{transform:translateY(-1px)}
-input,select,textarea{
+.homepage-v2 input,.homepage-v2 select,.homepage-v2 textarea,
+.results-page input,.results-page select,.results-page textarea,
+.detail-page input,.detail-page select,.detail-page textarea,
+.saved-page input,.saved-page select,.saved-page textarea,
+.compare-match input,.compare-match select,.compare-match textarea,
+.dashboard-page input,.dashboard-page select,.dashboard-page textarea,
+.account-page input,.account-page select,.account-page textarea,
+.owners-page input,.owners-page select,.owners-page textarea,
+.messages-page input,.messages-page select,.messages-page textarea{
   border-radius:10px!important;
   transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease;
 }
-input:focus,select:focus,textarea:focus{
+.homepage-v2 input:focus,.homepage-v2 select:focus,.homepage-v2 textarea:focus,
+.results-page input:focus,.results-page select:focus,.results-page textarea:focus,
+.detail-page input:focus,.detail-page select:focus,.detail-page textarea:focus,
+.saved-page input:focus,.saved-page select:focus,.saved-page textarea:focus,
+.compare-match input:focus,.compare-match select:focus,.compare-match textarea:focus,
+.dashboard-page input:focus,.dashboard-page select:focus,.dashboard-page textarea:focus,
+.account-page input:focus,.account-page select:focus,.account-page textarea:focus,
+.owners-page input:focus,.owners-page select:focus,.owners-page textarea:focus,
+.messages-page input:focus,.messages-page select:focus,.messages-page textarea:focus{
   border-color:var(--hp-plum)!important;
   box-shadow:0 0 0 4px rgba(84,42,82,.08)!important;
 }
 
-/* Cinematic homepage */
+/* Cinematic homepage *//* Cinematic homepage */
 .homepage-v2{overflow:clip}
 .homepage-v2 .hero{
   min-height:680px;
