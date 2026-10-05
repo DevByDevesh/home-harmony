@@ -50,3 +50,26 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 ## Backend Phase 1 — PostgreSQL + Prisma foundation
 - [x] Schema, server-only client, repositories, .env.example, schema validated
 - [ ] Initial migration — blocked on a real DATABASE_URL (`bun run db:migrate --name init`)
+
+## Map batch 2
+- [x] Filter-aware clusters with zoom-to-expand; individual markers unchanged when zoomed in.
+- [x] Place search seam (server-side, query only; never property data).
+- [ ] Place search live — blocked: Mapbox connection has only a public (pk.) token; a secret (sk.) token must be added.
+- [x] Public coordinates only; commute shows "Not available" via `src/lib/commute.ts` provider seam.
+
+## Phase 0 — Stability + regression baseline (current)
+- [ ] Inspect routes, shared components, data/auth/storage seams and tests.
+- [ ] Regression-check homepage → search → results → detail → compare/saved → dashboard/owner/agent/admin, desktop + mobile.
+- [ ] Confirm the enquiry/message entry still exists; restore only if broken.
+- [ ] Re-check map clusters, place search, filters, public coordinates, commute copy.
+- [ ] Run typecheck/build/lint/tests; add regression tests for any reproduced bug.
+
+## Future phases (planning only)
+- Phase 1 — Production backend: finish Prisma migration, real persistence, server data boundaries, auth/session hardening, storage verification.
+- Phase 2 — AI foundation: provider abstraction, local rules first, optional free-tier adapter, NL search, explainable recommendations, listing assistant; paid APIs optional.
+- Phase 3 — Smart property intelligence: valuation, price/sq.ft., rental yield/ROI, EMI/affordability, transparent deterministic scoring.
+- Phase 4 — Advanced discovery: map/draw/radius search, nearby amenities, commute only with verified route data, smarter filters, personalisation.
+- Phase 5 — Trust & safety: owner/agent verification, suspicious/duplicate listing and image signals, moderation, badges only when verified.
+- Phase 6 — Communication & conversion: real-time chat, enquiry inbox, visit reminders, notifications, saved-search alerts via a real provider.
+- Phase 7 — Transaction layer: documents, deal room, payment seams, invoices, subscriptions/services marketplace, audit/security hardening.
+- Phase 8 — Production polish & scale: analytics, SEO, performance, accessibility, observability, rate limiting, caching, backups, deployment checks.
