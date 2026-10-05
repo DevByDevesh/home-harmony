@@ -58,11 +58,11 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Public coordinates only; commute shows "Not available" via `src/lib/commute.ts` provider seam.
 
 ## Phase 0 — Stability + regression baseline (current)
-- [ ] Inspect routes, shared components, data/auth/storage seams and tests.
-- [ ] Regression-check homepage → search → results → detail → compare/saved → dashboard/owner/agent/admin, desktop + mobile.
-- [ ] Confirm the enquiry/message entry still exists; restore only if broken.
-- [ ] Re-check map clusters, place search, filters, public coordinates, commute copy.
-- [ ] Run typecheck/build/lint/tests; add regression tests for any reproduced bug.
+- [x] Inspect routes, shared components, data/auth/storage seams and tests.
+- [x] Regression-check homepage → search → results → detail → compare/saved → dashboard/owner/agent/admin, desktop + mobile.
+- [x] Confirm the enquiry/message entry still exists; restore only if broken.
+- [x] Re-check map clusters, filters, public coordinates, commute copy (place search blocked, see Map batch 2): filters, public coordinates, commute copy.
+- [x] Run typecheck/build/lint/tests; add regression tests for any reproduced bug.
 
 ## Future phases (planning only)
 - Phase 1 — Production backend: finish Prisma migration, real persistence, server data boundaries, auth/session hardening, storage verification.
