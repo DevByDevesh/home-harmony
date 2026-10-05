@@ -61,7 +61,7 @@ Phases 2–6 remain deferred: live maps, accounts, saving, comparison, contact, 
 - [x] Inspect routes, shared components, data/auth/storage seams and tests.
 - [x] Regression-check homepage → search → results → detail → compare/saved → dashboard/owner/agent/admin, desktop + mobile.
 - [x] Confirm the enquiry/message entry still exists; restore only if broken.
-- [x] Re-check map clusters, filters, public coordinates, commute copy (place search blocked, see Map batch 2): filters, public coordinates, commute copy.
+- [x] Re-check map clusters, filters, public coordinates, commute copy (place search blocked, see Map batch 2).
 - [x] Run typecheck/build/lint/tests; add regression tests for any reproduced bug.
 
 ## Future phases (planning only)
