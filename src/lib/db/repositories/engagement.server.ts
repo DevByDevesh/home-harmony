@@ -201,6 +201,11 @@ export async function setRecent(userId: string, slugs: string[]) {
 
 export async function getOrCreateConversation(userId: string, slug: string, firstMessage: string) {
   const db = await requireDb();
+  const cleanFirstMessage = firstMessage.trim();
+
+  if (!cleanFirstMessage || cleanFirstMessage.length > 2000) {
+    return { ok: false as const, message: "Message must be between 1 and 2000 characters." };
+  }
 
   const property = await db.property.findFirst({
     where: { slug, status: "ACTIVE" },
@@ -251,7 +256,7 @@ export async function getOrCreateConversation(userId: string, slug: string, firs
           userId,
           propertyId: property.id,
           handlerId: participantId,
-          message: firstMessage,
+          message: cleanFirstMessage,
           status: "NEW",
           conversationId: conversation.id,
         },
@@ -272,7 +277,7 @@ export async function getOrCreateConversation(userId: string, slug: string, firs
       data: {
         conversationId: conversation.id,
         senderId: userId,
-        body: firstMessage,
+        body: cleanFirstMessage,
       },
     });
 
