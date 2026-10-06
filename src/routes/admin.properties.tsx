@@ -1,69 +1,118 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, DetailList, fmtDate, type RowAction } from "@/components/admin/admin-kit";
 import { useConfirm } from "@/components/admin/use-confirm";
-import { lookups, useAdminActions, useAdminData } from "@/lib/admin/repository";
 import { adminHead } from "@/lib/admin/head";
-import { LivePropertiesPanel } from "@/components/admin/live-records";
 import { inr } from "@/lib/catalog";
-import type { AdminProperty } from "@/lib/admin/types";
+import { listAdminPropertiesFn, moderateListingFn } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/properties")({ head: adminHead("Properties"), component: AdminProperties });
-const statuses = ["ACTIVE", "UNDER_REVIEW", "PAUSED", "RENTED", "SOLD", "EXPIRED", "ARCHIVED"];
-const today = () => new Date().toISOString().slice(0, 10);
-const plus = (days: number) => new Date(Date.now() + days * 864e5).toISOString().slice(0, 10);
+
+type LiveProperty = Awaited<ReturnType<typeof listAdminPropertiesFn>>[number];
+
+const statuses = ["ACTIVE", "UNDER_REVIEW", "PAUSED", "ARCHIVED"];
 
 function AdminProperties() {
-  const { data: s, ready } = useAdminData(); const act = useAdminActions(); const l = lookups(s);
-  const [ask, dialog] = useConfirm(); const [open, setOpen] = useState<string | null>(null);
-  const set = (p: AdminProperty, patch: Partial<AdminProperty>, action: string) => act.update("properties", p.id, { ...patch, updatedAt: new Date().toISOString() }, action, p.title, "listings.moderate");
-  const actions = (p: AdminProperty): RowAction[] => [
-    { label: "Approve", hidden: p.status !== "UNDER_REVIEW", onSelect: () => set(p, { status: "ACTIVE", changesRequested: undefined }, "Property approved") },
-    { label: "Request changes", hidden: p.status !== "UNDER_REVIEW", onSelect: () => set(p, { changesRequested: "Please confirm the carpet area and add a clearer cover photo." }, "Changes requested") },
-    { label: "Reject", hidden: p.status !== "UNDER_REVIEW", destructive: true, onSelect: () => ask({ title: `Reject “${p.title}”?`, description: "The listing is archived with a rejection note. The owner can edit and resubmit.", confirm: "Reject", onConfirm: () => set(p, { status: "ARCHIVED", changesRequested: "Rejected by moderation" }, "Property rejected") }) },
-    { label: "Pause", hidden: p.status !== "ACTIVE", onSelect: () => set(p, { status: "PAUSED" }, "Listing paused") },
-    { label: "Resume", hidden: p.status !== "PAUSED", onSelect: () => set(p, { status: "ACTIVE" }, "Listing resumed") },
-    { label: "Mark featured", hidden: p.featured || p.status !== "ACTIVE", onSelect: () => act.setFeatured(p.id, { startsAt: today(), endsAt: plus(s.settings.featured.maxDurationDays) }, p.title) },
-    { label: "Remove featured", hidden: !p.featured, onSelect: () => act.setFeatured(p.id, null, p.title) },
-    { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({ title: `Archive “${p.title}”?`, description: "Archived listings are hidden from seekers but kept for records.", confirm: "Archive", onConfirm: () => set(p, { status: "ARCHIVED", featured: false }, "Listing archived") }) },
-    { label: "Restore", hidden: p.status !== "ARCHIVED", onSelect: () => set(p, { status: "UNDER_REVIEW" }, "Listing restored to review") },
+  const [rows, setRows] = useState<LiveProperty[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null);
+  const [ask, dialog] = useConfirm();
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      setRows(await listAdminPropertiesFn());
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load properties.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void refresh(); }, []);
+
+  const moderate = async (p: LiveProperty, action: "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "PAUSE" | "RESUME" | "ARCHIVE" | "RESTORE", note?: string) => {
+    try {
+      const result = await moderateListingFn({ data: { propertyId: p.id, action, ...(note ? { note } : {}) } });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Moderation action failed.");
+    }
+  };
+
+  const actions = (p: LiveProperty): RowAction[] => [
+    { label: "Approve", hidden: p.status !== "UNDER_REVIEW", onSelect: () => void moderate(p, "APPROVE") },
+    { label: "Request changes", hidden: p.status !== "UNDER_REVIEW", onSelect: () => void moderate(p, "REQUEST_CHANGES", "Please review the listing details and resubmit.") },
+    { label: "Reject", hidden: p.status !== "UNDER_REVIEW", destructive: true, onSelect: () => ask({
+      title: `Reject “${p.title}”?`,
+      description: "The listing will be archived and kept for records.",
+      confirm: "Reject",
+      onConfirm: () => void moderate(p, "REJECT", "Rejected by moderation"),
+    }) },
+    { label: "Pause", hidden: p.status !== "ACTIVE", onSelect: () => void moderate(p, "PAUSE") },
+    { label: "Resume", hidden: p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
+    { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
+      title: `Archive “${p.title}”?`,
+      description: "Archived listings are hidden from seekers but retained in the database.",
+      confirm: "Archive",
+      onConfirm: () => void moderate(p, "ARCHIVE"),
+    }) },
+    { label: "Restore to review", hidden: p.status !== "ARCHIVED", onSelect: () => void moderate(p, "RESTORE") },
   ];
-  const cur = s.properties.find(p => p.id === open); const feat = cur && s.featured.find(f => f.propertyId === cur.id);
+
+  const current = useMemo(() => rows.find(p => p.id === open) ?? null, [rows, open]);
+
   return <>
-    <AdminHeader title="Properties" intro="Moderate listings. Approval makes a listing visible — it does not make it verified."/>
-    <LivePropertiesPanel/>
-    <p className="admin-note">Manage live property listings and moderation status.</p>
-    <AdminDataTable rows={s.properties} ready={ready} caption="Properties" emptyTitle="No properties found." rowLabel={p => p.title} onOpen={p => setOpen(p.id)} actions={actions}
-      search={p => `${p.title} ${p.locality} ${p.city} ${l.userName(p.ownerId)} ${l.userName(p.agentId)} ${p.id}`}
-      filters={[{ key: "status", label: "Status", options: statuses, get: p => p.status }, { key: "flags", label: "Flag", options: ["REPORTED", "FEATURED"], get: p => p.featured ? "FEATURED" : p.reports ? "REPORTED" : "" }]}
+    <AdminHeader title="Properties" intro="Live PostgreSQL listings. Approval makes a listing visible — it does not make it verified." />
+    {error && <p className="admin-field-error" role="alert">{error}</p>}
+    <div className="admin-note">
+      {loading ? "Loading live listings…" : `${rows.length} live database records loaded.`}
+      <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}>Refresh</Button>
+    </div>
+    <AdminDataTable
+      rows={rows}
+      ready={!loading}
+      caption="Live properties"
+      emptyTitle="No properties found."
+      rowLabel={p => p.title}
+      onOpen={p => setOpen(p.id)}
+      actions={actions}
+      search={p => `${p.title} ${p.locality} ${p.city} ${p.ownerName} ${p.agentName ?? ""} ${p.id}`}
+      filters={[{ key: "status", label: "Status", options: statuses, get: p => p.status }, { key: "reports", label: "Reports", options: ["REPORTED"], get: p => p.reports > 0 ? "REPORTED" : "" }]}
       columns={[
         { key: "title", label: "Property", render: p => <span className="admin-cell-main"><strong>{p.title}</strong><small>{p.id} · {p.locality}, {p.city}</small></span>, sort: p => p.title },
         { key: "price", label: "Price", render: p => `${inr(p.price)}${p.mode === "Rent" ? "/mo" : ""}`, sort: p => p.price },
-        { key: "owner", label: "Owner / agent", render: p => `${l.userName(p.ownerId)}${p.agentId ? ` · ${l.userName(p.agentId)}` : ""}` },
-        { key: "status", label: "Listing status", render: p => <AdminStatusBadge status={p.status}/>, sort: p => p.status },
-        { key: "verification", label: "Verification", render: p => <AdminStatusBadge status={p.verification}/> },
-        { key: "flags", label: "Flags", render: p => <span className="admin-flags">{p.featured && <span className="admin-tag">Featured</span>}{p.reports > 0 && <span className="admin-tag admin-tag-warn">{p.reports} report{p.reports > 1 ? "s" : ""}</span>}{!p.featured && !p.reports && "—"}</span> },
+        { key: "owner", label: "Owner / agent", render: p => `${p.ownerName}${p.agentName ? ` · ${p.agentName}` : ""}` },
+        { key: "status", label: "Listing status", render: p => <AdminStatusBadge status={p.status} />, sort: p => p.status },
+        { key: "verification", label: "Verification", render: p => <AdminStatusBadge status={p.verification} /> },
+        { key: "flags", label: "Reports", render: p => p.reports ? <span className="admin-tag admin-tag-warn">{p.reports} report{p.reports > 1 ? "s" : ""}</span> : "—", sort: p => p.reports },
         { key: "updated", label: "Updated", render: p => fmtDate(p.updatedAt), sort: p => p.updatedAt },
-      ]}/>
-    <section className="admin-section"><h2>Featured placements</h2><p className="form-hint">Featured is a paid/promotional placement only. It never means verified, safer, better or a higher match.</p>
-      {s.featured.length ? <ul className="admin-mini-list">{s.featured.map(f => <li key={f.id}><span>{l.propertyTitle(f.propertyId)}</span><small>{fmtDate(f.startsAt)} – {fmtDate(f.endsAt)} · by {f.createdBy}</small></li>)}</ul> : <p className="form-hint">No featured listings.</p>}</section>
-    {cur && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={cur.title} description="Property listing.">
-      <DetailList items={[["ID", cur.id], ["Location", `${cur.locality}, ${cur.city}`], ["Price", inr(cur.price)], ["Owner", l.userName(cur.ownerId)], ["Agent", l.userName(cur.agentId)], ["Listing status", <AdminStatusBadge key="s" status={cur.status}/>], ["Verification", <AdminStatusBadge key="v" status={cur.verification}/>], ["Reports", cur.reports], ["Moderation note", cur.changesRequested ?? "—"]]}/>
-      {cur.featured && feat && <FeaturedDates key={feat.id} start={feat.startsAt} end={feat.endsAt} max={s.settings.featured.maxDurationDays} onSave={(a, b) => act.setFeatured(cur.id, { startsAt: a, endsAt: b }, cur.title)}/>}
-      <div className="admin-sheet-actions">{actions(cur).filter(a => !a.hidden).map(a => <Button key={a.label} size="sm" variant={a.destructive ? "outline" : "default"} onClick={a.onSelect}>{a.label}</Button>)}<Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: cur.slug }}>Open public page</Link></Button></div>
+      ]}
+    />
+    {current && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={current.title} description="Live PostgreSQL property record.">
+      <DetailList items={[
+        ["ID", current.id],
+        ["Location", `${current.locality}, ${current.city}`],
+        ["Price", inr(current.price)],
+        ["Owner", current.ownerName],
+        ["Agent", current.agentName ?? "—"],
+        ["Listing status", <AdminStatusBadge key="s" status={current.status} />],
+        ["Verification", <AdminStatusBadge key="v" status={current.verification} />],
+        ["Reports", current.reports],
+        ["Moderation note", current.changesRequested ?? "—"],
+      ]} />
+      <div className="admin-sheet-actions">
+        {actions(current).filter(a => !a.hidden).map(a => <Button key={a.label} size="sm" variant={a.destructive ? "outline" : "default"} onClick={a.onSelect}>{a.label}</Button>)}
+        <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: current.slug }}>Open public page</Link></Button>
+      </div>
     </AdminDetailPanel>}
     {dialog}
   </>;
 }
-
-function FeaturedDates({ start, end, max, onSave }: { start: string; end: string; max: number; onSave: (a: string, b: string) => void }) {
-  const [a, setA] = useState(start); const [b, setB] = useState(end);
-  const days = (Date.parse(b) - Date.parse(a)) / 864e5; const err = days < 1 ? "End date must be after the start date." : days > max ? `Maximum placement is ${max} days (settings).` : "";
-  return <form className="admin-inline-form" onSubmit={e => { e.preventDefault(); if (!err) onSave(a, b); }}>
-    <label className="admin-field"><span>Featured from</span><input type="date" value={a} onChange={e => setA(e.target.value)}/></label>
-    <label className="admin-field"><span>Until</span><input type="date" value={b} onChange={e => setB(e.target.value)}/></label>
-    {err && <p className="admin-field-error" role="alert">{err}</p>}<Button size="sm" type="submit" disabled={!!err}>Save dates</Button></form>;
-}
-
-
