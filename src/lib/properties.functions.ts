@@ -69,7 +69,7 @@ function demoProperty(home: (typeof listings)[number]): PublicProperty {
   };
 }
 
-function demoListings(input: { city?: string; listingType?: "RENT" | "BUY"; take?: number }) {
+function demoListings(input: { city?: string | undefined; listingType?: "RENT" | "BUY" | undefined; take?: number | undefined }) {
   return listings
     .filter((home) =>
       (!input.city || home.city === input.city) &&
