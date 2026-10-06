@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthField, AuthNotice, AuthShell } from "@/components/auth-shell";
+import { authClient, authErrorMessage } from "@/lib/auth/auth-client";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({ meta: [
@@ -14,14 +16,45 @@ export const Route = createFileRoute("/forgot-password")({
   component: ForgotPage,
 });
 
-/** Architecture only: no email provider is connected, so nothing is sent and no success is implied. */
 function ForgotPage() {
-  return <AuthShell kicker="PASSWORD RESET" title={<>Forgot your <em>password?</em></>} lede="Resetting by email will be available once email delivery is connected.">
-    <AuthNotice tone="info">Password reset emails aren't available yet. No email will be sent from this page.</AuthNotice>
-    <form className="auth-form" onSubmit={e => e.preventDefault()} aria-disabled="true">
-      <AuthField label="Email" name="email" type="email" autoComplete="email" disabled/>
-      <Button type="submit" className="auth-submit" disabled>Send reset link</Button>
-    </form>
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!email.trim()) {
+      setError("Enter the email address on your HouseProvider account.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const { error: err } = await authClient.requestPasswordReset({
+        email: email.trim(),
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (err) {
+        setError(authErrorMessage(err));
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError(authErrorMessage(null));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <AuthShell kicker="PASSWORD RESET" title={<>Forgot your <em>password?</em></>} lede="We'll send a secure password reset link to your email.">
+    {sent && <AuthNotice tone="success">If an account uses that email, a password reset link has been sent. Check your inbox and spam folder.</AuthNotice>}
+    {error && <AuthNotice tone="error">{error}</AuthNotice>}
+    {!sent && <form className="auth-form" onSubmit={submit} noValidate>
+      <AuthField label="Email" name="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required/>
+      <Button type="submit" className="auth-submit" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</Button>
+    </form>}
     <p className="auth-switch">Remembered it? <Link to="/login">Back to sign in</Link></p>
   </AuthShell>;
 }
