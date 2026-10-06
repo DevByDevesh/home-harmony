@@ -6,9 +6,20 @@ import type { Prisma, PropertyType, VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
 export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; maxPrice?: number; take?: number };
+export const LISTING_VALIDITY_DAYS = 30;
+const LISTING_VALIDITY_MS = LISTING_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+
+/** Marks active listings expired once their publication window reaches 30 days. */
+export async function expireListings() {
+  const db = await requireDb();
+  const cutoff = new Date(Date.now() - LISTING_VALIDITY_MS);
+  return db.property.updateMany({ where: { status: "ACTIVE", publishedAt: { not: null, lte: cutoff } }, data: { status: "EXPIRED" } });
+}
+
 
 export async function listPublicProperties(q: PropertySearch = {}) {
   const db = await requireDb();
+  await expireListings();
   return db.property.findMany({
     where: {
       status: "ACTIVE",
@@ -31,6 +42,7 @@ export async function getPropertyBySlug(slug: string) {
 /** Public detail read: ACTIVE listings only, matched by id or slug. */
 export async function getPublicProperty(idOrSlug: string) {
   const db = await requireDb();
+  await expireListings();
   return db.property.findFirst({
     where: { status: "ACTIVE", OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
@@ -49,6 +61,7 @@ export async function approveListing(propertyId: string, actorId: string) {
 /** Owner-scoped read: only listings owned by `ownerId`, any status. */
 export async function listOwnerProperties(ownerId: string) {
   const db = await requireDb();
+  await expireListings();
   return db.property.findMany({
     where: { ownerId },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
@@ -66,7 +79,7 @@ export async function setOwnerPropertyArchived(id: string, ownerId: string, arch
   const db = await requireDb();
   const r = await db.property.updateMany({
     where: { id, ownerId, status: archived ? { not: "ARCHIVED" } : "ARCHIVED" },
-    data: { status: archived ? "ARCHIVED" : "UNDER_REVIEW" },
+    data: { status: archived ? "ARCHIVED" : "UNDER_REVIEW", ...(archived ? {} : { publishedAt: null }) },
   });
   return r.count;
 }
@@ -74,7 +87,7 @@ export async function setOwnerPropertyArchived(id: string, ownerId: string, arch
 export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
   const db = await requireDb();
   const from = to === "PAUSED" ? "ACTIVE" : "PAUSED";
-  const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: { status: to } });
+  const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: to === "ACTIVE" ? { status: to, publishedAt: new Date() } : { status: to } });
   return r.count;
 }
 
