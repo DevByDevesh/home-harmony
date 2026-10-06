@@ -43,6 +43,7 @@ import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiPublicBootstrapSuperAdminRouteImport } from './routes/api/public/bootstrap-super-admin'
+import { Route as ApiPublicExpireListingsRouteImport } from './routes/api/public/expire-listings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -251,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
+  '/api/public/expire-listings': typeof ApiPublicExpireListingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -360,6 +362,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/auth/$'
     | '/api/public/bootstrap-super-admin'
+    | '/api/public/expire-listings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -451,6 +454,7 @@ export interface RootRouteChildren {
   PropertySlugRoute: typeof PropertySlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPublicBootstrapSuperAdminRoute: typeof ApiPublicBootstrapSuperAdminRoute
+  ApiPublicExpireListingsRoute: typeof ApiPublicExpireListingsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -691,6 +695,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/bootstrap-super-admin'
       fullPath: '/api/public/bootstrap-super-admin'
       preLoaderRoute: typeof ApiPublicBootstrapSuperAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/expire-listings': {
+      id: '/api/public/expire-listings'
+      path: '/api/public/expire-listings'
+      fullPath: '/api/public/expire-listings'
+      preLoaderRoute: typeof ApiPublicExpireListingsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
