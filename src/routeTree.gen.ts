@@ -22,6 +22,7 @@ import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
@@ -106,6 +107,11 @@ const PropertiesRoute = PropertiesRouteImport.update({
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -331,6 +339,7 @@ export interface FileRouteTypes {
     | '/owner'
     | '/properties'
     | '/saved'
+    | '/reset-password'
     | '/signup'
     | '/admin/agents'
     | '/admin/analytics'
@@ -435,6 +444,7 @@ export interface RootRouteChildren {
   OwnerRoute: typeof OwnerRoute
   PropertiesRoute: typeof PropertiesRoute
   SavedRoute: typeof SavedRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   MessagesRoute: typeof MessagesRoute
   OwnerNewRoute: typeof OwnerNewRoute
@@ -534,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/saved'
       fullPath: '/saved'
       preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
