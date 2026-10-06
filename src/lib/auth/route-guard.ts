@@ -8,7 +8,11 @@ import { AREA_ROLES, type Area } from "./roles";
  */
 export function guardArea(area: Area) {
   return async ({ location }: { location: { href: string } }) => {
-    const user = await getCurrentUser();
+    let user = await getCurrentUser();
+    if (!user) {
+      await new Promise(resolve => setTimeout(resolve, 75));
+      user = await getCurrentUser();
+    }
     if (!user) throw redirect({ to: "/login", search: { redirect: location.href } });
     if (!AREA_ROLES[area].includes(user.role)) throw redirect({ to: "/account", search: { denied: area } });
     return { user };
