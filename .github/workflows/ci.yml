@@ -1,0 +1,41 @@
+name: HouseProvider CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/houseprovider
+      BETTER_AUTH_SECRET: ci-only-secret-at-least-32-characters-long
+      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3000
+      VITE_MAPBOX_PUBLIC_TOKEN: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test -- --runInBand
+
+      - name: Production build
+        run: npm run build
