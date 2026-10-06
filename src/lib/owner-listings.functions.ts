@@ -30,6 +30,8 @@ export const listMyListingsFn = createServerFn({ method: "GET" }).handler(async 
       images: p.images.map((i) => ({ url: i.url, storageKey: i.storageKey, altText: i.altText, type: i.type })),
       amenities: p.amenities.map((a) => a.amenity.name),
       status: p.status,
+      ownerPhone: null,
+      ownerContactChannels: [],
     }));
   } catch (e) { rethrow(e); }
 });
