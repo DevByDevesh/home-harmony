@@ -18,6 +18,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as SavedRouteImport } from './routes/saved'
@@ -85,6 +86,11 @@ const ListPropertyRoute = ListPropertyRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OwnerRoute = OwnerRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
   '/saved': typeof SavedRoute
@@ -424,6 +433,7 @@ export interface RootRouteChildren {
   PropertiesRoute: typeof PropertiesRoute
   SavedRoute: typeof SavedRoute
   SignupRoute: typeof SignupRoute
+  MessagesRoute: typeof MessagesRoute
   OwnerNewRoute: typeof OwnerNewRoute
   PropertySlugRoute: typeof PropertySlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -711,6 +721,7 @@ const rootRouteChildren: RootRouteChildren = {
   PropertiesRoute: PropertiesRoute,
   SavedRoute: SavedRoute,
   SignupRoute: SignupRoute,
+  MessagesRoute: MessagesRoute,
   OwnerNewRoute: OwnerNewRoute,
   PropertySlugRoute: PropertySlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
