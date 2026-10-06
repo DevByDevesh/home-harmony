@@ -105,7 +105,7 @@ export async function repostExpiredOwnerProperty(id: string, ownerId: string) {
 
     await tx.verification.updateMany({
       where: { propertyId: id },
-      data: { status: "PENDING", decidedAt: null, notes: null },
+      data: { status: "PENDING", decidedAt: null, reviewerId: null, submittedAt: new Date() },
     });
 
     return current;
