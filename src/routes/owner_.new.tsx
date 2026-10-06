@@ -48,7 +48,7 @@ function Wizard() {
   const updateListing = useServerFn(updateMyListingFn);
   const [dbLoadError, setDbLoadError] = useState<string | null>(null);
   // Editing a database listing: load it from the server (ownership checked there); never touches the device draft.
-  useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"], checks: d.checks as VerificationKey[] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
+  useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"], checks: d.checks as ListingDraft["checks"] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const [staged, setStaged] = useState<File[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
