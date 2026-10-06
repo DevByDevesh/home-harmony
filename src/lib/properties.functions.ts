@@ -1,10 +1,12 @@
 /**
- * Public, read-only property server functions backed by PostgreSQL.
- * Only ACTIVE listings are returned, with a safe projection (no owner/agent ids,
- * no street address). Not wired into the UI while the database has no properties.
+ * Public, read-only property server functions.
+ * When PostgreSQL is configured, ACTIVE listings come from the database.
+ * Otherwise the typed fictional catalog is used as a clearly non-live fallback
+ * so the public discovery/detail experience remains usable in local/demo setups.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { listings } from "./catalog";
 
 export type PublicProperty = {
   id: string; slug: string; title: string; description: string;
@@ -36,12 +38,56 @@ function toPublic(p: Row): PublicProperty {
   };
 }
 
+function demoProperty(home: (typeof listings)[number]): PublicProperty {
+  return {
+    id: `demo-${home.slug}`,
+    slug: home.slug,
+    title: home.name,
+    description: home.description,
+    propertyType: home.kind.toUpperCase(),
+    listingType: home.mode === "Buy" ? "BUY" : "RENT",
+    price: home.price,
+    deposit: home.deposit,
+    areaSqft: home.area,
+    bedrooms: home.beds,
+    bathrooms: home.baths,
+    parking: home.parking,
+    furnishing: home.furnishing.toUpperCase().replaceAll(" ", "_"),
+    availableFrom: home.availableFrom,
+    city: home.city,
+    locality: home.neighborhood,
+    verificationStatus: "NOT_REQUESTED",
+    publishedAt: null,
+    updatedAt: home.updatedAt,
+    brokerage: home.brokerage,
+    latitude: home.lat,
+    longitude: home.lng,
+    images: [{ url: home.image, storageKey: `demo/${home.slug}`, altText: home.name, type: "PHOTO" }],
+    amenities: home.features,
+    ownerPhone: null,
+    ownerContactChannels: [],
+  };
+}
+
+function demoListings(input: { city?: string; listingType?: "RENT" | "BUY"; take?: number }) {
+  return listings
+    .filter((home) =>
+      (!input.city || home.city === input.city) &&
+      (!input.listingType || (input.listingType === "BUY" ? home.mode === "Buy" : home.mode === "Rent")),
+    )
+    .slice(0, input.take ?? 24)
+    .map(demoProperty);
+}
+
 export const listPropertiesFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z.object({ city: z.string().max(80).optional(), listingType: z.enum(["RENT", "BUY"]).optional(), take: z.number().int().min(1).max(100).optional() })
       .strict().parse(d ?? {}),
   )
   .handler(async ({ data }) => {
+    const { isDatabaseConfigured } = await import("./db/client.server");
+    if (!isDatabaseConfigured()) return demoListings(data);
+
     const { listPublicProperties } = await import("./db/repositories/properties.server");
     const rows = await listPublicProperties({
       ...(data.city ? { city: data.city } : {}),
@@ -54,6 +100,12 @@ export const listPropertiesFn = createServerFn({ method: "GET" })
 export const getPropertyFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ idOrSlug: z.string().min(1).max(200) }).strict().parse(d))
   .handler(async ({ data }) => {
+    const { isDatabaseConfigured } = await import("./db/client.server");
+    if (!isDatabaseConfigured()) {
+      const home = listings.find((item) => item.slug === data.idOrSlug || `demo-${item.slug}` === data.idOrSlug);
+      return home ? demoProperty(home) : null;
+    }
+
     const { getPublicProperty } = await import("./db/repositories/properties.server");
     const row = await getPublicProperty(data.idOrSlug);
     return row ? toPublic(row) : null;
