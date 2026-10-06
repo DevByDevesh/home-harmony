@@ -96,7 +96,7 @@ export function PropertyIntelligence({ home }: { home: IntelligenceHome }) {
         </div>
         <div className="location-card">
           <div className="location-icon"><MapPin size={20} /></div>
-          <div><strong>{home.neighborhood}</strong><p>{home.city}</p>{home.lat !== 0 && home.lng !== 0 && <small>{home.lat.toFixed(4)}, {home.lng.toFixed(4)}</small>}</div>
+          <div><strong>{home.neighborhood}</strong><p>{home.city}</p>{typeof home.lat === "number" && typeof home.lng === "number" && home.lat !== 0 && home.lng !== 0 && <small>{home.lat.toFixed(4)}, {home.lng.toFixed(4)}</small>}</div>
           <a className="location-action" href={googleMapsUrl(home)} target="_blank" rel="noreferrer"><Navigation size={16} /> Get directions</a>
         </div>
       </section>
