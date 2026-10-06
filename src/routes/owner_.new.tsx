@@ -51,7 +51,17 @@ function Wizard() {
   useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"], checks: d.checks as ListingDraft["checks"] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const [staged, setStaged] = useState<File[]>([]);
+  const [stagedPreviewUrls, setStagedPreviewUrls] = useState<string[]>([]);
   const heading = useRef<HTMLHeadingElement>(null);
+
+  // Keep stable object URLs for the preview gallery. Creating URLs during render
+  // caused the gallery to reload on every state change and made multi-photo
+  // navigation unreliable.
+  useEffect(() => {
+    const urls = staged.map(file => URL.createObjectURL(file));
+    setStagedPreviewUrls(urls);
+    return () => urls.forEach(url => URL.revokeObjectURL(url));
+  }, [staged]);
 
   useEffect(() => { if (dbEdit || !ready || draft || submitted) return; ownerActions.startDraft(edit); }, [ready, edit, draft, submitted]);
   useEffect(() => { if (!dbEdit && ready && !draft && data.draft && !submitted && data.editingId === (edit ?? null)) { setDraft(data.draft); setStep(Math.min(data.draftStep, 7)); } }, [ready, data.draft, data.draftStep, data.editingId, edit, draft, submitted]);
@@ -72,7 +82,8 @@ function Wizard() {
   const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(async r => { if (!r.ok) { toast.error(r.message); return; } const review = await autoReviewListing({ data: { id: r.id } }); setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id); toast.success(review.published ? "Changes approved automatically and the listing is live" : "Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => { ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]); const review = failed ? { published: false as const } : await autoReviewListing({ data: { id: r.id } }); setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id); toast.success(review.published ? "Listing approved automatically and is now live" : failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
-  const home = draftToHome(draft, "preview", staged[0] ? URL.createObjectURL(staged[0]) : undefined);
+  const previewImages = stagedPreviewUrls.length ? stagedPreviewUrls : uploads.map(upload => upload.url);
+  const home = draftToHome(draft, "preview", previewImages[0] ?? undefined);
 
   return <Shell editing={!!data.editingId || !!dbEdit}>
     <ol className="wizard-progress" aria-label="Listing steps">{steps.map((s, i) => <li key={s} aria-current={i === step ? "step" : undefined} className={i < step ? "done" : ""}><button type="button" onClick={() => go(i)}><span>{i < step ? <Check size={12}/> : i + 1}</span>{s}</button></li>)}</ol>
@@ -131,7 +142,7 @@ function Wizard() {
         <p className="demo-label"><span>PREVIEW</span>This is exactly how seekers would see your listing once approved.</p>
         <h3 className="preview-sub">Search card</h3><div className="preview-tile"><HomeTile home={home}/></div>
         <h3 className="preview-sub">Property page</h3>
-        <div className="detail-page preview-detail"><PropertyDetailView home={home} images={staged.map(f => URL.createObjectURL(f))} imageNote="Owner photo preview" disclaimer="Preview only — this listing has not been reviewed or verified." aside={<div className="detail-summary"><p className="kicker">AT A GLANCE</p><h3>{inr(home.price)}{home.mode === "Rent" && <small> / month</small>}</h3><div><span>Property type</span><strong>{home.kind}</strong></div><div><span>Deposit</span><strong>{inr(Number(draft.deposit) || 0)}</strong></div><div><span>Parking</span><strong>{draft.parking === "0" ? "None listed" : `${draft.parking} listed`}</strong></div><div><span>Availability</span><strong>{draft.availableFrom ? `From ${new Date(draft.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "Available now"}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div></div>}
+        <div className="detail-page preview-detail"><PropertyDetailView home={home} images={previewImages} imageNote="Owner photo preview" disclaimer="Preview only — this listing has not been reviewed or verified." aside={<div className="detail-summary"><p className="kicker">AT A GLANCE</p><h3>{inr(home.price)}{home.mode === "Rent" && <small> / month</small>}</h3><div><span>Property type</span><strong>{home.kind}</strong></div><div><span>Deposit</span><strong>{inr(Number(draft.deposit) || 0)}</strong></div><div><span>Parking</span><strong>{draft.parking === "0" ? "None listed" : `${draft.parking} listed`}</strong></div><div><span>Availability</span><strong>{draft.availableFrom ? `From ${new Date(draft.availableFrom).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "Available now"}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div></div>}
       {step === 8 && <div className="publish-step"><h3>Ready to submit?</h3><ul className="publish-list"><li>Status will be <ListingStatusPill status="UNDER_REVIEW"/> — it will not go live automatically.</li><li>No verification is granted on submission; checks are only requested.</li><li>In this demo the listing stays on this device. No marketplace receives it.</li></ul><Button onClick={publish} disabled={publishing}>Submit for review</Button></div>}
 
       <div className="wizard-nav"><Button variant="outline" disabled={step === 0} onClick={() => go(step - 1)}><ArrowLeft size={16}/> Previous</Button>
