@@ -19,7 +19,7 @@ import { draftToHome, freshness, ownerActions, useOwnerData, type OwnerListing }
 import { formatVisitDate, statusLabel, visitTransitions } from "@/lib/visits";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listMyListingsFn, setMyListingStatusFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
+import { listMyListingsFn, setMyListingStatusFn, setMyListingArchiveFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
 import { listOwnerEnquiriesFn, listOwnerVisitsFn } from "@/lib/engagement.functions";
 import { getMyOwnerContactFn, updateMyOwnerContactFn, type OwnerContactProfile } from "@/lib/owner-profile.functions";
 import { toListing } from "@/lib/property-mapper";
@@ -177,10 +177,23 @@ function ListingsPanel() {
   const items = data.listings.filter(l => group === "ALL" ? !l.archived : group === "ARCHIVED" ? l.archived : !l.archived && l.status === group);
   const fetchMine = useServerFn(listMyListingsFn);
   const db = useQuery({ queryKey: ["owner-db-listings"], queryFn: () => fetchMine() }).data ?? [];
-  const dbItems = db.filter(p => group === "ALL" || p.status === group);
-  const dbCount = (g: (typeof statusGroups)[number]) => g === "ARCHIVED" ? 0 : db.filter(p => g === "ALL" || p.status === g).length;
+  const dbItems = db.filter(p => group === "ALL" ? p.status !== "ARCHIVED" : group === "ARCHIVED" ? p.status === "ARCHIVED" : p.status === group);
+  const dbCount = (g: (typeof statusGroups)[number]) => g === "ALL"
+    ? db.filter(p => p.status !== "ARCHIVED").length
+    : g === "ARCHIVED"
+      ? db.filter(p => p.status === "ARCHIVED").length
+      : db.filter(p => p.status === g).length;
+  const discardDraft = () => {
+    if (!window.confirm("Delete this unfinished draft? This cannot be undone.")) return;
+    ownerActions.discardDraft();
+    toast.success("Draft deleted");
+  };
   return <>
-    {data.draft && !data.editingId && <div className="draft-note"><span>You have an unfinished draft{data.draftSavedAt ? ` · saved ${timeAgo(data.draftSavedAt)}` : ""}.</span><Button asChild size="sm" variant="outline"><Link to="/owner/new">Resume draft</Link></Button></div>}
+    <div className="listing-panel-actions">
+      <p className="form-hint">Manage your listings and drafts from here.</p>
+      <Button asChild><Link to="/owner/new"><Plus size={16}/> Add listing</Link></Button>
+    </div>
+    {data.draft && !data.editingId && <div className="draft-note"><span>You have an unfinished draft{data.draftSavedAt ? ` · saved ${timeAgo(data.draftSavedAt)}` : ""}.</span><div className="draft-note-actions"><Button asChild size="sm" variant="outline"><Link to="/owner/new">Resume draft</Link></Button><Button size="sm" variant="ghost" onClick={discardDraft}>Delete draft</Button></div></div>}
     <div className="seg-tabs" role="tablist" aria-label="Filter by status">{statusGroups.map(g => <button key={g} role="tab" aria-selected={group === g} onClick={() => setGroup(g)}>{g.replace("_", " ").toLowerCase()} <small>{count(g) + dbCount(g)}</small></button>)}</div>
     {items.length + dbItems.length === 0 ? <EmptyState icon={<ShieldCheck size={30}/>} title="No listings yet" action={<Button asChild><Link to="/owner/new"><Plus size={16}/> Create a listing</Link></Button>}>{group === "ALL" ? "Create your first listing in nine guided steps." : "Nothing in this status right now."}</EmptyState> :
     <ul className="owner-listings">{dbItems.map(p => <DbListingRow key={p.id} listing={p}/>)}{items.map(l => { const h = draftToHome(l.draft, l.id); return <li key={l.id}>
@@ -214,9 +227,27 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
   const status = listing.status as ListingStatus;
   const qc = useQueryClient();
   const setStatus = useServerFn(setMyListingStatusFn);
+  const setArchive = useServerFn(setMyListingArchiveFn);
   const change = async (to: "ACTIVE" | "PAUSED") => {
     try { const r = await setStatus({ data: { id: listing.id, status: to } }); if (!r.ok) { toast.error(r.message); return; } await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this listing."); }
+  };
+  const archive = async () => {
+    if (!window.confirm("Delete this listing from your active listings? It will be moved to Archived and its history will be preserved.")) return;
+    try {
+      const r = await setArchive({ data: { id: listing.id, archived: true } });
+      if (!r.ok) { toast.error(r.message); return; }
+      await qc.invalidateQueries({ queryKey: ["owner-db-listings"] });
+      toast.success("Listing archived");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not archive this listing."); }
+  };
+  const restore = async () => {
+    try {
+      const r = await setArchive({ data: { id: listing.id, archived: false } });
+      if (!r.ok) { toast.error(r.message); return; }
+      await qc.invalidateQueries({ queryKey: ["owner-db-listings"] });
+      toast.success("Listing restored to review");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not restore this listing."); }
   };
   return <li>
     <img src={h.image} alt="" loading="lazy"/>
@@ -228,8 +259,11 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
           <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Property image" disclaimer="Owner preview. Verification status is shown separately." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
         </DialogContent></Dialog>
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
-      {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
-      {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
+      {status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : <>
+        {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
+        {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
+        <Button size="sm" variant="ghost" onClick={archive}><Archive size={14}/> Delete</Button>
+      </>}
     </div></li>;
 }
 
