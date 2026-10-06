@@ -1,6 +1,6 @@
 /**
- * Database-backed property repository (server-only). Not wired into the UI yet —
- * the demo catalog in src/lib/catalog.ts remains the live source until a later phase.
+ * Database-backed property repository (server-only). Public reads use this repository
+ * when DATABASE_URL is configured; otherwise the typed demo catalog is used as fallback.
  */
 import type { PropertyType, VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
@@ -90,32 +90,17 @@ async function autoVerifyOwnerListing(
   const now = new Date();
   const checks = new Set(p.checks);
 
+  // Structural completeness is not real-world verification. Property, photo,
+  // location and availability checks always require actual review/evidence.
+  // A phone check may only be marked verified when auth has recorded a
+  // genuine phone verification event.
   const autoVerified = new Set<VerificationType>();
-
-  if (checks.has("PROPERTY") && p.title.trim() && p.description.trim() && p.price > 0 && p.areaSqft > 0) {
-    autoVerified.add("PROPERTY");
-  }
-
-  if (checks.has("PHOTOS") && p.photoKeys.length > 0) {
-    autoVerified.add("PHOTOS");
-  }
-
-  if (checks.has("LOCATION") && p.city.trim() && p.locality.trim() && p.addressLine1?.trim()) {
-    autoVerified.add("LOCATION");
-  }
-
-  if (checks.has("AVAILABILITY") && p.availableFrom instanceof Date && !Number.isNaN(p.availableFrom.getTime())) {
-    autoVerified.add("AVAILABILITY");
-  }
-
   const owner = await tx.user.findUnique({
     where: { id: ownerId },
     select: { phoneVerified: true },
   });
 
-  if (checks.has("PHONE") && owner?.phoneVerified) {
-    autoVerified.add("PHONE");
-  }
+  if (checks.has("PHONE") && owner?.phoneVerified) autoVerified.add("PHONE");
 
   for (const type of checks) {
     const verified = autoVerified.has(type);
@@ -130,16 +115,13 @@ async function autoVerifyOwnerListing(
     });
   }
 
-  const pending = [...checks].some((type) => !autoVerified.has(type));
-
+  // Never promote a listing to VERIFIED merely because submitted fields look complete.
   await tx.property.update({
     where: { id: propertyId },
-    data: {
-      verificationStatus: pending ? "PENDING" : "VERIFIED",
-    },
+    data: { verificationStatus: checks.size ? "PENDING" : "NOT_REQUESTED" },
   });
 
-  return { autoVerified: [...autoVerified], pending };
+  return { autoVerified: [...autoVerified], pending: checks.size > autoVerified.size };
 }
 /**
  * Automatically reviews a submitted listing using deterministic marketplace safety rules.
@@ -260,22 +242,21 @@ export async function autoReviewAndPublishListing(propertyId: string) {
     }
 
     const now = new Date();
+    // Structural safety review can decide publication eligibility, but it is
+    // not proof of ownership, location, photos or availability. Preserve the
+    // existing verification state instead of marking the listing VERIFIED.
     await tx.property.update({
       where: { id: propertyId },
-      data: {
-        status: "ACTIVE",
-        verificationStatus: "VERIFIED",
-        publishedAt: now,
-      },
+      data: { status: "ACTIVE", publishedAt: now },
     });
 
     await tx.auditLog.create({
       data: {
         actorId: property.ownerId,
-        action: "Listing auto-approved by structural safety review",
+        action: "Listing published by structural safety review",
         entityType: "Property",
         entityId: propertyId,
-        metadata: { riskScore: 0, issues: [] },
+        metadata: { riskScore: 0, issues: [], verificationStatus: property.verificationStatus },
       },
     });
 
