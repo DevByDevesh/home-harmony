@@ -31,7 +31,7 @@ export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer
         <span className="detail-gallery-control-count">Photo {activePhoto + 1} of {galleryImages.length}</span>
         <button type="button" className="detail-gallery-control" aria-label="Next photo" onClick={() => movePhoto(1)}>Next <ChevronRight size={18}/></button>
       </div>}
-      {galleryImages.length > 1 && <div className="detail-thumbnails" aria-label="Property photos">{galleryImages.map((src, i) => <button key={`${src}-thumb-${i}`} type="button" className={`detail-thumbnail ${i === activePhoto ? "active" : ""`} aria-label={`View photo ${i + 1}`} aria-current={i === activePhoto ? "true" : undefined} onClick={() => setActivePhoto(i)}><img src={src} alt="" width={120} height={90}/></button>)}</div>}
+      {galleryImages.length > 1 && <div className="detail-thumbnails" aria-label="Property photos">{galleryImages.map((src, i) => <button key={`${src}-thumb-${i}`} type="button" className={`detail-thumbnail ${i === activePhoto ? "active" : ""}`} aria-label={`View photo ${i + 1}`} aria-current={i === activePhoto ? "true" : undefined} onClick={() => setActivePhoto(i)}><img src={src} alt="" width={120} height={90}/></button>)}</div>}
       <Dialog>
         <DialogTrigger asChild><Button variant="secondary" className="detail-expand"><Expand size={16}/> View photos</Button></DialogTrigger>
         <DialogContent className="photo-dialog">
