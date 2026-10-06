@@ -51,5 +51,5 @@ export const claimFreeSixMonthsFn = createServerFn({ method: "POST" }).handler(a
 
   const { writeAudit } = await import("@/lib/auth/audit.server");
   await writeAudit({ actorId: me.id, action: "subscription.free_6_months.claim", entityType: "Subscription", entityId: result.id, metadata: { offer: PLAN_SLUG, months: 6 } });
-  return { ok: true as const, renewsAt: result.renewsAt.toISOString() };
+  return { ok: true as const, renewsAt: (result.renewsAt ?? renewsAt).toISOString() };
 });
