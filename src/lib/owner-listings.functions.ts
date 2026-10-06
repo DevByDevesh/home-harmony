@@ -55,6 +55,38 @@ export const setMyListingStatusFn = createServerFn({ method: "POST" })
     } catch (e) { rethrow(e); }
   });
 
+export const setMyListingArchiveFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64), archived: z.boolean() }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const { writeAudit } = await import("./auth/audit.server");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.archive");
+      const { setOwnerPropertyArchived } = await import("./db/repositories/properties.server");
+      const changed = await setOwnerPropertyArchived(data.id, me.id, data.archived);
+      if (!changed) {
+        await writeAudit({
+          actorId: me.id,
+          action: "listing.archive",
+          entityType: "Property",
+          entityId: data.id,
+          result: "DENIED",
+          metadata: { archived: data.archived },
+        });
+        return { ok: false as const, message: "You can only archive your own listings." };
+      }
+      await writeAudit({
+        actorId: me.id,
+        action: "listing.archive",
+        entityType: "Property",
+        entityId: data.id,
+        metadata: { archived: data.archived },
+      });
+      return { ok: true as const, archived: data.archived };
+    } catch (e) { rethrow(e); }
+  });
+
 const photoKey = { living: "demo/new-home-pune.jpg", city: "demo/new-home-mumbai.jpg", dining: "demo/new-home-bengaluru.jpg", exterior: "demo/new-home-house.jpg" } as const;
 const numStr = (min: number, max: number) => z.string().trim().refine((v) => { const n = Number(v); return Number.isInteger(n) && n >= min && n <= max; }).transform(Number);
 const createSchema = z.object({
