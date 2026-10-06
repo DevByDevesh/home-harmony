@@ -6,6 +6,8 @@ import { AuthNotice } from "@/components/auth-shell";
 import { guardArea } from "@/lib/auth/route-guard";
 import { roleLabel } from "@/lib/auth/roles";
 import { useSignOut } from "@/lib/auth/use-current-user";
+import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
+import { useState } from "react";
 
 const areaName = { owner: "the owner dashboard", agent: "the agent CRM", admin: "the admin area", dashboard: "the dashboard" } as const;
 
@@ -24,6 +26,18 @@ function AccountPage() {
   const { user } = Route.useRouteContext();
   const { denied } = Route.useSearch();
   const signOut = useSignOut();
+  const [claiming, setClaiming] = useState(false);
+  const [claimMessage, setClaimMessage] = useState<string | null>(null);
+  const [claimSuccess, setClaimSuccess] = useState(false);
+  const claimFree = async () => {
+    setClaiming(true); setClaimMessage(null);
+    try {
+      const result = await claimFreeSixMonthsFn();
+      if (result.ok) { setClaimSuccess(true); setClaimMessage(`6 months free claimed. Your subscription is active until ${fmt(result.renewsAt)}.`); }
+      else setClaimMessage(result.message);
+    } catch (e) { setClaimMessage(e instanceof Error ? e.message : "Could not claim the offer."); }
+    finally { setClaiming(false); }
+  };
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
   return <main className="wrap account-page">
     {denied && <div className="account-denied"><ShieldAlert size={20}/><div><strong>You don't have access to {areaName[denied]}.</strong><p>Your account is a {roleLabel[user.role]} account. Access to owner, agent and admin tools is granted by the HouseProvider team.</p></div></div>}
@@ -38,6 +52,13 @@ function AccountPage() {
       <div><dt>Member since</dt><dd>{fmt(user.createdAt)}</dd></div>
     </dl>
     <AuthNotice tone="info">Your saved homes, comparisons and visit plans are linked to your HouseProvider account.</AuthNotice>
+    <section className="dash-panel" aria-labelledby="free-six-months">
+      <p className="kicker">LIMITED MEMBER OFFER</p>
+      <h2 id="free-six-months">Claim 6 Months Free</h2>
+      <p>No payment required. Claim once and get a six-month HouseProvider subscription.</p>
+      <div className="account-actions"><Button onClick={() => void claimFree()} disabled={claiming || claimSuccess}>{claiming ? "Claiming…" : claimSuccess ? "Claimed" : "Claim 6 Months Free"}</Button></div>
+      {claimMessage && <p className="form-hint" role={claimSuccess ? "status" : "alert"}>{claimMessage}</p>}
+    </section>
     <div className="account-actions"><Button asChild><Link to="/dashboard">Go to dashboard</Link></Button><Button variant="outline" onClick={signOut}>Sign out</Button></div>
   </main>;
 }
