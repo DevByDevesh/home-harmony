@@ -86,7 +86,7 @@ export const moderateListingFn = createServerFn({ method: "POST" })
         where: { id: data.propertyId },
         data: {
           status: next,
-          ...(data.action === "APPROVE" ? { publishedAt: new Date() } : {}),
+          ...(data.action === "APPROVE" || data.action === "RESUME" ? { publishedAt: new Date() } : {}),
           ...(changesRequested !== undefined ? { changesRequested } : {}),
         },
       }),
