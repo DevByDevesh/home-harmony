@@ -80,9 +80,36 @@ export async function deleteUserSearch(userId: string, id: string) {
 /** Creates a visit request for a live listing. Always starts REQUESTED. */
 export async function createUserVisit(input: { id: string; userId: string; propertyId: string; date: string; time: string; notes: string | null }) {
   const db = await requireDb();
-  const property = await db.property.findFirst({ where: { id: input.propertyId, status: "ACTIVE" }, select: { ownerId: true, agentId: true } });
-  if (!property) return null;
-  return db.visit.create({ data: { id: input.id, userId: input.userId, propertyId: input.propertyId, handlerId: property.agentId ?? property.ownerId, requestedDate: new Date(`${input.date}T00:00:00Z`), requestedTime: input.time, notes: input.notes, status: "REQUESTED" } });
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.date) || !/^\\d{2}:\\d{2}$/.test(input.time)) return null;
+  const requestedDate = new Date(input.date + "T00:00:00Z");
+  if (Number.isNaN(requestedDate.getTime())) return null;
+  const today = new Date();
+  const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  if (requestedDate < todayUtc) return null;
+
+  const [property, user] = await Promise.all([
+    db.property.findFirst({
+      where: { id: input.propertyId, status: "ACTIVE" },
+      select: { ownerId: true, agentId: true },
+    }),
+    db.user.findUnique({ where: { id: input.userId }, select: { status: true } }),
+  ]);
+
+  if (!property || !user || user.status === "SUSPENDED" || user.status === "DEACTIVATED") return null;
+  if (property.ownerId === input.userId) return null;
+
+  return db.visit.create({
+    data: {
+      id: input.id,
+      userId: input.userId,
+      propertyId: input.propertyId,
+      handlerId: property.agentId ?? property.ownerId,
+      requestedDate,
+      requestedTime: input.time,
+      notes: input.notes,
+      status: "REQUESTED",
+    },
+  });
 }
 
 /** Seeker may only cancel their own, not-yet-finished visit. */
