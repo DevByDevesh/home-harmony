@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { PublicProperty } from "./properties.functions";
-import { MONTHLY_LISTING_LIMIT, getOwnerListingQuota } from "./db/repositories/properties.server";
+import { LISTING_LIMIT_MESSAGE, MONTHLY_LISTING_LIMIT, getOwnerListingQuota } from "./db/repositories/properties.server";
 
 export type OwnerDbListing = PublicProperty & { status: string };
 
@@ -142,7 +142,12 @@ export const createMyListingFn = createServerFn({ method: "POST" })
       const prop = await createOwnerProperty(me.id, toPropertyInput(d));
       await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW", monthlyLimit: MONTHLY_LISTING_LIMIT } });
       return { ok: true as const, id: prop.id };
-    } catch (e) { rethrow(e); }
+    } catch (e) {
+      if (e instanceof Error && e.message === LISTING_LIMIT_MESSAGE) {
+        return { ok: false as const, message: LISTING_LIMIT_MESSAGE };
+      }
+      rethrow(e);
+    }
   });
 
 const fromKind = { APARTMENT: "Apartment", HOUSE: "House", ROOM: "Room", PG: "PG", COMMERCIAL: "Commercial" } as const;
