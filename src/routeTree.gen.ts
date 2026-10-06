@@ -396,6 +396,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/list-property'
     | '/login'
+    | '/messages'
     | '/owner'
     | '/properties'
     | '/saved'
