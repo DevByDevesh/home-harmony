@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { Building2, Calculator, CalendarCheck, ExternalLink, MapPin, Navigation, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Listing } from "@/lib/catalog";
+import type { Home, ListingDetails } from "@/lib/catalog";
+
+type IntelligenceHome = Home & Partial<ListingDetails>;
 
 function formatInr(value: number) {
   return "₹" + Math.round(value).toLocaleString("en-IN");
 }
 
-function googleMapsUrl(home: Listing) {
+function googleMapsUrl(home: IntelligenceHome) {
   if (home.lat && home.lng) {
     return "https://www.google.com/maps/search/?api=1&query=" + home.lat + "," + home.lng;
   }
@@ -22,7 +24,7 @@ const nearbyCategories = [
   ["Restaurants", "restaurants"],
 ] as const;
 
-export function PropertySectionNav({ home }: { home: Listing }) {
+export function PropertySectionNav({ home }: { home: IntelligenceHome }) {
   const items = [
     ["overview", "Overview"],
     ["details", "Details"],
@@ -40,7 +42,7 @@ export function PropertySectionNav({ home }: { home: Listing }) {
   );
 }
 
-export function MortgageCalculator({ home }: { home: Listing }) {
+export function MortgageCalculator({ home }: { home: IntelligenceHome }) {
   const [downPayment, setDownPayment] = useState(Math.round(home.price * 0.2));
   const [rate, setRate] = useState(8.5);
   const [years, setYears] = useState(20);
@@ -84,7 +86,7 @@ export function MortgageCalculator({ home }: { home: Listing }) {
   );
 }
 
-export function PropertyIntelligence({ home }: { home: Listing }) {
+export function PropertyIntelligence({ home }: { home: IntelligenceHome }) {
   return (
     <div className="property-intelligence">
       <section id="location" className="property-feature-section location-section">
