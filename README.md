@@ -55,3 +55,7 @@ See `.env.example` for the required authentication, database, OAuth, storage, an
 - Prisma + PostgreSQL for persistent data
 - Better Auth for authentication and sessions
 - Mapbox for map rendering
+
+
+### Listing expiry scheduler
+Staging/production should configure `LISTING_EXPIRY_CRON_SECRET` and call `POST /api/public/expire-listings` from the hosting scheduler at least daily. The endpoint marks active listings older than 30 days from `publishedAt` as `EXPIRED`. Public reads also run the same expiry sweep as a safety net.
