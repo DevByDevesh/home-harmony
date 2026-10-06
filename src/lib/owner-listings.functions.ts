@@ -56,6 +56,25 @@ export const setMyListingStatusFn = createServerFn({ method: "POST" })
     } catch (e) { rethrow(e); }
   });
 
+export const repostMyExpiredListingFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requireRole } = await import("./auth/guards.server");
+      const { AREA_ROLES } = await import("./auth/roles");
+      const { writeAudit } = await import("./auth/audit.server");
+      const me = await requireRole(AREA_ROLES.owner, "owner.listing.repost");
+      const { repostExpiredOwnerProperty } = await import("./db/repositories/properties.server");
+      const reposted = await repostExpiredOwnerProperty(data.id, me.id);
+      if (!reposted) {
+        await writeAudit({ actorId: me.id, action: "listing.repost", entityType: "Property", entityId: data.id, result: "DENIED", metadata: { reason: "not_expired_or_not_owned" } });
+        return { ok: false as const, message: "Only your expired listings can be reposted." };
+      }
+      await writeAudit({ actorId: me.id, action: "listing.repost", entityType: "Property", entityId: data.id, metadata: { status: "UNDER_REVIEW", verificationReset: true, validityDays: 30 } });
+      return { ok: true as const, id: reposted.id };
+    } catch (e) { rethrow(e); }
+  });
+
 export const setMyListingArchiveFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64), archived: z.boolean() }).strict().parse(d))
   .handler(async ({ data }) => {
