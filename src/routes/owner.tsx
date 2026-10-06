@@ -259,7 +259,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
           <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Property image" disclaimer="Owner preview. Verification status is shown separately." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
         </DialogContent></Dialog>
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
-      {status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : <>
+      {listing.status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : <>
         {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
         {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
         <Button size="sm" variant="ghost" onClick={archive}><Archive size={14}/> Delete</Button>
