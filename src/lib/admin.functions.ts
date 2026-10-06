@@ -19,7 +19,7 @@ export const listAdminPropertiesFn = createServerFn({ method: "GET" }).handler(a
     select: {
       id: true, slug: true, title: true, locality: true, city: true, price: true,
       listingType: true, status: true, verificationStatus: true, changesRequested: true,
-      ownerId: true, agentId: true, updatedAt: true,
+      ownerId: true, agentId: true, updatedAt: true, owner: { select: { name: true } }, agent: { select: { name: true } },
       _count: { select: { reports: true, featured: true } },
     },
   });
@@ -29,7 +29,7 @@ export const listAdminPropertiesFn = createServerFn({ method: "GET" }).handler(a
     verification: p.verificationStatus,
     reports: p._count.reports,
     featured: p._count.featured > 0,
-    updatedAt: p.updatedAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(), ownerName: p.owner?.name ?? "—", agentName: p.agent?.name ?? null,
   }));
 });
 
