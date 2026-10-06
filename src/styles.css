@@ -2105,3 +2105,11 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .photo-dialog-prev { left: 8px; }
   .photo-dialog-next { right: 8px; }
 }
+
+
+/* The preview uses a background layer instead of an img element to avoid the legacy image animation/overlay artifact. */
+.detail-image:has(.detail-gallery-controls) .detail-main-photo {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
