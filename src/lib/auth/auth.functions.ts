@@ -15,7 +15,7 @@ function rethrow(e: unknown): never {
 
 /** Current signed-in user (safe fields only) or null. Public: never throws for signed-out visitors. */
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async (): Promise<SafeUser | null> => {
-  try { return await (await guards()).getSessionUser(); } catch { return null; }
+  return await (await guards()).getSessionUser();
 });
 
 export const listAccounts = createServerFn({ method: "GET" }).handler(async () => {
