@@ -6,7 +6,7 @@ export const findMapPlace = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     // Geocoding uses the same Mapbox public token already used by the map itself.
     // No Lovable gateway or second secret is required for location search.
-    const token = process.env["VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN"];
+    const token = process.env["VITE_MAPBOX_PUBLIC_TOKEN"] ?? process.env["VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN"];
     if (!token) throw new Error("Map location search is unavailable right now.");
 
     const url = new URL(
