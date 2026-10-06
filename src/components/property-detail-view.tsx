@@ -7,7 +7,7 @@ import { Reveal } from "@/components/cinematic-motion";
 import { PropertyIntelligence, PropertySectionNav } from "@/components/property-intelligence";
 
 /** Shared property presentation used by the public detail page and the owner listing preview. */
-export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer, images }: { home: Home; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] }) {
+export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer, images }: { home: Home; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] | undefined }) {
   const galleryImages = images?.length ? images : [home.image];
   const [activePhoto, setActivePhoto] = useState(0);
   const currentPhoto = galleryImages[Math.min(activePhoto, galleryImages.length - 1)] ?? home.image;
