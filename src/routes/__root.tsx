@@ -3,7 +3,6 @@ import { Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, He
 import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import modernUiCss from "../modern-ui.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,7 +13,6 @@ import { SupportChat } from "@/components/support-chat";
 function NotFoundPage() { return <main className="fallback wrap"><p className="kicker">NOT FOUND</p><h1>That place isn’t here.</h1><p>The page may have moved, but there are more homes to explore.</p><Button asChild><Link to="/properties">Explore homes</Link></Button></main>; }
 function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
   return <main className="fallback wrap"><p className="kicker">SOMETHING WENT WRONG</p><h1>This page didn’t load.</h1><p>Try again or return to the home page.</p><div className="fallback-actions"><Button onClick={() => { router.invalidate(); reset(); }}>Try again</Button><Button asChild variant="outline"><Link to="/">Go home</Link></Button></div></main>;
 }
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
