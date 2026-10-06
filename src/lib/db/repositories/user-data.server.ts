@@ -19,10 +19,34 @@ export async function createComparison(userId: string, propertyIds: string[]) {
   return db.comparison.create({ data: { userId, properties: { create: propertyIds.map((propertyId, position) => ({ propertyId, position })) } } });
 }
 
+/** Legacy visit entry point kept for compatibility with older callers. */
 export async function requestVisit(input: { userId: string; propertyId: string; date: string; time: string; notes?: string }) {
   const db = await requireDb();
-  const property = await db.property.findUniqueOrThrow({ where: { id: input.propertyId }, select: { ownerId: true, agentId: true } });
-  return db.visit.create({ data: { userId: input.userId, propertyId: input.propertyId, handlerId: property.agentId ?? property.ownerId, requestedDate: new Date(input.date), requestedTime: input.time, notes: input.notes ?? null } });
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.date) || !/^\\d{2}:\\d{2}$/.test(input.time)) return null;
+  const requestedDate = new Date(input.date + "T00:00:00Z");
+  if (Number.isNaN(requestedDate.getTime())) return null;
+  const today = new Date();
+  const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  if (requestedDate < todayUtc) return null;
+
+  const [property, user] = await Promise.all([
+    db.property.findFirst({ where: { id: input.propertyId, status: "ACTIVE" }, select: { ownerId: true, agentId: true } }),
+    db.user.findUnique({ where: { id: input.userId }, select: { status: true } }),
+  ]);
+  if (!property || !user || user.status === "SUSPENDED" || user.status === "DEACTIVATED") return null;
+  if (property.ownerId === input.userId) return null;
+
+  return db.visit.create({
+    data: {
+      userId: input.userId,
+      propertyId: input.propertyId,
+      handlerId: property.agentId ?? property.ownerId,
+      requestedDate,
+      requestedTime: input.time,
+      notes: input.notes?.trim().slice(0, 500) || null,
+      status: "REQUESTED",
+    },
+  });
 }
 
 // ---- Phase: seeker data backed by PostgreSQL. Every query is scoped by userId. ----
