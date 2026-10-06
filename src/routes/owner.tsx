@@ -19,7 +19,7 @@ import { draftToHome, freshness, ownerActions, useOwnerData, type OwnerListing }
 import { formatVisitDate, statusLabel, visitTransitions } from "@/lib/visits";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listMyListingsFn, setMyListingStatusFn, setMyListingArchiveFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
+import { listMyListingsFn, setMyListingStatusFn, setMyListingArchiveFn, repostMyExpiredListingFn, type OwnerDbListing } from "@/lib/owner-listings.functions";
 import { listOwnerEnquiriesFn, listOwnerVisitsFn } from "@/lib/engagement.functions";
 import { getMyOwnerContactFn, updateMyOwnerContactFn, type OwnerContactProfile } from "@/lib/owner-profile.functions";
 import { toListing } from "@/lib/property-mapper";
@@ -228,6 +228,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
   const qc = useQueryClient();
   const setStatus = useServerFn(setMyListingStatusFn);
   const setArchive = useServerFn(setMyListingArchiveFn);
+  const repost = useServerFn(repostMyExpiredListingFn);
   const change = async (to: "ACTIVE" | "PAUSED") => {
     try { const r = await setStatus({ data: { id: listing.id, status: to } }); if (!r.ok) { toast.error(r.message); return; } await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this listing."); }
@@ -240,6 +241,15 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
       await qc.invalidateQueries({ queryKey: ["owner-db-listings"] });
       toast.success("Listing archived");
     } catch (e) { toast.error(e instanceof Error ? e.message : "Could not archive this listing."); }
+  };
+  const repostExpired = async () => {
+    if (!window.confirm("Repost this expired listing? Its details and images will be preserved, and it will go through verification again.")) return;
+    try {
+      const r = await repost({ data: { id: listing.id } });
+      if (!r.ok) { toast.error(r.message); return; }
+      await qc.invalidateQueries({ queryKey: ["owner-db-listings"] });
+      toast.success("Listing reposted for a fresh 30-day validity period.");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not repost this listing."); }
   };
   const restore = async () => {
     try {
@@ -259,7 +269,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
           <div className="detail-page preview-detail"><PropertyDetailView home={h} imageNote="Property image" disclaimer="Owner preview. Verification status is shown separately." aside={<div className="detail-summary"><p className="kicker">STATUS</p><h3><ListingStatusPill status={status}/></h3><div><span>Deposit</span><strong>{inr(h.deposit)}</strong></div><div><span>Verification</span><strong>Not verified</strong></div></div>}/></div>
         </DialogContent></Dialog>
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
-      {listing.status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : <>
+      {listing.status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : listing.status === "EXPIRED" ? <Button size="sm" variant="outline" onClick={repostExpired}><RotateCcw size={14}/> Repost</Button> : <>
         {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
         {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
         <Button size="sm" variant="ghost" onClick={archive}><Archive size={14}/> Delete</Button>
