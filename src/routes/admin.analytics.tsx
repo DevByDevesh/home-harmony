@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { LocalEventsCard } from "@/components/analytics-kit";
 import { AdminChartCard, AdminHeader, AdminMetricCard, Distribution } from "@/components/admin/admin-kit";
 import { LiveCountsPanel } from "@/components/admin/live-business";
 import { adminTrendsFn, liveCountsFn } from "@/lib/admin-business.functions";
@@ -44,8 +43,7 @@ function AdminAnalytics() {
         <Distribution title="Service requests (live)" data={toDist(counts.data?.requests)}/>
       </div>
     </>}
-    <p className="form-hint">Payment processing is not connected. Analytics below reflect recorded HouseProvider activity.</p>
-    <LocalEventsCard types={["PROPERTY_VIEW", "PROPERTY_SAVE", "PROPERTY_COMPARE", "SEARCH", "VISIT_REQUEST", "LISTING_PUBLISHED"]}/>
+    <p className="form-hint">Payment processing is not connected. Analytics reflect only activity currently recorded in PostgreSQL; page views and searches are not collected server-side.</p>
   </>;
 }
 
