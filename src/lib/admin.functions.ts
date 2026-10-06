@@ -97,7 +97,7 @@ export const moderateListingFn = createServerFn({ method: "POST" })
           entityType: "Property",
           entityId: data.propertyId,
           result: "SUCCESS",
-          metadata: data.note ? { note: data.note } : undefined,
+          ...(data.note ? { metadata: { note: data.note } } : {}),
         },
       }),
     ]);
