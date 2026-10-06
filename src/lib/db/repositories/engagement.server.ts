@@ -105,6 +105,16 @@ export async function ownerUpdateVisit(ownerId: string, id: string, to: VisitSta
     if (!v) return "Visit not found for your listings.";
     if (!visitTransitions[v.status].includes(to)) return `A ${v.status.toLowerCase()} visit can’t be marked ${to.toLowerCase()}.`;
     if (to === "RESCHEDULED" && (!date || !time)) return "Choose a new date and time.";
+    if (to === "RESCHEDULED") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date!) || !/^\d{2}:\d{2}$/.test(time!)) {
+        return "Choose a valid new date and time.";
+      }
+      const nextDate = new Date(`${date}T00:00:00Z`);
+      if (Number.isNaN(nextDate.getTime())) return "Choose a valid new date.";
+      const today = new Date();
+      const todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      if (nextDate < todayUtc) return "Visit date cannot be in the past.";
+    }
     const upd = await tx.visit.updateMany({
       where: { id, status: v.status },
       data: { status: to, handlerId: ownerId, ...(to === "CONFIRMED" ? { confirmedAt: new Date() } : {}), ...(to === "RESCHEDULED" ? { requestedDate: new Date(`${date}T00:00:00Z`), requestedTime: time! } : {}) },
