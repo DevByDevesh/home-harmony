@@ -2,25 +2,22 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { AdminHeader, AdminLoadingState } from "@/components/admin/admin-kit";
-import { useAdminActions, useAdminData } from "@/lib/admin/repository";
+import { AdminHeader } from "@/components/admin/admin-kit";
+import { defaultSettings, notificationChannels, notificationEvents, type PlatformSettings } from "@/lib/admin/config";
 import { adminHead } from "@/lib/admin/head";
-import { notificationChannels, notificationEvents, type PlatformSettings } from "@/lib/admin/config";
 
 export const Route = createFileRoute("/admin/settings")({ head: adminHead("Settings"), component: AdminSettings });
 const sections: [keyof PlatformSettings, string][] = [["general", "General"], ["platform", "Platform"], ["listings", "Listings"], ["verification", "Verification"], ["moderation", "Moderation"], ["subscriptions", "Subscriptions"], ["payments", "Payments"], ["featured", "Featured listings"], ["services", "Services"], ["notifications", "Notifications"], ["security", "Security"]];
 const human = (k: string) => k.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());
 
 function AdminSettings() {
-  const { data: s, ready } = useAdminData(); const act = useAdminActions();
   const [sec, setSec] = useState<keyof PlatformSettings>("general");
-  const editable = act.can("settings.edit");
   return <>
-    <AdminHeader title="Settings" intro="Platform rules live in one configuration object so a backend can own them later."/>
-    <p className="admin-note">Payment and notification providers are not connected. No provider credentials are stored here.</p>
+    <AdminHeader title="Settings" intro="Platform configuration is currently defined in code. Database-backed settings will be enabled after a safe staging migration is established."/>
+    <p className="admin-note">Settings are currently read-only. This prevents device-local changes from being mistaken for live platform configuration. Payment and notification providers are not connected.</p>
     <div className="admin-settings">
       <div className="seg-tabs admin-settings-tabs" role="tablist" aria-label="Settings sections">{sections.map(([k, label]) => <button key={k} role="tab" aria-selected={sec === k} onClick={() => setSec(k)}>{label}</button>)}</div>
-      {!ready ? <AdminLoadingState/> : <SectionForm key={sec + JSON.stringify(s.settings[sec])} section={sec} value={s.settings[sec]} disabled={!editable} onSave={v => act.saveSettings(sec, v)}/>}
+      <SectionForm key={sec + JSON.stringify(defaultSettings[sec])} section={sec} value={defaultSettings[sec]} disabled onSave={() => undefined}/>
     </div>
   </>;
 }
