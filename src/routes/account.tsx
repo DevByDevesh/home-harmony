@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldAlert } from "lucide-react";
+import { BadgeCheck, Building2, CalendarClock, MessageSquare, ShieldAlert, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { AuthNotice } from "@/components/auth-shell";
@@ -55,7 +55,15 @@ function AccountPage() {
     <section className="dash-panel" aria-labelledby="free-six-months">
       <p className="kicker">LIMITED MEMBER OFFER</p>
       <h2 id="free-six-months">Claim 6 Months Free</h2>
-      <p>No payment required. Claim once and get a six-month HouseProvider subscription.</p>
+      <p>Get six months of HouseProvider membership at <strong>₹0</strong>. No payment is required to claim this offer.</p>
+      <div className="subscription-benefits">
+        <div><CalendarClock size={18}/><span><strong>6 months active</strong><small>Membership is active for six months from the day you claim.</small></span></div>
+        <div><Building2 size={18}/><span><strong>Property listing access</strong><small>The free plan has no configured listing limit.</small></span></div>
+        <div><MessageSquare size={18}/><span><strong>Enquiries & messaging</strong><small>Manage seeker enquiries and conversations from your account.</small></span></div>
+        <div><BadgeCheck size={18}/><span><strong>Verification workflow</strong><small>Submit listings for HouseProvider review and verification.</small></span></div>
+        <div><Sparkles size={18}/><span><strong>₹0 promotional plan</strong><small>No payment is required during the six-month free period.</small></span></div>
+      </div>
+      <p className="subscription-note">One claim per account. The offer ends on the date shown after claiming.</p>
       <div className="account-actions"><Button onClick={() => void claimFree()} disabled={claiming || claimSuccess}>{claiming ? "Claiming…" : claimSuccess ? "Claimed" : "Claim 6 Months Free"}</Button></div>
       {claimMessage && <p className="form-hint" role={claimSuccess ? "status" : "alert"}>{claimMessage}</p>}
     </section>
