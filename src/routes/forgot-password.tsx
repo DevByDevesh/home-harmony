@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthField, AuthNotice, AuthShell } from "@/components/auth-shell";
 import { authClient, authErrorMessage } from "@/lib/auth/auth-client";
@@ -20,16 +20,19 @@ function ForgotPage() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    if (!email.trim()) {
-      setError("Enter the email address on your HouseProvider account.");
-      return;
-    }
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const timer = window.setInterval(() => {
+      setResendIn(value => Math.max(0, value - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendIn]);
 
+  async function requestReset() {
+    setError(null);
     setBusy(true);
     try {
       const { error: err } = await authClient.requestPasswordReset({
@@ -38,14 +41,26 @@ function ForgotPage() {
       });
       if (err) {
         setError(authErrorMessage(err));
-        return;
+        return false;
       }
       setSent(true);
+      setResendIn(60);
+      return true;
     } catch {
       setError(authErrorMessage(null));
+      return false;
     } finally {
       setBusy(false);
     }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError("Enter the email address on your HouseProvider account.");
+      return;
+    }
+    await requestReset();
   }
 
   return <AuthShell kicker="PASSWORD RESET" title={<>Forgot your <em>password?</em></>} lede="We'll send a secure password reset link to your email.">
@@ -55,6 +70,12 @@ function ForgotPage() {
       <AuthField label="Email" name="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required/>
       <Button type="submit" className="auth-submit" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</Button>
     </form>}
+    {sent && <div className="auth-form" style={{ gap: "10px" }}>
+      <Button type="button" className="auth-submit" onClick={() => void requestReset()} disabled={busy || resendIn > 0}>
+        {busy ? "Sending…" : resendIn > 0 ? `Resend link in ${resendIn}s` : "Resend reset link"}
+      </Button>
+      <p className="auth-switch">Didn't receive it? Check spam, then resend when the timer ends.</p>
+    </div>}
     <p className="auth-switch">Remembered it? <Link to="/login">Back to sign in</Link></p>
   </AuthShell>;
 }
