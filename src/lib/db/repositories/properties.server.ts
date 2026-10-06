@@ -2,7 +2,7 @@
  * Database-backed property repository (server-only). Public reads use this repository
  * when DATABASE_URL is configured; otherwise the typed demo catalog is used as fallback.
  */
-import type { PropertyType, VerificationType } from "@prisma/client";
+import type { Prisma, PropertyType, VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
 export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; maxPrice?: number; take?: number };
@@ -81,7 +81,7 @@ const WIZARD_PHOTO_PREFIX = "demo/new-home-";
 
 /** Creates an owner listing. Status is always UNDER_REVIEW; checks are only requested (PENDING) — never approved here. */
 async function autoVerifyOwnerListing(
-  tx: any,
+  tx: Prisma.TransactionClient,
   propertyId: string,
   ownerId: string,
   p: NewOwnerProperty,
