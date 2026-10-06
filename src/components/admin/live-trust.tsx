@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { verificationTypeLabel } from "@/lib/admin/config";
-import { adminListReportsFn, adminListVerificationsFn, adminSetVerificationStatusFn } from "@/lib/admin-trust.functions";
+import { adminListReportsFn, adminListVerificationsFn, adminSetVerificationStatusFn, adminUpdateReportFn } from "@/lib/admin-trust.functions";
 
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—");
 const lc = (s: string) => s.replace(/_/g, " ").toLowerCase();
@@ -57,11 +57,21 @@ const reportCategoryLabels: Record<string, string> = {
 
 export function LiveReportsPanel() {
   const q = useQuery({ queryKey: ["admin", "reports"], queryFn: () => adminListReportsFn() });
-  return <Panel id="live-reports" title="Reports in the database" hint="Real visitor reports. Nothing on the platform submits reports yet, so this stays empty until reporting is connected. A report is never proof of wrongdoing.">
-    <Table q={q} rows={q.data} head={["Category", "Summary", "Reported account", "Listing", "Priority", "Status", "Reviewer", "Reported"]} empty="No reports in the database. Visitor reporting isn’t connected yet, so nothing can appear here.">
+  const run = useRun("reports");
+  const actions: Record<string, ["start" | "resolve" | "dismiss" | "reopen", string][]> = {
+    OPEN: [["start", "Start review"], ["resolve", "Resolve"], ["dismiss", "Dismiss"]],
+    IN_REVIEW: [["resolve", "Resolve"], ["dismiss", "Dismiss"]],
+    RESOLVED: [["reopen", "Reopen"]],
+    DISMISSED: [["reopen", "Reopen"]],
+  };
+  return <Panel id="live-reports" title="Reports in the database" hint="Real visitor reports. A report is not proof of wrongdoing; review the evidence before taking action.">
+    <Table q={q} rows={q.data} head={["Category", "Summary", "Reported account", "Listing", "Priority", "Status", "Reviewer", "Reported", "Actions"]} empty="No reports in the database.">
       {q.data?.map(r => <tr key={r.id}>
         <td>{reportCategoryLabels[r.category] ?? lc(r.category)}</td><td>{r.summary}</td><td>{r.subject}</td><td>{r.property}</td>
         <td>{lc(r.priority)}</td><td>{lc(r.status)}</td><td>{r.assignee}</td><td>{date(r.createdAt)}</td>
+        <td><div className="dash-row-actions">{(actions[r.status] ?? []).map(([action, label]) =>
+          <Button key={action} size="sm" variant="outline" onClick={() => void run(adminUpdateReportFn({ data: { id: r.id, action } }), label)}>{label}</Button>
+        )}</div></td>
       </tr>)}
     </Table>
   </Panel>;
