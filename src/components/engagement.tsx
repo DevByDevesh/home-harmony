@@ -97,7 +97,7 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: { slug: string; name: string; ownerPhone?: string | null; ownerContactChannels?: string[] }) {
+export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: { slug: string; name: string; ownerPhone?: string | null | undefined; ownerContactChannels?: string[] | undefined }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
   const qc = useQueryClient();
