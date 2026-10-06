@@ -12,6 +12,37 @@ import { AUTH_ERRORS } from "./roles";
 import { AUTH_RATE_LIMITS } from "./rate-limit";
 import { writeAudit } from "./audit.server";
 
+async function sendPasswordResetEmail(to: string, url: string) {
+  const apiKey = process.env["RESEND_API_KEY"];
+  const from = process.env["AUTH_EMAIL_FROM"];
+
+  if (!apiKey || !from) {
+    console.error("Password reset email delivery is not configured: set RESEND_API_KEY and AUTH_EMAIL_FROM.");
+    throw new Error("Password reset email delivery is not configured.");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: "Reset your HouseProvider password",
+      text: `Reset your HouseProvider password using this link: ${url}\n\nThis link expires automatically. If you did not request a password reset, you can ignore this email.`,
+      html: `<p>We received a request to reset your HouseProvider password.</p><p><a href="${url}">Reset your password</a></p><p>This link expires automatically. If you did not request this, you can ignore this email.</p>`,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    console.error("Password reset email delivery failed.", response.status, detail);
+    throw new Error("Password reset email delivery failed.");
+  }
+}
+
 async function buildAuth() {
   const db = await requireDb();
   const secret = process.env["BETTER_AUTH_SECRET"];
@@ -49,8 +80,11 @@ async function buildAuth() {
       minPasswordLength: 10,
       maxPasswordLength: 128,
       autoSignIn: true,
-      // No email provider yet: verification is not required and no emails are sent.
       requireEmailVerification: false,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        await sendPasswordResetEmail(user.email, url);
+      },
     },
     user: {
       fields: { emailVerified: "emailConfirmed" },
