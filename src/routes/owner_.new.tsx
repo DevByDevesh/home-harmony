@@ -81,7 +81,7 @@ function Wizard() {
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
   const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(async r => { if (!r.ok) { toast.error(r.message); return; } const review = await autoReviewListing({ data: { id: r.id } }); setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id); toast.success(review.published ? "Changes approved automatically and the listing is live" : "Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => {
-      if (!r.ok) { toast.error("You can post up to 2 properties per month."); return; }
+      if (!r.ok) { toast.error(r.message); return; }
       ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]);
       const review = failed ? { published: false as const } : await autoReviewListing({ data: { id: r.id } });
       setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id);
