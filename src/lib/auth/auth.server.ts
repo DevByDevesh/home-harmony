@@ -13,12 +13,14 @@ import { AUTH_RATE_LIMITS } from "./rate-limit";
 import { writeAudit } from "./audit.server";
 
 async function sendPasswordResetEmail(to: string, url: string) {
-  const apiKey = process.env["RESEND_API_KEY"];
-  const from = process.env["AUTH_EMAIL_FROM"];
+  const apiKey = process.env["RESEND_API_KEY"]?.trim();
+  const from = process.env["AUTH_EMAIL_FROM"]?.trim();
 
   if (!apiKey || !from) {
-    console.error("Password reset email delivery is not configured: set RESEND_API_KEY and AUTH_EMAIL_FROM.");
-    throw new Error("Password reset email delivery is not configured.");
+    console.error("Password reset email delivery is not configured.");
+    throw new APIError("SERVICE_UNAVAILABLE", {
+      message: "Password reset email delivery is not configured on this server.",
+    });
   }
 
   const response = await fetch("https://api.resend.com/emails", {
