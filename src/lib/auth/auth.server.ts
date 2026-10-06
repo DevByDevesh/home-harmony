@@ -32,6 +32,8 @@ async function buildAuth() {
       return [
         "https://houseprovider.in",
         "https://www.houseprovider.in",
+      // Staging is the active pre-production environment; production remains untouched.
+      "https://staging.houseprovider.in",
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:8080",
