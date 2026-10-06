@@ -61,6 +61,16 @@ export async function listOwnerProperties(ownerId: string) {
  * owner's id can never match. Resume only from PAUSED (never bypasses review).
  * Returns the number of rows changed (0 = not yours or not allowed).
  */
+/** Owner-scoped soft delete/archive. History is preserved for listings with activity. */
+export async function setOwnerPropertyArchived(id: string, ownerId: string, archived: boolean) {
+  const db = await requireDb();
+  const r = await db.property.updateMany({
+    where: { id, ownerId, status: archived ? { not: "ARCHIVED" } : "ARCHIVED" },
+    data: { status: archived ? "ARCHIVED" : "UNDER_REVIEW" },
+  });
+  return r.count;
+}
+
 export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
   const db = await requireDb();
   const from = to === "PAUSED" ? "ACTIVE" : "PAUSED";
