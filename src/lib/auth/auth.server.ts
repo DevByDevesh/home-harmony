@@ -21,10 +21,22 @@ async function buildAuth() {
   return betterAuth({
     secret,
     baseURL: process.env["BETTER_AUTH_URL"] || undefined,
-    trustedOrigins: async (request) => {
-      const list = ["https://*.lovable.app", "https://*.lovableproject.com", "http://localhost:8080"];
-      if (request) list.push(new URL(request.url).origin);
-      return list;
+    trustedOrigins: async () => {
+      const configured = (process.env["BETTER_AUTH_TRUSTED_ORIGINS"] ?? "")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+
+      // Never trust the request Origin automatically. Production origins must be
+      // explicitly configured to prevent cross-origin auth requests.
+      return [
+        "https://houseprovider.in",
+        "https://www.houseprovider.in",
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8080",
+        ...configured,
+      ];
     },
     database: prismaAdapter(db, { provider: "postgresql" }),
     socialProviders: googleClientId && googleClientSecret
