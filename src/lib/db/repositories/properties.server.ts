@@ -279,7 +279,7 @@ export async function autoReviewAndPublishListing(propertyId: string) {
 }
 
 export const MONTHLY_LISTING_LIMIT = 2;
-const LISTING_LIMIT_MESSAGE = "You can post up to 2 properties per month.";
+export const LISTING_LIMIT_MESSAGE = "You can post up to 2 properties per month.";
 
 function indiaCalendarMonthRange(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit" }).formatToParts(now);
