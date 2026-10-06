@@ -22,6 +22,8 @@ npm run preview
 
 ## Database (PostgreSQL + Prisma)
 
+**Staging/production requirement:** `DATABASE_URL` must be configured on the server. The demo fallback is intended only for local development; staging and production should be treated as database-backed environments.
+
 Copy `.env.example` to your local environment and configure `DATABASE_URL` as a server-side secret (never `VITE_`-prefixed).
 
 Development:
