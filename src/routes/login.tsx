@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
@@ -7,10 +7,15 @@ import { AuthField, AuthNotice, AuthShell, ProviderRow } from "@/components/auth
 import { authClient, authErrorMessage } from "@/lib/auth/auth-client";
 import { safeRedirect } from "@/lib/auth/redirect";
 import { currentUserQuery } from "@/lib/auth/use-current-user";
+import { getCurrentUser } from "@/lib/auth/auth.functions";
 
 const search = z.object({ redirect: z.string().optional(), signedOut: z.boolean().optional(), created: z.boolean().optional() });
 
 export const Route = createFileRoute("/login")({
+  beforeLoad: async ({ search }) => {
+    const user = await getCurrentUser();
+    if (user) throw redirect({ href: safeRedirect(search.redirect) });
+  },
   validateSearch: search,
   head: () => ({ meta: [
     { title: "Sign in — HouseProvider.in" },
