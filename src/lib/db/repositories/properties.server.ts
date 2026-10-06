@@ -84,6 +84,34 @@ export async function setOwnerPropertyArchived(id: string, ownerId: string, arch
   return r.count;
 }
 
+/** Reposts an expired listing without creating a new property record. Details/images/history are preserved; verification is reset for a fresh review. */
+export async function repostExpiredOwnerProperty(id: string, ownerId: string) {
+  const db = await requireDb();
+  return db.$transaction(async (tx) => {
+    const current = await tx.property.findFirst({
+      where: { id, ownerId, status: "EXPIRED" },
+      select: { id: true },
+    });
+    if (!current) return null;
+
+    await tx.property.update({
+      where: { id },
+      data: {
+        status: "UNDER_REVIEW",
+        publishedAt: null,
+        verificationStatus: "PENDING",
+      },
+    });
+
+    await tx.verification.updateMany({
+      where: { propertyId: id },
+      data: { status: "PENDING", decidedAt: null, notes: null },
+    });
+
+    return current;
+  });
+}
+
 export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
   const db = await requireDb();
   const from = to === "PAUSED" ? "ACTIVE" : "PAUSED";
