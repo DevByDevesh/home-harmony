@@ -5,6 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { PublicProperty } from "./properties.functions";
+import { MONTHLY_LISTING_LIMIT, getOwnerListingQuota } from "./db/repositories/properties.server";
 
 export type OwnerDbListing = PublicProperty & { status: string };
 
@@ -120,6 +121,15 @@ function toPropertyInput(d: WizardInput) {
 }
 
 /** Creates a DB listing owned by the signed-in owner. Owner id comes from the session only. */
+export const getMyListingQuotaFn = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { requireRole } = await import("./auth/guards.server");
+    const { AREA_ROLES } = await import("./auth/roles");
+    const me = await requireRole(AREA_ROLES.owner, "owner.listing.quota");
+    return await getOwnerListingQuota(me.id);
+  } catch (e) { rethrow(e); }
+});
+
 export const createMyListingFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => createSchema.parse(d))
   .handler(async ({ data: d }) => {
@@ -130,8 +140,8 @@ export const createMyListingFn = createServerFn({ method: "POST" })
       const me = await requireRole(AREA_ROLES.owner, "owner.listing.create");
       const { createOwnerProperty } = await import("./db/repositories/properties.server");
       const prop = await createOwnerProperty(me.id, toPropertyInput(d));
-      await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW" } });
-      return { id: prop.id };
+      await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW", monthlyLimit: MONTHLY_LISTING_LIMIT } });
+      return { ok: true as const, id: prop.id };
     } catch (e) { rethrow(e); }
   });
 
