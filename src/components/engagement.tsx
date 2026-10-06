@@ -32,9 +32,9 @@ function OwnerVisitRow({ v }: { v: OwnerVisit }) {
       await qc.invalidateQueries({ queryKey: ["owner-db-visits"] });
       toast.success(`Marked ${statusLabel[status].toLowerCase()}`);
       return true;
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Couldnâ€™t update this visit."); return false; }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t update this visit."); return false; }
   };
-  return <li><div><strong>{v.visitor} Â· {v.title}</strong><small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` Â· â€œ${v.note}â€` : ""}</small><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span></div>
+  return <li><div><strong>{v.visitor} · {v.title}</strong><small>{formatVisitDate(v.date)} at {v.slot}{v.note ? ` · “${v.note}”` : ""}</small><span className={`status status-${v.status.toLowerCase()}`}>{statusLabel[v.status]}</span></div>
     <div className="dash-row-actions">{visitTransitions[v.status].map(s => s === "RESCHEDULED"
       ? <RescheduleDialog key={s} onSave={(d, t) => act("RESCHEDULED", d, t)}/>
       : <Button key={s} size="sm" variant={s === "CONFIRMED" ? "default" : "outline"} onClick={() => act(s as Exclude<VisitStatus, "REQUESTED">)}>{s === "CONFIRMED" ? "Accept" : s === "CANCELLED" ? "Decline" : statusLabel[s]}</Button>)}</div></li>;
@@ -59,7 +59,7 @@ export function OwnerDbEnquiries({ empty }: { empty: ReactNode }) {
   const fetch = useServerFn(listOwnerEnquiriesFn);
   const rows = useQuery({ queryKey: ["owner-db-enquiries"], queryFn: () => fetch() }).data ?? [];
   if (!rows.length) return <>{empty}</>;
-  return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.from} Â· {e.title}</strong><small>â€œ{e.message}â€</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
+  return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.from} · {e.title}</strong><small>“{e.message}”</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
 }
 
 export function MyDbVisits() {
@@ -104,7 +104,7 @@ export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: 
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
-  const phone = ownerPhone?.replace(/[^+\\d]/g, "");
+  const phone = ownerPhone?.replace(/[^+\d]/g, "");
   const channels = ownerContactChannels?.map((channel) => channel.toUpperCase()) ?? [];
   const canCall = !!phone && channels.some((channel) => channel.includes("PHONE") || channel.includes("CALL") || channel.includes("BOTH"));
   const canWhatsApp = !!phone && channels.some((channel) => channel.includes("WHATSAPP") || channel.includes("BOTH"));
@@ -140,7 +140,7 @@ export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: 
       </DialogContent>
     </Dialog> : messageButton}
     {canCall && <Button asChild variant="outline" className="detail-more"><a href={`tel:${phone}`}><Phone size={17}/>Call</a></Button>}
-    {canWhatsApp && <Button asChild variant="outline" className="detail-more"><a href={`https://wa.me/${phone.replace(/^\\+/, "")}`} target="_blank" rel="noreferrer"><MessageCircle size={17}/>WhatsApp</a></Button>}
+    {canWhatsApp && <Button asChild variant="outline" className="detail-more"><a href={`https://wa.me/${phone.replace(/^\+/, "")}`} target="_blank" rel="noreferrer"><MessageCircle size={17}/>WhatsApp</a></Button>}
   </div>;
 }
 
@@ -149,7 +149,7 @@ export function MyEnquiries({ empty }: { empty: ReactNode }) {
   const fetch = useServerFn(listMyEnquiriesFn);
   const rows = useQuery({ queryKey: ["my-enquiries"], queryFn: () => fetch() }).data;
   if (!rows?.length) return <>{empty}</>;
-  return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.title}</strong><small>â€œ{e.message}â€</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
+  return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.title}</strong><small>“{e.message}”</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
 }
 
 /** Signed-in: account notifications (visit/enquiry events). Returns null when signed out. */
@@ -160,7 +160,6 @@ export function MyNotifications() {
   if (!rows.length) return <p className="form-hint"><Bell size={14}/> No account notifications yet.</p>;
   return <ul className="dash-list activity">{rows.map(n => <li key={n.id}><div><strong>{n.title}</strong><small>{n.message}</small><small>{when(n.createdAt)}</small></div></li>)}</ul>;
 }
-
 
 export function ChatPanel() {
   const { user } = useCurrentUser();
