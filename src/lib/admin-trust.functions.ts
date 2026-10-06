@@ -105,3 +105,33 @@ export const adminListReportsFn = createServerFn({ method: "GET" }).handler(asyn
     return rows.map(r => ({ id: r.id, category: r.category, status: r.status, priority: r.priority, summary: r.summary, reporter: first(r.reporter.name), subject: first(r.subjectUser?.name), property: r.property?.title ?? "—", assignee: first(r.assignee?.name), createdAt: r.createdAt.toISOString() }));
   } catch (e) { rethrow(e); }
 });
+
+
+export const adminUpdateReportFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({
+    id,
+    action: z.enum(["start", "resolve", "dismiss", "reopen"]),
+  }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await guard("reports.moderate");
+      const d = await db();
+      const report = await d.report.findUnique({ where: { id: data.id }, select: { status: true } });
+      if (!report) return { ok: false as const, message: "Report not found." };
+      const moves: Record<string, { from: string[]; to: "IN_REVIEW" | "RESOLVED" | "DISMISSED" | "OPEN" }> = {
+        start: { from: ["OPEN"], to: "IN_REVIEW" },
+        resolve: { from: ["IN_REVIEW", "OPEN"], to: "RESOLVED" },
+        dismiss: { from: ["IN_REVIEW", "OPEN"], to: "DISMISSED" },
+        reopen: { from: ["RESOLVED", "DISMISSED"], to: "OPEN" },
+      };
+      const move = moves[data.action]!;
+      if (!move.from.includes(report.status)) return { ok: false as const, message: "This report can’t take that action in its current status." };
+      const updated = await d.report.updateMany({
+        where: { id: data.id, status: report.status },
+        data: { status: move.to, resolvedAt: move.to === "RESOLVED" || move.to === "DISMISSED" ? new Date() : null },
+      });
+      if (!updated.count) return { ok: false as const, message: "This report changed meanwhile. Refresh and try again." };
+      await audit(u.id, `admin.report.${data.action}`, "Report", data.id, { to: move.to });
+      return { ok: true as const };
+    } catch (e) { rethrow(e); }
+  });
