@@ -278,12 +278,45 @@ export async function autoReviewAndPublishListing(propertyId: string) {
   });
 }
 
+export const MONTHLY_LISTING_LIMIT = 2;
+const LISTING_LIMIT_MESSAGE = "You can post up to 2 properties per month.";
+
+function indiaCalendarMonthRange(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit" }).formatToParts(now);
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value);
+  const start = new Date(`${year}-${String(month).padStart(2, "0")}-01T00:00:00+05:30`);
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const end = new Date(`${nextYear}-${String(nextMonth).padStart(2, "0")}-01T00:00:00+05:30`);
+  return { start, end };
+}
+
+export async function getOwnerListingQuota(ownerId: string) {
+  const db = await requireDb();
+  const { start, end } = indiaCalendarMonthRange();
+  const [owner, used] = await Promise.all([
+    db.user.findUnique({ where: { id: ownerId }, select: { role: true } }),
+    db.property.count({ where: { ownerId, createdAt: { gte: start, lt: end } } }),
+  ]);
+  const limited = owner?.role === "USER" || owner?.role === "OWNER";
+  return { limit: limited ? MONTHLY_LISTING_LIMIT : null, used, remaining: limited ? Math.max(0, MONTHLY_LISTING_LIMIT - used) : null, message: limited && used >= MONTHLY_LISTING_LIMIT ? LISTING_LIMIT_MESSAGE : null };
+}
+
 export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) {
   const db = await requireDb();
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const slug = `${slugify(`${p.bedrooms}bhk ${p.propertyType} ${p.locality} ${p.city}`)}-${crypto.randomUUID().slice(0, 8)}`;
-  return db.$transaction(async (tx) => {
-    const prop = await tx.property.create({
+  const { start, end } = indiaCalendarMonthRange();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await db.$transaction(async (tx) => {
+        const owner = await tx.user.findUnique({ where: { id: ownerId }, select: { role: true } });
+        if (owner?.role === "USER" || owner?.role === "OWNER") {
+          const used = await tx.property.count({ where: { ownerId, createdAt: { gte: start, lt: end } } });
+          if (used >= MONTHLY_LISTING_LIMIT) throw new Error(LISTING_LIMIT_MESSAGE);
+        }
+        const prop = await tx.property.create({
       data: {
         slug, title: p.title, description: p.description, propertyType: p.propertyType, listingType: p.listingType,
         price: p.price, deposit: p.deposit, areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking,
@@ -296,9 +329,15 @@ export async function createOwnerProperty(ownerId: string, p: NewOwnerProperty) 
       const a = await tx.amenity.upsert({ where: { name }, update: {}, create: { name, slug: slugify(name) } });
       await tx.propertyAmenity.create({ data: { propertyId: prop.id, amenityId: a.id } });
     }
-    await autoVerifyOwnerListing(tx, prop.id, ownerId, p, prop.createdAt);
-    return prop;
-  });
+        await autoVerifyOwnerListing(tx, prop.id, ownerId, p, prop.createdAt);
+        return prop;
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034" && attempt < 2) continue;
+      throw error;
+    }
+  }
+  throw new Error("Could not create listing safely. Please try again.");
 }
 
 /** Loads a listing for editing — only when owned by `ownerId`. Includes the private address for the owner only. */
