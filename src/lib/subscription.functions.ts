@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireUser } from "@/lib/auth/guards.server";
-import { db } from "@/lib/db/client.server";
 
 const PLAN_SLUG = "free-6-months";
 
@@ -13,7 +12,8 @@ function addSixMonths(from: Date) {
 /** One-time promotional offer: every active account can claim six months free. */
 export const claimFreeSixMonthsFn = createServerFn({ method: "POST" }).handler(async () => {
   const me = await requireUser();
-  const d = await db();
+  const { requireDb } = await import("@/lib/db/client.server");
+  const d = await requireDb();
 
   const existingClaim = await d.subscription.findFirst({
     where: { userId: me.id, plan: { slug: PLAN_SLUG } },
