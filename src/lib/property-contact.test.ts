@@ -1,16 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { propertyContactRedirect } from "./property-contact";
+import test from "node:test";
+import assert from "node:assert/strict";
 
-describe("propertyContactRedirect", () => {
-  it("returns the property route with contact intent", () => {
-    expect(propertyContactRedirect("3bhk-apartment-nagpur")).toBe(
-      "/property/3bhk-apartment-nagpur?contact=true",
-    );
-  });
+test("property contact redirect keeps the property and contact intent", async () => {
+  const { propertyContactRedirect } = await import("./property-contact.ts");
+  assert.equal(
+    propertyContactRedirect("3bhk-apartment-nagpur"),
+    "/property/3bhk-apartment-nagpur?contact=true",
+  );
+});
 
-  it("safely encodes a slug before putting it in the redirect", () => {
-    expect(propertyContactRedirect("home with spaces")).toBe(
-      "/property/home%20with%20spaces?contact=true",
-    );
-  });
+test("property contact redirect safely encodes the slug", async () => {
+  const { propertyContactRedirect } = await import("./property-contact.ts");
+  assert.equal(
+    propertyContactRedirect("home with spaces"),
+    "/property/home%20with%20spaces?contact=true",
+  );
 });

@@ -99,7 +99,7 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name, compact = false, autoOpen = false }: { slug: string; name: string; compact?: boolean; autoOpen?: boolean }) {
+export function EnquiryButton({ slug, name, compact = false, autoOpen = false }: { slug: string; name: string; compact?: boolean; autoOpen?: boolean | undefined }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
   const requestPhone = useServerFn(requestOwnerPhoneFn);
