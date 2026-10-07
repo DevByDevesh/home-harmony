@@ -28,3 +28,11 @@ test("Admin appointment requires active account, complete personal details, veri
   assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"ACTIVE",hasPersonalDetails:true,identityVerified:true,confirmed:false}),false);
   assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"SUSPENDED",hasPersonalDetails:true,identityVerified:true,confirmed:true}),false);
 });
+
+
+test("dashboard boundaries stay separate by role", async () => {
+  const { AREA_ROLES } = await import("./roles.ts");
+  assert.deepEqual(AREA_ROLES.dashboard, ["USER"]);
+  assert.deepEqual(AREA_ROLES.owner, ["OWNER"]);
+  assert.deepEqual(AREA_ROLES.admin, ["OWNER", "ADMIN"]);
+});
