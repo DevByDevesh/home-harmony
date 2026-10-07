@@ -160,6 +160,9 @@ h1,h2,h3,p { margin-top: 0; } h1,h2,h3 { font-family: var(--font-display); lette
   .results-line { flex-direction: column; align-items: flex-start; } .results-line-end { flex-wrap: wrap; }
   .map-layout { display: flex; flex-direction: column-reverse; gap: 16px; } .map-pane { position: relative; top: 0; height: 58vh; min-height: 360px; width: 100%; } .map-list { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; width: 100%; padding-bottom: 8px; } .map-list .home-tile { flex: 0 0 78%; scroll-snap-align: start; } .map-list .empty-result { flex: 1; padding: 30px 10px; }
   .filter-sheet { max-height: 88vh; border-radius: 14px 14px 0 0; }
+body:has(.filter-sheet[data-state="open"]) .support-fab,
+body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !important; }
+
 .filter-sheet .filter-foot { position: sticky; bottom: 0; z-index: 30; flex: 0 0 auto; min-height: 76px; padding: 14px 24px calc(14px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--border); box-shadow: 0 -10px 24px color-mix(in srgb, var(--foreground) 7%, transparent); }
 .filter-sheet .filter-foot .button { min-height: 48px; }
 @media (max-width: 760px) {
