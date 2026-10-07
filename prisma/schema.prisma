@@ -19,7 +19,6 @@ enum Role {
   AGENT
   PROPERTY_MANAGER
   ADMIN
-  SUPER_ADMIN
 }
 
 enum AccountStatus {
