@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canAssignRole, hasPermission, type AppPermission } from "./roles";
+import { canAssignRole, hasPermission, type AppPermission } from "./roles.ts";
 
 const adminPermissions: AppPermission[] = [
   "admin.access",
