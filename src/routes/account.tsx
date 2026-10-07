@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AuthNotice } from "@/components/auth-shell";
 import { getCurrentUser } from "@/lib/auth/auth.functions";
 import { safeRedirect } from "@/lib/auth/redirect";
-import { roleLabel } from "@/lib/auth/roles";
+import { getRoleDashboardPath, roleLabel } from "@/lib/auth/roles";
 import { useSignOut } from "@/lib/auth/use-current-user";
 import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
 import { useState } from "react";
@@ -30,6 +30,14 @@ export const Route = createFileRoute("/account")({
 function AccountPage() {
   const { user } = Route.useRouteContext();
   const { denied } = Route.useSearch();
+  const dashboardPath = getRoleDashboardPath(user.role);
+  const dashboardLabel = dashboardPath === "/owner"
+    ? "Go to owner dashboard"
+    : dashboardPath === "/admin"
+      ? "Go to admin dashboard"
+      : dashboardPath === "/dashboard"
+        ? "Go to dashboard"
+        : "Back to account";
   const signOut = useSignOut();
   const [claiming, setClaiming] = useState(false);
   const [claimMessage, setClaimMessage] = useState<string | null>(null);
@@ -72,7 +80,7 @@ function AccountPage() {
       <div className="account-actions"><Button onClick={() => void claimFree()} disabled={claiming || claimSuccess}>{claiming ? "Claiming…" : claimSuccess ? "Claimed" : "Claim 6 Months Free"}</Button></div>
       {claimMessage && <p className="form-hint" role={claimSuccess ? "status" : "alert"}>{claimMessage}</p>}
     </section>
-    <div className="account-actions"><Button asChild><Link to="/dashboard">Go to dashboard</Link></Button><Button variant="outline" onClick={signOut}>Sign out</Button></div>
+    <div className="account-actions"><Button asChild><Link to={dashboardPath}>{dashboardLabel}</Link></Button><Button variant="outline" onClick={signOut}>Sign out</Button></div>
   </main>;
 }
 
