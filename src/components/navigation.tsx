@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowUpRight, Heart, Home, Map, Menu, MessageSquare, Search, User, X } from "lucide-react";
+import { ArrowUpRight, Bell, Heart, Home, Map, Menu, MessageSquare, Search, User, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserData } from "@/lib/user-data";
@@ -7,7 +7,7 @@ import { useCurrentUser, useSignOut } from "@/lib/auth/use-current-user";
 import { AREA_ROLES, roleLabel } from "@/lib/auth/roles";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listConversationsFn } from "@/lib/engagement.functions";
+import { listConversationsFn, listNotificationsFn, markNotificationReadFn } from "@/lib/engagement.functions";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function Navigation() {
@@ -17,6 +17,10 @@ export function Navigation() {
   const { user } = useCurrentUser(); const signOut = useSignOut();
   const fetchConversations = useServerFn(listConversationsFn);
   const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => fetchConversations(), enabled: !!user, staleTime: 15000 });
+  const fetchNotifications = useServerFn(listNotificationsFn);
+  const readNotification = useServerFn(markNotificationReadFn);
+  const notifications = useQuery({ queryKey: ["notifications"], queryFn: () => fetchNotifications(), enabled: !!user, staleTime: 10000 });
+  const unreadNotifications = user ? (notifications.data ?? []).filter(n => !n.read).length : 0;
   const unreadMessages = user ? (conversations.data ?? []).filter(c => c.lastMessage && c.lastMessage.senderId !== user.id && !c.lastMessage.readAt).length : 0;
   const canOwner = !!user && AREA_ROLES.owner.includes(user.role), canAgent = !!user && AREA_ROLES.agent.includes(user.role), canAdmin = !!user && AREA_ROLES.admin.includes(user.role);
   const onMap = path === "/properties" && (view === "map" || view === "satellite");
@@ -26,6 +30,15 @@ export function Navigation() {
       <nav className="nav-links" aria-label="Main navigation"><Link to="/properties" search={{ mode: "Rent" }}>Rent</Link><Link to="/properties" search={{ mode: "Buy" }}>Buy</Link><Link to="/properties" search={{ view: "map" }}>Map</Link><Link to="/compare">Compare</Link></nav>
       <div className="nav-actions">
         {user && <Link to="/messages" className="nav-icon nav-message" aria-label={`Messages${unreadMessages ? ` (${unreadMessages} unread)` : ""}`}><MessageSquare size={18}/>{unreadMessages > 0 && <span className="nav-dot">{unreadMessages > 9 ? "9+" : unreadMessages}</span>}</Link>}
+        {user && <DropdownMenu>
+          <DropdownMenuTrigger className="nav-icon nav-notifications" aria-label={`Notifications${unreadNotifications ? ` (${unreadNotifications} unread)` : ""}`}><Bell size={18}/>{unreadNotifications > 0 && <span className="nav-dot">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}</DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="nav-notifications-menu">
+            <DropdownMenuLabel>Notifications</DropdownMenuLabel><DropdownMenuSeparator/>
+            {(notifications.data ?? []).length ? (notifications.data ?? []).slice(0, 8).map(n => <DropdownMenuItem key={n.id} className={n.read ? "notification-read" : "notification-unread"} onSelect={() => { if (!n.read) { void readNotification({ data: { id: n.id } }).then(() => void notifications.refetch()); } }}>
+              <span><strong>{n.title}</strong><small>{n.message}</small></span>
+            </DropdownMenuItem>) : <DropdownMenuItem disabled>No notifications yet.</DropdownMenuItem>}
+          </DropdownMenuContent>
+        </DropdownMenu>}
         <Link to="/saved" className="nav-icon" aria-label={`Saved properties (${data.saved.length})`}><Heart size={18}/>{data.saved.length > 0 && <span className="nav-dot">{data.saved.length}</span>}</Link>
         {user
           ? <DropdownMenu><DropdownMenuTrigger className="nav-icon nav-account" aria-label={`Account menu for ${user.name || user.email}`}><User size={18}/></DropdownMenuTrigger>
