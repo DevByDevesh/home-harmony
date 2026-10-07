@@ -9,19 +9,24 @@ export function DiscoverySearch({ initial = {} }: { initial?: HomeQuery }) {
   const [mode, setMode] = useState(initial.mode || "Rent");
   const [location, setLocation] = useState(initial.location || "");
   const [kind, setKind] = useState(initial.kind || "");
-  const budget = mode === "Buy" ? { min: 10000, max: 200000000, step: 500000 } : { min: 1000, max: 500000, step: 1000 };
+  const budget = mode === "Buy" ? { min: 10000, max: 100000000, step: 500000 } : { min: 1000, max: 500000, step: 1000 };
   const [min, setMin] = useState(initial.min || "");
   const [max, setMax] = useState(initial.max || "");
 
   const formatBudget = (value: number) => {
     if (mode === "Buy") {
-      return value >= 10000000
-        ? `₹${(value / 10000000).toLocaleString("en-IN", { maximumFractionDigits: 2 })} Cr`
-        : `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`;
+      if (value >= 10000000) {
+        return `₹${(value / 10000000).toLocaleString("en-IN", { maximumFractionDigits: 2 })} Cr`;
+      }
+      if (value >= 100000) {
+        return `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`;
+      }
+      return `₹${value.toLocaleString("en-IN")}`;
     }
-    return value >= 100000
-      ? `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`
-      : `₹${value.toLocaleString("en-IN")}`;
+    if (value >= 100000) {
+      return `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`;
+    }
+    return `₹${value.toLocaleString("en-IN")}`;
   };
 
   const currentMin = Math.min(Math.max(Number(min) || budget.min, budget.min), budget.max - budget.step);
