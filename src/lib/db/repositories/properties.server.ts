@@ -166,7 +166,7 @@ export async function repostExpiredOwnerProperty(id: string, ownerId: string) {
 
 export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "SUSPENDED" | "PAUSED") {
   const db = await requireDb();
-  const from = to === "ACTIVE" ? { in: ["SUSPENDED", "PAUSED"] as const } : { in: ["ACTIVE"] as const };
+  const from = to === "ACTIVE" ? { in: ["SUSPENDED", "PAUSED"] } : { in: ["ACTIVE"] };
   const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: to === "ACTIVE" ? { status: to, publishedAt: new Date() } : { status: to } });
   return r.count;
 }
