@@ -42,7 +42,7 @@ export function displayPrice(home: Home) {
 }
 
 /* ---------- Phase 2: listing details (fictional) ---------- */
-export type ListingStatus = "ACTIVE" | "PAUSED" | "RENTED" | "SOLD" | "EXPIRED" | "UNDER_REVIEW";
+export type ListingStatus = "DRAFT" | "ACTIVE" | "UNDER_REVIEW" | "REJECTED" | "SUSPENDED" | "PAUSED" | "RENTED" | "SOLD" | "EXPIRED" | "DELETED" | "ARCHIVED";
 /** Each check must come from a real verification record. Showcase homes have none, so every value is false. */
 export type Verification = { ownerIdentity: boolean; phone: boolean; location: boolean; listingReviewed: boolean; photosChecked: boolean; availabilityConfirmed: boolean };
 export type ListingDetails = {
