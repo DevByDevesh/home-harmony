@@ -38,7 +38,7 @@ export const listMyListingsFn = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const setMyListingStatusFn = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64), status: z.enum(["ACTIVE", "SUSPENDED", "PAUSED"]) }).strict().parse(d))
+  .inputValidator((d: unknown) => z.object({ id: z.string().min(1).max(64), status: z.enum(["ACTIVE", "PAUSED"]) }).strict().parse(d))
   .handler(async ({ data }) => {
     try {
       const { requireRole } = await import("./auth/guards.server");
