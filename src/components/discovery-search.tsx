@@ -9,7 +9,7 @@ export function DiscoverySearch({ initial = {} }: { initial?: HomeQuery }) {
   const [mode, setMode] = useState(initial.mode || "Rent");
   const [location, setLocation] = useState(initial.location || "");
   const [kind, setKind] = useState(initial.kind || "");
-  const budget = mode === "Buy" ? { min: 1000000, max: 200000000, step: 500000 } : { min: 5000, max: 500000, step: 1000 };
+  const budget = mode === "Buy" ? { min: 10000, max: 200000000, step: 500000 } : { min: 1000, max: 500000, step: 1000 };
   const [min, setMin] = useState(initial.min || "");
   const [max, setMax] = useState(initial.max || "");
 
