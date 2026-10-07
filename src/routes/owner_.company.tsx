@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { BarChart3, BadgeCheck, Building2, ClipboardList, Flag, Gauge, Settings, Users } from "lucide-react";
 import { AdminAuditTimeline, AdminChartCard, AdminHeader, AdminLoadingState, AdminMetricCard, Distribution } from "@/components/admin/admin-kit";
-import { liveCountsFn, adminTrendsFn } from "@/lib/admin-business.functions";
+import { liveCountsFn, adminTrendsFn, ownerAnalyticsFn } from "@/lib/admin-business.functions";
 import { adminListAuditFn } from "@/lib/admin-trust.functions";
 
 export const Route = createFileRoute("/owner/company")({
@@ -24,6 +24,7 @@ const toDist = (o: Record<string, number> | undefined) => o ? Object.entries(o).
 function CompanyOwnerDashboard() {
   const counts = useQuery({ queryKey: ["owner-platform", "counts"], queryFn: () => liveCountsFn() });
   const trends = useQuery({ queryKey: ["owner-platform", "trends", 30], queryFn: () => adminTrendsFn({ data: { days: 30 } }) });
+  const analytics = useQuery({ queryKey: ["owner-platform", "analytics"], queryFn: () => ownerAnalyticsFn() });
   const audit = useQuery({ queryKey: ["owner-platform", "audit"], queryFn: () => adminListAuditFn() });
 
   if (counts.isPending) return <main className="admin-page wrap"><AdminHeader title="Company Owner Dashboard" intro="Loading platform operations…"/><AdminLoadingState/></main>;
@@ -39,21 +40,28 @@ function CompanyOwnerDashboard() {
       actions={<span className="admin-signed"><strong>OWNER</strong> · Highest-level platform account</span>}
     />
 
+    {analytics.isPending ? <AdminLoadingState label="Loading owner analytics"/> : analytics.isError ? <p role="alert">{(analytics.error as Error).message}</p> : <section className="admin-section">
+      <div className="admin-section-head"><h2>Owner analytics</h2><span className="form-hint">Live database metrics · New users/listings = last 30 days</span></div>
+      <AdminMetricCard items={[
+        { label: "Total Users", value: analytics.data!.totalUsers },
+        { label: "Active Users", value: analytics.data!.activeUsers },
+        { label: "Banned Users", value: analytics.data!.bannedUsers },
+        { label: "Total Listings", value: analytics.data!.totalListings },
+        { label: "Active Listings", value: analytics.data!.activeListings },
+        { label: "Pending Listings", value: analytics.data!.pendingListings },
+        { label: "Rejected Listings", value: analytics.data!.rejectedListings },
+        { label: "Expired Listings", value: analytics.data!.expiredListings },
+        { label: "Suspended Listings", value: analytics.data!.suspendedListings },
+        { label: "Total Enquiries", value: analytics.data!.totalEnquiries },
+        { label: "Total Visits", value: analytics.data!.totalVisits },
+        { label: "Total Messages", value: analytics.data!.totalMessages },
+        { label: "New Users", value: analytics.data!.newUsers },
+        { label: "New Listings", value: analytics.data!.newListings },
+        { label: "Listing approval rate", value: analytics.data!.listingApprovalRate },
+      ]}/>
+    </section>}
+
     <AdminMetricCard items={[
-      { label: "Total accounts", value: sum(c.users) },
-      { label: "Platform owners", value: c.users["OWNER"] ?? 0 },
-      { label: "Agents", value: c.users["AGENT"] ?? 0 },
-      { label: "Total properties", value: sum(c.properties) },
-      { label: "Active listings", value: c.properties["ACTIVE"] ?? 0 },
-      { label: "Under review", value: c.properties["UNDER_REVIEW"] ?? 0 },
-      { label: "Suspended listings", value: c.properties["SUSPENDED"] ?? 0 },
-      { label: "Total enquiries", value: sum(c.enquiries) },
-      { label: "Total visits", value: sum(c.visits) },
-      { label: "Verification waiting", value: pendingVerification },
-      { label: "Subscriptions", value: sum(c.subscriptions) },
-      { label: "Succeeded payments", value: c.paidCount },
-      { label: "Recorded revenue", value: `₹${c.paidTotal.toLocaleString("en-IN")}` },
-    ]}/>
 
     <section className="admin-section">
       <div className="admin-section-head"><h2>Platform management</h2><span className="form-hint">Owner-only entry point to existing live operational modules.</span></div>
