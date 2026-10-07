@@ -14,7 +14,10 @@ export class AuthError extends Error {
 
 export async function getSessionUser(): Promise<SafeUser | null> {
   const auth = await getAuth();
-  const session = await auth.api.getSession({ headers: getRequestHeaders() as unknown as Headers }).catch(() => null);
+  // Do not turn database/auth transport failures into "signed out".
+  // A transient DB pool error must surface as an error, otherwise the UI
+  // incorrectly redirects an already-authenticated user to /login.
+  const session = await auth.api.getSession({ headers: getRequestHeaders() as unknown as Headers });
   if (!session) return null;
   const db = await requireDb();
   const u = await db.user.findUnique({ where: { id: session.user.id } });
