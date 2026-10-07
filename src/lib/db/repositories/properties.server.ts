@@ -5,7 +5,7 @@
 import { Prisma, type PropertyType, type VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
-export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; maxPrice?: number; take?: number };
+export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; take?: number };
 export const LISTING_VALIDITY_DAYS = 30;
 export const LISTING_REPOST_WINDOW_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,7 +76,9 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.city ? { city: q.city } : {}),
       ...(q.listingType ? { listingType: q.listingType } : {}),
       ...(q.propertyType ? { propertyType: q.propertyType } : {}),
-      ...(q.maxPrice ? { price: { lte: q.maxPrice } } : {}),
+      ...((q.minPrice !== undefined || q.maxPrice !== undefined)
+        ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } }
+        : {}),
     },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
