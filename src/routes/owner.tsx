@@ -271,7 +271,7 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
       {listing.status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : listing.status === "EXPIRED" ? <Button size="sm" variant="outline" onClick={repostExpired}><RotateCcw size={14}/> Repost</Button> : <>
         {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("SUSPENDED") }><Pause size={14}/> Pause</Button>}
-        {(status === "PAUSED" || status === "SUSPENDED") && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")><Play size={14}/> Resume</Button>}
+        {(status === "PAUSED" || status === "SUSPENDED") && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
         <Button size="sm" variant="ghost" onClick={archive}><Archive size={14}/> Delete</Button>
       </>}
     </div></li>;
