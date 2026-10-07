@@ -60,3 +60,11 @@ test("Admin appointment requires active account, complete personal details, veri
   assert.equal(isVerifiedAdminCandidate({ targetRole: "USER", targetStatus: "ACTIVE", hasPersonalDetails: true, identityVerified: true, confirmed: false }), false);
   assert.equal(isVerifiedAdminCandidate({ targetRole: "USER", targetStatus: "SUSPENDED", hasPersonalDetails: true, identityVerified: true, confirmed: true }), false);
 });
+
+
+test("OWNER can remove an ADMIN or demote a SUPER_ADMIN, while ADMIN cannot manage privileged roles", () => {
+  assert.equal(canAssignRole("OWNER", "USER", "ADMIN"), true);
+  assert.equal(canAssignRole("OWNER", "ADMIN", "SUPER_ADMIN"), true);
+  assert.equal(canAssignRole("ADMIN", "USER", "ADMIN"), false);
+  assert.equal(canAssignRole("ADMIN", "ADMIN", "SUPER_ADMIN"), false);
+});
