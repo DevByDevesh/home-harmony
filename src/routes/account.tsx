@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { BadgeCheck, Building2, CalendarClock, MessageSquare, ShieldAlert, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { AuthNotice } from "@/components/auth-shell";
-import { guardArea } from "@/lib/auth/route-guard";
+import { getCurrentUser } from "@/lib/auth/auth.functions";
+import { safeRedirect } from "@/lib/auth/redirect";
 import { roleLabel } from "@/lib/auth/roles";
 import { useSignOut } from "@/lib/auth/use-current-user";
 import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
@@ -13,7 +14,11 @@ const areaName = { owner: "the owner dashboard", ownerCompany: "the company owne
 
 export const Route = createFileRoute("/account")({
   validateSearch: z.object({ denied: z.enum(["owner", "ownerCompany", "agent", "admin", "dashboard"]).optional() }),
-  beforeLoad: guardArea("dashboard"),
+  beforeLoad: async ({ location }) => {
+    const user = await getCurrentUser();
+    if (!user) throw redirect({ to: "/login", search: { redirect: safeRedirect(location.href) } });
+    return { user };
+  },
   head: () => ({ meta: [
     { title: "Your account — HouseProvider.in" }, { name: "description", content: "Your HouseProvider.in profile and account details." },
     { property: "og:title", content: "Your account — HouseProvider.in" }, { property: "og:description", content: "Your HouseProvider.in profile." },
