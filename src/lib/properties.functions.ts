@@ -69,11 +69,13 @@ function demoProperty(home: (typeof listings)[number]): PublicProperty {
   };
 }
 
-function demoListings(input: { city?: string | undefined; listingType?: "RENT" | "BUY" | undefined; take?: number | undefined }) {
+function demoListings(input: { city?: string | undefined; listingType?: "RENT" | "BUY" | undefined; minPrice?: number | undefined; maxPrice?: number | undefined; take?: number | undefined }) {
   return listings
     .filter((home) =>
       (!input.city || home.city === input.city) &&
-      (!input.listingType || (input.listingType === "BUY" ? home.mode === "Buy" : home.mode === "Rent")),
+      (!input.listingType || (input.listingType === "BUY" ? home.mode === "Buy" : home.mode === "Rent")) &&
+      (input.minPrice === undefined || home.price >= input.minPrice) &&
+      (input.maxPrice === undefined || home.price <= input.maxPrice),
     )
     .slice(0, input.take ?? 24)
     .map(demoProperty);
@@ -81,7 +83,7 @@ function demoListings(input: { city?: string | undefined; listingType?: "RENT" |
 
 export const listPropertiesFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
-    z.object({ city: z.string().max(80).optional(), listingType: z.enum(["RENT", "BUY"]).optional(), take: z.number().int().min(1).max(100).optional() })
+    z.object({ city: z.string().max(80).optional(), listingType: z.enum(["RENT", "BUY"]).optional(), minPrice: z.number().finite().positive().optional(), maxPrice: z.number().finite().positive().optional(), take: z.number().int().min(1).max(100).optional() })
       .strict().parse(d ?? {}),
   )
   .handler(async ({ data }) => {
@@ -92,6 +94,8 @@ export const listPropertiesFn = createServerFn({ method: "GET" })
     const rows = await listPublicProperties({
       ...(data.city ? { city: data.city } : {}),
       ...(data.listingType ? { listingType: data.listingType } : {}),
+      ...(data.minPrice !== undefined ? { minPrice: data.minPrice } : {}),
+      ...(data.maxPrice !== undefined ? { maxPrice: data.maxPrice } : {}),
       ...(data.take ? { take: data.take } : {}),
     });
     return rows.map(toPublic);
