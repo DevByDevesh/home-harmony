@@ -64,10 +64,10 @@ export const setAccountStatus = createServerFn({ method: "POST" })
       const db = await requireDb();
       const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true, status: true } });
       if (!subject) throw new AuthError(403, "Account not found.");
-      const privilegedSubject = subject.role === "ADMIN" || subject.role === "SUPER_ADMIN";
+      const privilegedSubject = subject.role === "OWNER" || subject.role === "ADMIN" || subject.role === "SUPER_ADMIN";
       if (subject.id === actor.id || (privilegedSubject && !hasPermission(actor.role, "users.assignAdmin"))) {
         await writeAudit({ actorId: actor.id, action: "account.status", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { to: data.status } });
-        throw new AuthError(403, subject.id === actor.id ? "You can't change your own account status." : "Only a Super admin can change an admin's status.");
+        throw new AuthError(403, subject.id === actor.id ? "You can't change your own account status." : "Only the platform Owner or a Super admin can change a privileged account's status.");
       }
       await db.$transaction(async (tx) => {
         await tx.user.update({ where: { id: subject.id }, data: { status: data.status } });
