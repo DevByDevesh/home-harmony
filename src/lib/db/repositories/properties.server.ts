@@ -2,7 +2,7 @@
  * Database-backed property repository (server-only). Public reads use this repository
  * when DATABASE_URL is configured; otherwise the typed demo catalog is used as fallback.
  */
-import { Prisma, type PropertyType, type VerificationType } from "@prisma/client";
+import { Prisma, PropertyStatus, type PropertyType, type VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
 export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; take?: number };
@@ -164,9 +164,9 @@ export async function repostExpiredOwnerProperty(id: string, ownerId: string) {
   });
 }
 
-export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "SUSPENDED" | "PAUSED") {
+export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
   const db = await requireDb();
-  const from = to === "ACTIVE" ? { in: ["SUSPENDED", "PAUSED"] } : { in: ["ACTIVE"] };
+  const from: Prisma.PropertyWhereInput["status"] = to === "ACTIVE" ? { in: [PropertyStatus.PAUSED] } : { in: [PropertyStatus.ACTIVE] };
   const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: to === "ACTIVE" ? { status: to, publishedAt: new Date() } : { status: to } });
   return r.count;
 }
