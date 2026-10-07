@@ -38,8 +38,8 @@ export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent:
 }
 
 export const AREA_ROLES = {
-  dashboard: ROLES as readonly AuthRole[],
-  owner: ["USER","OWNER","ADMIN"] as AuthRole[],
+  dashboard: ["USER"] as AuthRole[],
+  owner: ["OWNER"] as AuthRole[],
   ownerCompany: ["OWNER"] as AuthRole[],
   agent: ["AGENT","ADMIN"] as AuthRole[],
   admin: ["OWNER","ADMIN"] as AuthRole[],
