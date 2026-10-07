@@ -35,7 +35,7 @@ function AdminProperties() {
 
   useEffect(() => { void refresh(); void getListingModerationConfigFn().then(c => setRejectionReasonRequired(c.rejectionReasonRequired)).catch(() => undefined); }, []);
 
-  const moderate = async (p: LiveProperty, action: "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "PAUSE" | "RESUME" | "ARCHIVE" | "RESTORE", note?: string) => {
+  const moderate = async (p: LiveProperty, action: "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "PAUSE" | "RESUME" | "ARCHIVE" | "RESTORE" | "DELETE", note?: string) => {
     try {
       const result = await moderateListingFn({ data: { propertyId: p.id, action, ...(note ? { note } : {}) } });
       if (!result.ok) {
@@ -67,7 +67,13 @@ function AdminProperties() {
     } },
     { label: "Suspend Listing", hidden: p.status !== "ACTIVE", destructive: true, onSelect: () => void moderate(p, "PAUSE") },
     { label: "Resume", hidden: p.status !== "SUSPENDED" && p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
-    { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
+        { label: "Delete Listing", hidden: p.status === "DELETED", destructive: true, onSelect: () => ask({
+      title: `Permanently delete “${p.title}”?`,
+      description: "This permanently removes the listing and its listing-specific data. This action cannot be undone.",
+      confirm: "Delete permanently",
+      onConfirm: () => void moderate(p, "DELETE"),
+    }) },
+{ label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
       title: `Archive “${p.title}”?`,
       description: "Archived listings are hidden from seekers but retained in the database.",
       confirm: "Archive",
