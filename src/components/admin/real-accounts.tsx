@@ -3,6 +3,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { changeUserRole, listAccounts, setAccountStatus } from "@/lib/auth/auth.functions";
 import { adminListAdminActivityFn } from "@/lib/admin-trust.functions";
+import { setAdminPermissions, listAdminPermissions } from "@/lib/auth/auth.functions";
+import { ADMIN_PERMISSION_LABELS, GRANULAR_ADMIN_PERMISSIONS, type AdminPermission } from "@/lib/admin/permissions";
 import { ACCOUNT_STATUSES, ROLES, canAssignRole, roleLabel, type AccountStatus, type AuthRole } from "@/lib/auth/roles";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 
@@ -11,8 +13,11 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   const { user } = useCurrentUser();
   const [confirmBan, setConfirmBan] = useState<{ id: string; name: string } | null>(null);
   const [activityUserId, setActivityUserId] = useState<string | null>(null);
+  const [permissionUserId, setPermissionUserId] = useState<string | null>(null);
+  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
+  const permissionQuery = useQuery({ queryKey: ["admin", "permissions", permissionUserId], queryFn: () => listAdminPermissions({ data: { userId: permissionUserId! } }), enabled: Boolean(permissionUserId) });
   const activity = useQuery({
     queryKey: ["admin", "activity", activityUserId],
     queryFn: () => adminListAdminActivityFn({ data: { userId: activityUserId! } }),
@@ -24,8 +29,10 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Action failed")
   });
   const role = useMutation({ mutationFn: (d: { userId: string; role: AuthRole; adminConfirmation?: boolean }) => changeUserRole({ data: d }), ...done("Role updated") });
+  const permissions = useMutation({ mutationFn: (d: { userId: string; permissions: AdminPermission[] }) => setAdminPermissions({ data: d }), onSuccess: () => { toast.success("Admin permissions updated"); void qc.invalidateQueries({ queryKey: ["admin", "permissions", permissionUserId] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Permission update failed") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
   const isOwner = user?.role === "OWNER";
+  const openPermissions = (userId: string) => { setPermissionUserId(userId); setSelectedPermissions([]); };
   const confirmRoleAction = (message: string, userId: string, nextRole: AuthRole) => {
     if (!window.confirm(message)) return;
     role.mutate({ userId, role: nextRole, ...(nextRole === "ADMIN" ? { adminConfirmation: true } : {}) });
@@ -62,7 +69,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
               {isOwner && a.role === "ADMIN" ? <>
                 <button type="button" className="text-link" onClick={() => confirmRoleAction(`Remove Admin privileges from ${a.name || a.email || "this user"}?`, a.id, "USER")}>Remove Admin</button>{" "}
                 <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "SUSPENDED" })}>Suspend</button>{" "}
-                <button type="button" className="text-link" onClick={() => setActivityUserId(a.id)}>View activity</button>
+                <button type="button" className="text-link" onClick={() => openPermissions(a.id)}>Permissions</button>{" "}<button type="button" className="text-link" onClick={() => setActivityUserId(a.id)}>View activity</button>
               </> : null}
               {isOwner && a.role === "SUPER_ADMIN" ? <>
                 <button type="button" className="text-link" onClick={() => confirmRoleAction(`Demote ${a.name || a.email || "this user"} from Super admin to Admin?`, a.id, "ADMIN")}>Demote Admin</button>{" "}
@@ -75,6 +82,26 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
           </tr>;
         })}
       </tbody></table></div>}
+    {isOwner && permissionUserId ? <section className="dash-panel" aria-labelledby="admin-permissions-title">
+      <h3 id="admin-permissions-title">Admin permissions</h3>
+      {permissionQuery.isPending ? <p>Loading permissions…</p> : permissionQuery.isError ? <p role="alert">{(permissionQuery.error as Error).message}</p> : <>
+        <p className="form-hint">Owner-controlled operational permissions. Admin Management and Owner Management are intentionally excluded from this editor.</p>
+        <div className="admin-permission-grid">
+          {GRANULAR_ADMIN_PERMISSIONS.map(permission => {
+            const checked = selectedPermissions.length ? selectedPermissions.includes(permission) : (permissionQuery.data?.permissions ?? []).includes(permission);
+            return <label key={permission}><input type="checkbox" checked={checked} onChange={e => {
+              const current = selectedPermissions.length ? selectedPermissions : (permissionQuery.data?.permissions ?? []);
+              setSelectedPermissions(e.target.checked ? [...current, permission] : current.filter(p => p !== permission));
+            }} /> {ADMIN_PERMISSION_LABELS[permission]}</label>;
+          })}
+        </div>
+        <button type="button" className="text-link" disabled={permissions.isPending} onClick={() => {
+          const current = selectedPermissions.length ? selectedPermissions : (permissionQuery.data?.permissions ?? []);
+          permissions.mutate({ userId: permissionUserId, permissions: current });
+        }}>Save permissions</button>{" "}
+        <button type="button" className="text-link" onClick={() => { setPermissionUserId(null); setSelectedPermissions([]); }}>Close</button>
+      </>}
+    </section> : null}
     {isOwner && activityUserId ? <section className="dash-panel" aria-labelledby="admin-activity-title">
       <h3 id="admin-activity-title">Admin activity</h3>
       {activity.isPending ? <p>Loading activity…</p> : activity.isError ? <p role="alert">{(activity.error as Error).message}</p> : !activity.data?.length ? <p>No activity recorded for this account.</p> :
