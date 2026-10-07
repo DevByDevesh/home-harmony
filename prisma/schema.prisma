@@ -55,12 +55,16 @@ enum Furnishing {
 }
 
 enum PropertyStatus {
+  DRAFT
   ACTIVE
   UNDER_REVIEW
+  REJECTED
+  SUSPENDED
   PAUSED
   RENTED
   SOLD
   EXPIRED
+  DELETED
   ARCHIVED
 }
 
