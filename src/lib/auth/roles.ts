@@ -45,7 +45,7 @@ export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent:
 /** Route-area access used by route guards (and mirrored server-side). */
 export const AREA_ROLES = {
   dashboard: ROLES as readonly AuthRole[],
-  owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
+  owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],\n  ownerCompany: ["OWNER"] as AuthRole[],
   agent: ["AGENT", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
   admin: ["OWNER", ...ADMIN_ROLES] as AuthRole[],
 } as const;
