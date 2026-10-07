@@ -80,7 +80,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
         ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } }
         : {}),
     },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: Math.min(q.take ?? 24, 100),
   });
