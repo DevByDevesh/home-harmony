@@ -3,7 +3,7 @@
  * UI uses these only to show/hide controls; every protected server function
  * re-checks them against the session user loaded from the database.
  */
-import { can as canAdmin, type AdminPermission } from "@/lib/admin/permissions";
+import { can as canAdmin, type AdminPermission } from "../admin/permissions.ts";
 
 export const ROLES = ["USER", "OWNER", "AGENT", "PROPERTY_MANAGER", "ADMIN", "SUPER_ADMIN"] as const;
 export type AuthRole = (typeof ROLES)[number];
