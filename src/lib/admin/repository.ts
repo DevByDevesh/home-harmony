@@ -28,7 +28,7 @@ type Collection = "users" | "properties" | "verifications" | "reports" | "enquir
 const store = createLocalStore<AdminState>("houseprovider.admin.v1", initial);
 export const useAdminData = () => store.use();
 
-const actorName = (role: Role) => role === "SUPER_ADMIN" ? "Admin Demo (super admin)" : "Priya Nair (admin)";
+const actorName = (role: Role) => role === "ADMIN" ? "Priya Nair (admin)" : "Priya Nair (admin)";
 export const DEMO_NOTICE = "Demo action — saved on this device only, no live backend update.";
 
 function log(role: Role, action: string, target: string, result: AuditLog["result"] = "SUCCESS") {
