@@ -2,7 +2,7 @@ import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { BarChart3, BadgeCheck, Building2, ClipboardList, Flag, Gauge, Settings , Users, UserCog } from "lucide-react";
+import { BarChart3, BadgeCheck, Building2, ClipboardList, Flag, Gauge, Settings, Users } from "lucide-react";
 import { AdminAuditTimeline, AdminChartCard, AdminHeader, AdminLoadingState, AdminMetricCard, Distribution } from "@/components/admin/admin-kit";
 import { liveCountsFn, adminTrendsFn } from "@/lib/admin-business.functions";
 import { adminListAuditFn } from "@/lib/admin-trust.functions";
@@ -41,15 +41,18 @@ function CompanyOwnerDashboard() {
 
     <AdminMetricCard items={[
       { label: "Total accounts", value: sum(c.users) },
-      { label: "Owners", value: c.users["OWNER"] ?? 0 },
-      { label: "Admins", value: (c.users["ADMIN"] ?? 0) + (c.users["SUPER_ADMIN"] ?? 0) },
+      { label: "Property owners", value: c.users["OWNER"] ?? 0 },
+      { label: "Agents", value: c.users["AGENT"] ?? 0 },
+      { label: "Total properties", value: sum(c.properties) },
       { label: "Active listings", value: c.properties["ACTIVE"] ?? 0 },
       { label: "Under review", value: c.properties["UNDER_REVIEW"] ?? 0 },
+      { label: "Suspended listings", value: c.properties["SUSPENDED"] ?? 0 },
+      { label: "Total enquiries", value: sum(c.enquiries) },
+      { label: "Total visits", value: sum(c.visits) },
       { label: "Verification waiting", value: pendingVerification },
-      { label: "Open enquiries", value: c.enquiries["NEW"] ?? 0 },
-      { label: "Visit requests", value: sum(c.visits) },
       { label: "Subscriptions", value: sum(c.subscriptions) },
       { label: "Succeeded payments", value: c.paidCount },
+      { label: "Recorded revenue", value: `₹${c.paidTotal.toLocaleString("en-IN")}` },
     ]}/>
 
     <section className="admin-section">
