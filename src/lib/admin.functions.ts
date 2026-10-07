@@ -124,6 +124,15 @@ export const moderateListingFn = createServerFn({ method: "POST" })
           metadata: { propertyId: data.propertyId },
         },
       })] : []),
+      ...(data.action === "PAUSE" && owner ? [db.notification.create({
+        data: {
+          userId: owner.ownerId,
+          type: "LISTING_SUSPENDED",
+          title: "Listing suspended",
+          message: "Your property listing has been suspended by an administrator and is no longer visible to seekers.",
+          metadata: { propertyId: data.propertyId },
+        },
+      })] : []),
       ...(data.action === "APPROVE" && owner ? [db.notification.create({
         data: {
           userId: owner.ownerId,
