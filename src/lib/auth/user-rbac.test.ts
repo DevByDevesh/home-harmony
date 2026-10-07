@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canAssignRole, hasPermission } from "./roles";
+import { canAssignRole, hasPermission } from "./roles.ts";
 
 test("USER has normal seeker capabilities", () => {
   for (const permission of [
