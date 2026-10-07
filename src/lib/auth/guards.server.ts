@@ -7,6 +7,7 @@ import { requireDb } from "@/lib/db/client.server";
 import { getAuth } from "./auth.server";
 import { writeAudit } from "./audit.server";
 import { hasPermission, type AppPermission, type AuthRole, type SafeUser } from "./roles";
+import { normaliseGranularAdminPermissions } from "../admin/permissions";
 
 export class AuthError extends Error {
   constructor(public status: 401 | 403, message: string) { super(message); }
@@ -44,7 +45,16 @@ export async function requireRole(roles: readonly AuthRole[], action = "access")
 
 export async function requirePermission(permission: AppPermission): Promise<SafeUser> {
   const u = await requireUser();
-  if (!hasPermission(u.role, permission)) {
+  let allowed = hasPermission(u.role, permission);
+  if (allowed && (u.role === "ADMIN" || u.role === "SUPER_ADMIN")) {
+    const db = await requireDb();
+    const record = await db.user.findUnique({ where: { id: u.id }, select: { adminPermissions: true } });
+    const granular = normaliseGranularAdminPermissions(record?.adminPermissions);
+    if (permission !== "admin.access" && permission !== "users.assignAdmin" && permission !== "payments.refund" && permission !== "plans.edit" && permission !== "settings.edit") {
+      allowed = granular.includes(permission as import("../admin/permissions").AdminPermission);
+    }
+  }
+  if (!allowed) {
     await writeAudit({ actorId: u.id, action: "auth.unauthorized", entityType: "Permission", entityId: permission, result: "DENIED", metadata: { role: u.role } });
     throw new AuthError(403, "You don't have permission for this action.");
   }
