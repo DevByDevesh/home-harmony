@@ -2172,3 +2172,9 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
   background-position: center;
   background-size: cover;
 }
+
+.contact-request-card,.contact-approved-card{margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card);}
+.contact-request-card{display:grid;gap:10px;}
+.contact-request-card strong,.contact-approved-card strong{display:block;}
+.contact-approved-card{display:grid;gap:7px;}
+.contact-approved-card a{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--primary);}
