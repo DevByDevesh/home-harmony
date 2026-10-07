@@ -37,14 +37,16 @@ export function hasPermission(role: AuthRole, permission: AppPermission): boolea
 export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent: AuthRole): boolean {
   if (!hasPermission(actor, "users.changeRole")) return false;
   const privileged = PRIVILEGED_ROLES.includes(target) || PRIVILEGED_ROLES.includes(subjectCurrent);
-  // The company/platform OWNER is the highest-level account and may manage every lower role.\n  if (actor === "OWNER") return target !== "OWNER" && subjectCurrent !== "OWNER";
+  // The company/platform OWNER is the highest-level account and may manage every lower role.
+  if (actor === "OWNER") return target !== "OWNER" && subjectCurrent !== "OWNER";
   return privileged ? hasPermission(actor, "users.assignAdmin") : true;
 }
 
 /** Route-area access used by route guards (and mirrored server-side). */
 export const AREA_ROLES = {
   dashboard: ROLES as readonly AuthRole[],
-  owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],\n  ownerCompany: ["OWNER"] as AuthRole[],
+  owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
+  ownerCompany: ["OWNER"] as AuthRole[],
   agent: ["AGENT", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
   admin: ["OWNER", ...ADMIN_ROLES] as AuthRole[],
 } as const;
