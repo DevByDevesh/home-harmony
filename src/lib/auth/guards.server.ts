@@ -46,7 +46,7 @@ export async function requireRole(roles: readonly AuthRole[], action = "access")
 export async function requirePermission(permission: AppPermission): Promise<SafeUser> {
   const u = await requireUser();
   let allowed = hasPermission(u.role, permission);
-  if (allowed && (u.role === "ADMIN" || u.role === "SUPER_ADMIN")) {
+  if (allowed && u.role === "ADMIN") {
     const db = await requireDb();
     const record = await db.user.findUnique({ where: { id: u.id }, select: { adminPermissions: true } });
     const granular = normaliseGranularAdminPermissions(record?.adminPermissions);
