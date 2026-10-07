@@ -230,6 +230,8 @@ model User {
   email          String?       @unique
   phone          String?       @unique
   role           Role          @default(USER)
+  /// Owner-controlled granular permissions for ADMIN/SUPER_ADMIN accounts. Null means role defaults.
+  adminPermissions Json?
   status         AccountStatus @default(PENDING)
   /// Display name used by the auth library (profile keeps the canonical fullName).
   name           String        @default("")
