@@ -58,12 +58,12 @@ export const moderateListingFn = createServerFn({ method: "POST" })
     const next = {
       APPROVE: "ACTIVE",
       REQUEST_CHANGES: "UNDER_REVIEW",
-      REJECT: "ARCHIVED",
-      PAUSE: "PAUSED",
+      REJECT: "REJECTED",
+      PAUSE: "SUSPENDED",
       RESUME: "ACTIVE",
       ARCHIVE: "ARCHIVED",
       RESTORE: "UNDER_REVIEW",
-    }[data.action] as "ACTIVE" | "UNDER_REVIEW" | "PAUSED" | "ARCHIVED";
+    }[data.action] as "ACTIVE" | "UNDER_REVIEW" | "REJECTED" | "SUSPENDED" | "PAUSED" | "ARCHIVED";
 
     if (data.action === "APPROVE" && current.status !== "UNDER_REVIEW") {
       return { ok: false as const, message: "Only listings under review can be approved." };
@@ -77,11 +77,11 @@ export const moderateListingFn = createServerFn({ method: "POST" })
     if (data.action === "REJECT" && LISTING_REJECTION_REASON_REQUIRED && !data.note?.trim()) {
       return { ok: false as const, message: "A rejection reason is required." };
     }
-    if (data.action === "RESUME" && current.status !== "PAUSED") {
-      return { ok: false as const, message: "Only paused listings can be resumed." };
+    if (data.action === "RESUME" && current.status !== "SUSPENDED" && current.status !== "PAUSED") {
+      return { ok: false as const, message: "Only suspended listings can be resumed." };
     }
     if (data.action === "PAUSE" && current.status !== "ACTIVE") {
-      return { ok: false as const, message: "Only active listings can be paused." };
+      return { ok: false as const, message: "Only active listings can be suspended." };
     }
 
     const changesRequested = data.action === "REQUEST_CHANGES"
