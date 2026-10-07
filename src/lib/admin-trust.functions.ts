@@ -137,7 +137,7 @@ export const adminUpdateReportFn = createServerFn({ method: "POST" })
   });
 
 
-export type AdminActivityEntry = { id: string; at: string; actor: string; action: string; result: string; metadata: unknown };
+export type AdminActivityEntry = { id: string; at: string; actor: string; action: string; result: string };
 
 /** Owner-only activity feed for a specific Admin/Super Admin account. */
 export const adminListAdminActivityFn = createServerFn({ method: "GET" })
@@ -150,8 +150,8 @@ export const adminListAdminActivityFn = createServerFn({ method: "GET" })
       const rows = await (await db()).auditLog.findMany({
         where: { entityType: "User", entityId: data.userId },
         orderBy: { createdAt: "desc" }, take: 100,
-        select: { id: true, action: true, result: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
+        select: { id: true, action: true, result: true, createdAt: true, actor: { select: { name: true } } },
       });
-      return rows.map(a => ({ id: a.id, at: a.createdAt.toISOString(), actor: first(a.actor?.name), action: a.action, result: a.result, metadata: a.metadata }));
+      return rows.map(a => ({ id: a.id, at: a.createdAt.toISOString(), actor: first(a.actor?.name), action: a.action, result: a.result }));
     } catch (e) { rethrow(e); }
   });
