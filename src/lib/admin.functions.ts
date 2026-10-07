@@ -81,6 +81,11 @@ export const moderateListingFn = createServerFn({ method: "POST" })
         ? null
         : undefined;
 
+    const owner = await db.property.findUnique({
+      where: { id: data.propertyId },
+      select: { ownerId: true },
+    });
+
     await db.$transaction([
       db.property.update({
         where: { id: data.propertyId },
@@ -90,6 +95,33 @@ export const moderateListingFn = createServerFn({ method: "POST" })
           ...(changesRequested !== undefined ? { changesRequested } : {}),
         },
       }),
+      ...(data.action === "REJECT" && owner ? [db.notification.create({
+        data: {
+          userId: owner.ownerId,
+          type: "LISTING_REJECTED",
+          title: "Listing rejected",
+          message: data.note?.trim() || "Your property listing was rejected during admin review. Please review the listing and resubmit it.",
+          metadata: { propertyId: data.propertyId },
+        },
+      })] : []),
+      ...(data.action === "REQUEST_CHANGES" && owner ? [db.notification.create({
+        data: {
+          userId: owner.ownerId,
+          type: "LISTING_CHANGES_REQUESTED",
+          title: "Changes requested for your listing",
+          message: changesRequested || "Please review and update your listing before resubmitting.",
+          metadata: { propertyId: data.propertyId },
+        },
+      })] : []),
+      ...(data.action === "APPROVE" && owner ? [db.notification.create({
+        data: {
+          userId: owner.ownerId,
+          type: "LISTING_APPROVED",
+          title: "Listing approved",
+          message: "Your property listing has been approved and is now visible to seekers.",
+          metadata: { propertyId: data.propertyId },
+        },
+      })] : []),
       db.auditLog.create({
         data: {
           actorId: actor.id,
