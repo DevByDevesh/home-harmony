@@ -5,7 +5,7 @@ import { AdminDataTable, AdminDetailPanel, AdminHeader, AdminStatusBadge, Detail
 import { useConfirm } from "@/components/admin/use-confirm";
 import { adminHead } from "@/lib/admin/head";
 import { inr } from "@/lib/catalog";
-import { listAdminPropertiesFn, moderateListingFn } from "@/lib/admin.functions";
+import { getListingModerationConfigFn, listAdminPropertiesFn, moderateListingFn } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/properties")({ head: adminHead("Properties"), component: AdminProperties });
 
@@ -19,6 +19,7 @@ function AdminProperties() {
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [ask, dialog] = useConfirm();
+  const [rejectionReasonRequired, setRejectionReasonRequired] = useState(true);
 
   const refresh = async () => {
     setLoading(true);
@@ -32,7 +33,7 @@ function AdminProperties() {
     }
   };
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { void refresh(); void getListingModerationConfigFn().then(c => setRejectionReasonRequired(c.rejectionReasonRequired)).catch(() => undefined); }, []);
 
   const moderate = async (p: LiveProperty, action: "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "PAUSE" | "RESUME" | "ARCHIVE" | "RESTORE", note?: string) => {
     try {
@@ -50,12 +51,20 @@ function AdminProperties() {
   const actions = (p: LiveProperty): RowAction[] => [
     { label: "Approve", hidden: p.status !== "UNDER_REVIEW", onSelect: () => void moderate(p, "APPROVE") },
     { label: "Request changes", hidden: p.status !== "UNDER_REVIEW", onSelect: () => void moderate(p, "REQUEST_CHANGES", "Please review the listing details and resubmit.") },
-    { label: "Reject", hidden: p.status !== "UNDER_REVIEW", destructive: true, onSelect: () => ask({
-      title: `Reject “${p.title}”?`,
-      description: "The listing will be archived and kept for records.",
-      confirm: "Reject",
-      onConfirm: () => void moderate(p, "REJECT", "Rejected by moderation"),
-    }) },
+    { label: "Reject", hidden: p.status !== "UNDER_REVIEW", destructive: true, onSelect: () => {
+      const reason = window.prompt(
+        rejectionReasonRequired
+          ? `Reason for rejecting “${p.title}” (required):`
+          : `Reason for rejecting “${p.title}” (optional):`,
+        "",
+      )?.trim();
+      if (reason === undefined) return;
+      if (rejectionReasonRequired && !reason) {
+        setError("A rejection reason is required.");
+        return;
+      }
+      void moderate(p, "REJECT", reason || undefined);
+    } },
     { label: "Pause", hidden: p.status !== "ACTIVE", onSelect: () => void moderate(p, "PAUSE") },
     { label: "Resume", hidden: p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
     { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
@@ -96,7 +105,7 @@ function AdminProperties() {
         { key: "updated", label: "Updated", render: p => fmtDate(p.updatedAt), sort: p => p.updatedAt },
       ]}
     />
-    {current && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={current.title} description="Live PostgreSQL property record.">
+    {current && <AdminDetailPanel open onOpenChange={o => !o && setOpen(null)} title={current.title} description={`Live PostgreSQL property record. Rejection reason is ${rejectionReasonRequired ? "required" : "optional"}.`}>
       <DetailList items={[
         ["ID", current.id],
         ["Location", `${current.locality}, ${current.city}`],
