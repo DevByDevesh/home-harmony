@@ -1,5 +1,5 @@
 import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,7 +45,7 @@ function BudgetRange({ draft, onChange }: { draft: Filters; onChange: (patch: Pa
         <span>{draft.mode === "Rent" ? "per month" : "purchase price"}</span>
         <strong>{formatBudget(maxValue, draft.mode)}</strong>
       </div>
-      <div className="budget-range-slider" style={{ "--budget-start": `${minPercent}%`, "--budget-end": `${maxPercent}%` } as React.CSSProperties}>
+      <div className="budget-range-slider" style={{ "--budget-start": `${minPercent}%`, "--budget-end": `${maxPercent}%` } as CSSProperties}>
         <div className="budget-range-fill" aria-hidden="true" />
         <input type="range" min={config.min} max={config.max} step={config.step} value={minValue} onChange={e => updateMin(Number(e.target.value))} aria-label="Minimum budget" />
         <input type="range" min={config.min} max={config.max} step={config.step} value={maxValue} onChange={e => updateMax(Number(e.target.value))} aria-label="Maximum budget" />
