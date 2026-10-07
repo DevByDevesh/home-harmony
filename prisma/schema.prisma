@@ -233,6 +233,17 @@ enum SupportTicketCategory {
   OTHER
 }
 
+enum OwnerContactRequestType {
+  PHONE
+  CALL
+}
+
+enum OwnerContactRequestStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+}
+
 enum ServiceRequestStatus {
   NEW
   ASSIGNED
@@ -294,6 +305,8 @@ model User {
   buyerConversations       Conversation[]    @relation("ConversationBuyer")
   participantConversations Conversation[]    @relation("ConversationParticipant")
   sentMessages             Message[]         @relation("MessageSender")
+  contactRequestsMade       OwnerContactRequest[] @relation("OwnerContactRequester")
+  contactRequestsReceived   OwnerContactRequest[] @relation("OwnerContactOwner")
 
   @@index([role])
   @@index([status])
@@ -449,6 +462,7 @@ model Property {
   serviceRequests ServiceRequest[]
   reviews         PropertyReview[]
   conversations   Conversation[]
+  contactRequests OwnerContactRequest[]
 
   @@index([city])
   @@index([locality])
@@ -854,6 +868,31 @@ model FeaturedListing {
 }
 
 // ---------- Customer support ----------
+model OwnerContactRequest {
+  id               String                     @id @default(cuid())
+  requesterId      String
+  ownerId          String
+  propertyId       String
+  conversationId   String?
+  type             OwnerContactRequestType
+  status           OwnerContactRequestStatus @default(REQUESTED)
+  preferredDate    DateTime?                @db.Date
+  preferredTime    String?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  decidedAt        DateTime?
+
+  requester        User         @relation("OwnerContactRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  owner            User         @relation("OwnerContactOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  property         Property     @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  conversation     Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([requesterId, createdAt])
+  @@index([ownerId, status, createdAt])
+  @@index([propertyId, type, status])
+  @@index([conversationId])
+}
+
 model SupportTicket {
   id          String             @id @default(cuid())
   userId      String
