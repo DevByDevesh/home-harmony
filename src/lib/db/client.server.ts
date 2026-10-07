@@ -17,8 +17,9 @@ export async function getDb(): Promise<PrismaClient | null> {
   if (globalForPrisma.__hpPrisma) return globalForPrisma.__hpPrisma;
   const [{ PrismaClient }, { PrismaPg }] = await Promise.all([import("@prisma/client"), import("@prisma/adapter-pg")]);
   const client = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
-  // Reuse across dev hot reloads to avoid exhausting connections.
-  if (process.env["NODE_ENV"] !== "production") globalForPrisma.__hpPrisma = client;
+  // Keep one Prisma client/pool per server process. Creating a new client for
+  // every request creates a new pg connection pool and can exhaust the DB limit.
+  globalForPrisma.__hpPrisma = client;
   return client;
 }
 
