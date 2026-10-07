@@ -1003,6 +1003,7 @@ model Conversation {
   participant User      @relation("ConversationParticipant", fields: [participantId], references: [id], onDelete: Restrict)
   messages    Message[]
   enquiries   Enquiry[]
+  contactRequests OwnerContactRequest[]
 
   @@unique([propertyId, buyerId, participantId])
   @@index([buyerId, lastMessageAt])
