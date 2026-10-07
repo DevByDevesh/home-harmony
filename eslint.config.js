@@ -7,6 +7,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi"] },
+  eslintPluginPrettier,
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -34,11 +35,7 @@ export default tseslint.config(
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      // Prettier is kept available for local formatting, but CI lint should
-      // validate code quality rather than reject the repository's existing
-      // formatting style across unrelated files.
       "prettier/prettier": "off",
     },
   },
-  eslintPluginPrettier,
 );
