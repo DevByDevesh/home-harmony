@@ -65,7 +65,7 @@ function AdminProperties() {
       }
       void moderate(p, "REJECT", reason || undefined);
     } },
-    { label: "Suspend", hidden: p.status !== "ACTIVE", onSelect: () => void moderate(p, "PAUSE") },
+    { label: "Suspend Listing", hidden: p.status !== "ACTIVE", destructive: true, onSelect: () => void moderate(p, "PAUSE") },
     { label: "Resume", hidden: p.status !== "SUSPENDED" && p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
     { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
       title: `Archive “${p.title}”?`,
