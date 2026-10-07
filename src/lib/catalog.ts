@@ -24,10 +24,11 @@ export const homes: Home[] = [
   { slug: "2bhk-apartment-dharampeth-nagpur-2109", name: "The Olive", city: "Nagpur", neighborhood: "Dharampeth", mode: "Rent", kind: "Apartment", price: 24000, beds: 2, baths: 2, area: 940, furnishing: "Semi furnished", image: pune, description: "An easygoing two-bedroom apartment with a welcoming living room and practical proportions.", features: ["Parking", "Balcony", "Lift"] },
 ];
 
-export type HomeQuery = { location?: string | undefined; mode?: string | undefined; kind?: string | undefined; max?: string | undefined };
+export type HomeQuery = { location?: string | undefined; mode?: string | undefined; kind?: string | undefined; min?: string | undefined; max?: string | undefined };
 export function searchHomes(catalog: Home[], query: HomeQuery): Home[] {
   const place = (query.location ?? "").trim().toLocaleLowerCase();
-  const budget = Number(query.max);
+  const minBudget = Number(query.min);
+  const maxBudget = Number(query.max);
   return catalog.filter(home =>
     (!place || `${home.city} ${home.neighborhood} ${home.name}`.toLocaleLowerCase().includes(place)) &&
     (!query.mode || home.mode === query.mode) &&
