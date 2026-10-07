@@ -14,7 +14,7 @@ import { timeAgo } from "@/lib/local-store";
 import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, validateStep, type DemoPhoto, type ListingDraft } from "@/lib/owner-data";
 import { useServerFn } from "@tanstack/react-start";
 import { SavedPhotoUploader, StagedPhotoUploader, uploadAll } from "@/components/photo-uploader";
-import { autoReviewMyListingFn, createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
+import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
 const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
@@ -39,11 +39,9 @@ function Wizard() {
   const [errors, setErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
-  const [autoApproved, setAutoApproved] = useState(false);
   const [savedToDb, setSavedToDb] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const createListing = useServerFn(createMyListingFn);
-  const autoReviewListing = useServerFn(autoReviewMyListingFn);
   const loadDbDraft = useServerFn(getMyListingDraftFn);
   const updateListing = useServerFn(updateMyListingFn);
   const [dbLoadError, setDbLoadError] = useState<string | null>(null);
@@ -70,7 +68,7 @@ function Wizard() {
   useEffect(() => () => uploads.forEach(u => URL.revokeObjectURL(u.url)), [uploads]);
 
   if (submitted) return <Shell><div className="wizard-success" role="status"><CheckCircle2 size={40}/><p className="kicker">STATUS · UNDER REVIEW</p><h2>Listing submitted for review</h2>
-    {savedToDb ? <p>{autoApproved ? <>Your listing passed HouseProvider’s automated safety review and is <strong>live</strong> for seekers.</> : <>Your listing is saved to your account with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> until the required review is complete.</>}</p> :
+    {savedToDb ? <p><>Your listing is saved to your account with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> until an admin approves it.</></p> :
     <p>Your listing is saved on this device with the status <ListingStatusPill status="UNDER_REVIEW"/>. It is <strong>not live</strong> and <strong>not verified</strong>: real moderation and verification need the HouseProvider backend, which isn’t connected yet. No seeker can see it.</p>}
     <div className="wizard-nav"><Button asChild><Link to="/owner" search={{ tab: "listings" }}>Go to my listings</Link></Button><Button variant="outline" onClick={() => { setSubmitted(null); setSavedToDb(false); setDraft(null); setStep(0); ownerActions.startDraft(); }}>Create another</Button></div></div></Shell>;
   if (dbLoadError) return <Shell editing><div className="wizard-card" role="alert"><p>{dbLoadError}</p><Button asChild variant="outline"><Link to="/owner" search={{ tab: "listings" }}>Back to my listings</Link></Button></div></Shell>;
@@ -79,13 +77,12 @@ function Wizard() {
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => { setDraft({ ...draft, [k]: v }); setErrors([]); };
   const toggle = <K extends "amenities" | "photos">(k: K, v: ListingDraft[K][number]) => { const arr = draft[k] as string[]; set(k, (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]) as ListingDraft[K]); };
   const go = (to: number) => { if (to > step) { for (let s = step; s < to; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } } setErrors([]); setStep(to); requestAnimationFrame(() => heading.current?.focus()); };
-  const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(async r => { if (!r.ok) { toast.error(r.message); return; } const review = await autoReviewListing({ data: { id: r.id } }); setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id); toast.success(review.published ? "Changes approved automatically and the listing is live" : "Changes submitted for review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
+  const publish = () => { for (let s = 0; s < 7; s++) { const e = s === 5 && (dbEdit || staged.length > 0 || uploads.length > 0) ? [] : validateStep(s, draft); if (e.length) { setStep(s); setErrors(e); return; } } if (dbEdit) { if (publishing) return; setPublishing(true); updateListing({ data: { id: dbEdit, draft } }).then(async r => { if (!r.ok) { toast.error(r.message); return; } setSavedToDb(true); setSubmitted(r.id); toast.success("Changes submitted for admin review"); }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not save your changes.")).finally(() => setPublishing(false)); return; }
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => {
       if (!r.ok) { toast.error(r.message); return; }
       ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]);
-      const review = failed ? { published: false as const } : await autoReviewListing({ data: { id: r.id } });
-      setAutoApproved(review.published); setSavedToDb(true); setSubmitted(r.id);
-      toast.success(review.published ? "Listing approved automatically and is now live" : failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review");
+      setSavedToDb(true); setSubmitted(r.id);
+      toast.success(failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review");
     }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
   const previewImages = stagedPreviewUrls.length ? stagedPreviewUrls : uploads.map(upload => upload.url);
