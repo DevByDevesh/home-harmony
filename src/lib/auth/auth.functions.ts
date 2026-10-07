@@ -69,9 +69,27 @@ export const setAccountStatus = createServerFn({ method: "POST" })
         await writeAudit({ actorId: actor.id, action: "account.status", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { to: data.status } });
         throw new AuthError(403, subject.id === actor.id ? "You can't change your own account status." : "Only a Super admin can change an admin's status.");
       }
-      await db.user.update({ where: { id: subject.id }, data: { status: data.status } });
-      // Invalidate live sessions whenever access is removed.
-      if (data.status !== "ACTIVE") await db.session.deleteMany({ where: { userId: subject.id } });
+      await db.$transaction(async (tx) => {
+        await tx.user.update({ where: { id: subject.id }, data: { status: data.status } });
+
+        // A banned/suspended account must lose access to every listing it owns
+        // or manages. Never auto-reactivate these listings when the account is restored;
+        // an admin must explicitly approve/resume them again.
+        if (data.status === "SUSPENDED") {
+          await tx.property.updateMany({
+            where: {
+              OR: [{ ownerId: subject.id }, { agentId: subject.id }],
+              status: { in: ["ACTIVE", "PAUSED", "UNDER_REVIEW"] },
+            },
+            data: { status: "SUSPENDED" },
+          });
+        }
+
+        // Invalidate live sessions whenever access is removed.
+        if (data.status !== "ACTIVE") {
+          await tx.session.deleteMany({ where: { userId: subject.id } });
+        }
+      });
       const action = data.status === "SUSPENDED" ? "account.suspend" : data.status === "DEACTIVATED" ? "account.deactivate" : data.status === "ACTIVE" ? "account.restore" : "account.pending";
       await writeAudit({ actorId: actor.id, action, entityType: "User", entityId: subject.id, metadata: { from: subject.status, to: data.status } });
       return { ok: true as const };
