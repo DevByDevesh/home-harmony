@@ -44,6 +44,13 @@ export const AREA_ROLES = {
   agent: ["AGENT","ADMIN"] as AuthRole[],
   admin: ["OWNER","ADMIN"] as AuthRole[],
 } as const;
+
+export function getRoleDashboardPath(role: AuthRole): "/dashboard" | "/admin" | "/owner" | "/account" {
+  if (role === "OWNER") return "/owner";
+  if (role === "ADMIN") return "/admin";
+  if (role === "USER") return "/dashboard";
+  return "/account";
+}
 export type Area = keyof typeof AREA_ROLES;
 
 export const roleLabel: Record<AuthRole, string> = {
