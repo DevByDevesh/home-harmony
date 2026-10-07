@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canAssignRole, hasPermission, type AppPermission } from "./roles.ts";
+import { canAssignRole, getRoleDashboardPath, hasPermission, type AppPermission } from "./roles.ts";
 
 const adminPermissions: AppPermission[] = [
   "admin.access","users.manage","users.changeRole","listings.moderate","verification.review","reports.moderate",
@@ -29,6 +29,12 @@ test("Admin appointment requires active account, complete personal details, veri
   assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"SUSPENDED",hasPersonalDetails:true,identityVerified:true,confirmed:true}),false);
 });
 
+
+test("account dashboard CTA points each role to its permitted dashboard", () => {
+  assert.equal(getRoleDashboardPath("USER"), "/dashboard");
+  assert.equal(getRoleDashboardPath("ADMIN"), "/admin");
+  assert.equal(getRoleDashboardPath("OWNER"), "/owner");
+});
 
 test("dashboard boundaries stay separate by role", async () => {
   const { AREA_ROLES } = await import("./roles.ts");
