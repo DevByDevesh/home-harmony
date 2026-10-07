@@ -19,12 +19,15 @@ export const Route = createFileRoute("/api/public/expire-listings")({
           return json(401, { ok: false, message: "Not authorised." });
         }
 
-        const { expireListings, LISTING_VALIDITY_DAYS } = await import("@/lib/db/repositories/properties.server");
-        const result = await expireListings();
+        const { expireListings, purgeExpiredListings, LISTING_VALIDITY_DAYS, LISTING_REPOST_WINDOW_DAYS } = await import("@/lib/db/repositories/properties.server");
+        const expired = await expireListings();
+        const purged = await purgeExpiredListings();
         return json(200, {
           ok: true,
-          expired: result.count,
+          expired: expired.count,
+          purged: purged.count,
           validityDays: LISTING_VALIDITY_DAYS,
+          repostWindowDays: LISTING_REPOST_WINDOW_DAYS,
         });
       },
     },
