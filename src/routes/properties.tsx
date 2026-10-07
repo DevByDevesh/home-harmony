@@ -17,7 +17,21 @@ import { userActions, useUserData } from "@/lib/user-data";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
-  loader: async () => (await listPropertiesFn({ data: { take: 100 } })).map(toListing),
+  loader: async ({ search }) => {
+    const toPrice = (value?: string) => {
+      const n = Number(value);
+      return Number.isFinite(n) && n > 0 ? n : undefined;
+    };
+    const listingType = search.mode === "Buy" ? "BUY" : search.mode === "Rent" ? "RENT" : undefined;
+    return (await listPropertiesFn({
+      data: {
+        take: 100,
+        ...(listingType ? { listingType } : {}),
+        ...(toPrice(search.min) !== undefined ? { minPrice: toPrice(search.min) } : {}),
+        ...(toPrice(search.max) !== undefined ? { maxPrice: toPrice(search.max) } : {}),
+      },
+    })).map(toListing);
+  },
   errorComponent: () => <main className="results-page"><div className="wrap"><EmptyState icon={<SearchX size={34}/>} title="Homes could not be loaded.">Please try again in a moment.</EmptyState></div></main>,
   head: () => ({ meta: [
     { title: "Explore homes on list or map — HouseProvider.in" },
