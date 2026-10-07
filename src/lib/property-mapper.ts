@@ -38,7 +38,5 @@ export function toListing(p: PublicProperty): Listing {
     updatedAt: p.updatedAt.slice(0, 10), status: "ACTIVE",
     // Verification is never inferred; DB listings are unverified until a real record exists.
     verification: unverified,
-    ownerPhone: p.ownerPhone,
-    ownerContactChannels: p.ownerContactChannels,
   };
 }
