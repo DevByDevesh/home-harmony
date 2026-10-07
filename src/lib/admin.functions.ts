@@ -5,7 +5,7 @@ import { z } from "zod";
 const id = z.string().min(1).max(64);
 
 /** Admin-configurable listing rejection policy. Defaults to requiring a reason for safer moderation. */
-export const LISTING_REJECTION_REASON_REQUIRED = process.env.LISTING_REJECTION_REASON_REQUIRED !== "false";
+export const LISTING_REJECTION_REASON_REQUIRED = process.env["LISTING_REJECTION_REASON_REQUIRED"] !== "false";
 
 async function admin() {
   const { requirePermission } = await import("./auth/guards.server");
