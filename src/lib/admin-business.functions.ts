@@ -280,6 +280,86 @@ export const ownerAnalyticsFn = createServerFn({ method: "GET" }).handler(async 
  */
 export type AdminTrends = { series: Record<string, SeriesPoint[]>; verificationStatuses: Record<string, number> };
 
+export type AdminAnalytics = {
+  scope: import("./analytics").AdminAnalyticsScope;
+  metrics: {
+    totalListings?: number; activeListings?: number; pendingListings?: number; rejectedListings?: number;
+    totalEnquiries?: number; totalVisits?: number; totalReports?: number; totalVerifications?: number;
+    totalUsers?: number; activeUsers?: number; bannedUsers?: number;
+    totalPayments?: number; paidRevenue?: number; totalSubscriptions?: number; activeSubscriptions?: number; totalServiceRequests?: number;
+  };
+  series: Record<string, SeriesPoint[]>;
+};
+
+/** Permission-scoped operational analytics for Admin/Super Admin. OWNER is intentionally handled as full platform analytics. */
+export const adminAnalyticsFn = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ days: z.union([z.literal(7), z.literal(30), z.literal(90)]) }).strict().parse(d))
+  .handler(async ({ data }): Promise<AdminAnalytics> => {
+    try {
+      const { requirePermission } = await import("./auth/guards.server");
+      const actor = await requirePermission("analytics.view");
+      const d = await db();
+      const { adminAnalyticsScope } = await import("./analytics");
+      const record = await d.user.findUnique({ where: { id: actor.id }, select: { adminPermissions: true } });
+      const { normaliseGranularAdminPermissions } = await import("./admin/permissions");
+      const permissions = actor.role === "OWNER"
+        ? ["analytics.view", "users.manage", "payments.view", "subscriptions.manage", "services.manage", "audit.view", "listings.moderate", "verification.review", "reports.moderate", "enquiries.manage", "visits.manage"]
+        : normaliseGranularAdminPermissions(record?.adminPermissions);
+      const scope = adminAnalyticsScope(permissions);
+      const since = new Date(Date.now() - data.days * 864e5);
+      const perDay = (rows: { createdAt: Date }[]): SeriesPoint[] => {
+        const m = new Map<string, number>();
+        for (const r of rows) { const k = r.createdAt.toISOString().slice(0, 10); m.set(k, (m.get(k) ?? 0) + 1); }
+        const out: SeriesPoint[] = []; const today = new Date();
+        for (let i = data.days - 1; i >= 0; i--) { const dt = new Date(today); dt.setDate(today.getDate() - i); out.push({ label: dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }), value: m.get(dt.toISOString().slice(0, 10)) ?? 0 }); }
+        return out;
+      };
+
+      const [properties, enquiries, visits, reports, verifications, users, payments, subscriptions, services] = await Promise.all([
+        scope.listings ? d.property.groupBy({ by: ["status"], _count: { _all: true } }) : Promise.resolve([]),
+        scope.enquiries ? d.enquiry.count() : Promise.resolve(0),
+        scope.visits ? d.visit.count() : Promise.resolve(0),
+        scope.moderation ? d.report.count() : Promise.resolve(0),
+        scope.moderation ? d.verification.count() : Promise.resolve(0),
+        scope.users ? d.user.groupBy({ by: ["status"], _count: { _all: true } }) : Promise.resolve([]),
+        scope.payments ? d.payment.aggregate({ where: { status: "SUCCEEDED" }, _sum: { amount: true }, _count: { _all: true } }) : Promise.resolve(null),
+        scope.subscriptions ? d.subscription.groupBy({ by: ["status"], _count: { _all: true } }) : Promise.resolve([]),
+        scope.services ? d.serviceRequest.count() : Promise.resolve(0),
+      ]);
+
+      const series: Record<string, SeriesPoint[]> = {};
+      if (scope.listings) series["New listings"] = perDay(await d.property.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.users) series["New accounts"] = perDay(await d.user.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.visits) series["Visit requests"] = perDay(await d.visit.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.enquiries) series["Enquiries"] = perDay(await d.enquiry.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.moderation) {
+        series["Reports"] = perDay(await d.report.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+        series["Verification checks"] = perDay(await d.verification.findMany({ where: { submittedAt: { gte: since } }, select: { submittedAt: true } }).then(rows => rows.map(r => ({ createdAt: r.submittedAt }))));
+      }
+      if (scope.payments) series["Payments"] = perDay(await d.payment.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.subscriptions) series["Subscriptions"] = perDay(await d.subscription.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+      if (scope.services) series["Service requests"] = perDay(await d.serviceRequest.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }));
+
+      const propertyCounts = Object.fromEntries(properties.map(x => [x.status, x._count._all]));
+      const userCounts = Object.fromEntries(users.map(x => [x.status, x._count._all]));
+      const subscriptionCounts = Object.fromEntries(subscriptions.map(x => [x.status, x._count._all]));
+      return {
+        scope,
+        metrics: {
+          ...(scope.listings ? { totalListings: Object.values(propertyCounts).reduce((a, b) => a + b, 0), activeListings: propertyCounts.ACTIVE ?? 0, pendingListings: propertyCounts.UNDER_REVIEW ?? 0, rejectedListings: propertyCounts.REJECTED ?? 0 } : {}),
+          ...(scope.enquiries ? { totalEnquiries: enquiries } : {}),
+          ...(scope.visits ? { totalVisits: visits } : {}),
+          ...(scope.moderation ? { totalReports: reports, totalVerifications: verifications } : {}),
+          ...(scope.users ? { totalUsers: Object.values(userCounts).reduce((a, b) => a + b, 0), activeUsers: userCounts.ACTIVE ?? 0, bannedUsers: userCounts.SUSPENDED ?? 0 } : {}),
+          ...(scope.payments ? { totalPayments: payments?._count._all ?? 0, paidRevenue: payments?._sum.amount ?? 0 } : {}),
+          ...(scope.subscriptions ? { totalSubscriptions: Object.values(subscriptionCounts).reduce((a, b) => a + b, 0), activeSubscriptions: subscriptionCounts.ACTIVE ?? 0 } : {}),
+          ...(scope.services ? { totalServiceRequests: services } : {}),
+        },
+        series,
+      };
+    } catch (e) { rethrow(e); }
+  });
+
 export const adminTrendsFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ days: z.union([z.literal(7), z.literal(30), z.literal(90)]) }).strict().parse(d))
   .handler(async ({ data }): Promise<AdminTrends> => {
