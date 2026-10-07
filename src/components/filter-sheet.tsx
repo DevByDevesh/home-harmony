@@ -7,6 +7,57 @@ import { amenityOptions, cities, listings } from "@/lib/catalog";
 import { amenityList, applyFilters, clearFilters, type Filters } from "@/lib/filters";
 
 function Group({ label, children }: { label: string; children: ReactNode }) { return <fieldset className="filter-group"><legend>{label}</legend>{children}</fieldset>; }
+
+const RENT_BUDGET = { min: 5000, max: 500000, step: 1000 } as const;
+const BUY_BUDGET = { min: 1000000, max: 200000000, step: 500000 } as const;
+
+function formatBudget(value: number, mode: string | undefined) {
+  if (mode === "Buy") {
+    if (value >= 10000000) return `₹${(value / 10000000).toLocaleString("en-IN", { maximumFractionDigits: 2 })} Cr`;
+    return `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`;
+  }
+  if (value >= 100000) return `₹${(value / 100000).toLocaleString("en-IN", { maximumFractionDigits: 1 })} Lakh`;
+  return `₹${value.toLocaleString("en-IN")}`;
+}
+
+function BudgetRange({ draft, onChange }: { draft: Filters; onChange: (patch: Partial<Filters>) => void }) {
+  const config = draft.mode === "Buy" ? BUY_BUDGET : RENT_BUDGET;
+  const currentMin = Math.min(Math.max(Number(draft.min) || config.min, config.min), config.max - config.step);
+  const currentMax = Math.max(Math.min(Number(draft.max) || config.max, config.max), config.min + config.step);
+  const minValue = Math.min(currentMin, currentMax - config.step);
+  const maxValue = Math.max(currentMax, minValue + config.step);
+  const minPercent = ((minValue - config.min) / (config.max - config.min)) * 100;
+  const maxPercent = ((maxValue - config.min) / (config.max - config.min)) * 100;
+
+  const updateMin = (value: number) => {
+    const next = Math.min(value, maxValue - config.step);
+    onChange({ min: next === config.min ? undefined : String(next) });
+  };
+  const updateMax = (value: number) => {
+    const next = Math.max(value, minValue + config.step);
+    onChange({ max: next === config.max ? undefined : String(next) });
+  };
+
+  return <Group label="Budget">
+    <div className="budget-range">
+      <div className="budget-range-values">
+        <strong>{formatBudget(minValue, draft.mode)}</strong>
+        <span>{draft.mode === "Rent" ? "per month" : "purchase price"}</span>
+        <strong>{formatBudget(maxValue, draft.mode)}</strong>
+      </div>
+      <div className="budget-range-slider" style={{ "--budget-start": `${minPercent}%`, "--budget-end": `${maxPercent}%` } as React.CSSProperties}>
+        <div className="budget-range-fill" aria-hidden="true" />
+        <input type="range" min={config.min} max={config.max} step={config.step} value={minValue} onChange={e => updateMin(Number(e.target.value))} aria-label="Minimum budget" />
+        <input type="range" min={config.min} max={config.max} step={config.step} value={maxValue} onChange={e => updateMax(Number(e.target.value))} aria-label="Maximum budget" />
+      </div>
+      <div className="budget-range-limits">
+        <span>{formatBudget(config.min, draft.mode)}</span>
+        <span>{formatBudget(config.max, draft.mode)}</span>
+      </div>
+      <p className="budget-range-hint">Drag either handle to narrow the budget. {draft.mode === "Rent" ? "Rent is shown monthly." : "Buy is shown as the total property price."}</p>
+    </div>
+  </Group>;
+}
 function Pills({ value, options, onChange, label }: { value?: string | undefined; options: [string, string][]; onChange: (v: string | undefined) => void; label: string }) {
   return <div className="pill-row" role="group" aria-label={label}>{options.map(([v, text]) => <button type="button" key={v} className="pill" aria-pressed={value === v} onClick={() => onChange(value === v ? undefined : v)}>{text}</button>)}</div>;
 }
@@ -30,11 +81,7 @@ export function FilterSheet({ filters, onApply, activeCount }: { filters: Filter
         <Group label="Locality"><input className="filter-select" value={draft.location ?? ""} onChange={e => set({ location: e.target.value || undefined })} placeholder="e.g. Hinjewadi" aria-label="Locality"/></Group>
         <Group label="Property type"><Pills label="Property type" value={draft.kind} options={["Apartment", "House", "Room", "PG", "Commercial"].map(k => [k, k])} onChange={v => set({ kind: v })}/></Group>
         <Group label="BHK"><Pills label="BHK" value={draft.beds} options={[["1", "1 BHK"], ["2", "2 BHK"], ["3", "3 BHK"], ["4", "4+ BHK"]]} onChange={v => set({ beds: v })}/></Group>
-        <Group label={rent ? "Monthly rent" : "Price"}><div className="range-row">
-          <select className="filter-select" value={draft.min ?? ""} onChange={e => set({ min: e.target.value || undefined })} aria-label="Minimum price"><option value="">No min</option>{(rent ? [20000, 40000, 60000, 100000] : [10000000, 20000000, 30000000]).map(v => <option key={v} value={v}>₹{v.toLocaleString("en-IN")}</option>)}</select>
-          <span>to</span>
-          <select className="filter-select" value={draft.max ?? ""} onChange={e => set({ max: e.target.value || undefined })} aria-label="Maximum price"><option value="">No max</option>{(rent ? [30000, 60000, 100000, 150000] : [20000000, 30000000, 40000000]).map(v => <option key={v} value={v}>₹{v.toLocaleString("en-IN")}</option>)}</select>
-        </div></Group>
+        <BudgetRange draft={draft} onChange={patch => set(patch)} />
         <Group label="Minimum area"><Pills label="Minimum area" value={draft.minArea} options={[["800", "800+"], ["1200", "1,200+"], ["1600", "1,600+"], ["2500", "2,500+"]]} onChange={v => set({ minArea: v })}/></Group>
         <Group label="Furnishing"><Pills label="Furnishing" value={draft.furnishing} options={["Fully furnished", "Semi furnished", "Unfurnished"].map(k => [k, k])} onChange={v => set({ furnishing: v })}/></Group>
         <Group label="Bathrooms"><Pills label="Bathrooms" value={draft.baths} options={[["1", "1+"], ["2", "2+"], ["3", "3+"]]} onChange={v => set({ baths: v })}/></Group>
