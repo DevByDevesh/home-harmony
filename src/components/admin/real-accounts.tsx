@@ -71,12 +71,8 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
                 <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "SUSPENDED" })}>Suspend</button>{" "}
                 <button type="button" className="text-link" onClick={() => openPermissions(a.id)}>Permissions</button>{" "}<button type="button" className="text-link" onClick={() => setActivityUserId(a.id)}>View activity</button>
               </> : null}
-              {isOwner && a.role === "SUPER_ADMIN" ? <>
-                <button type="button" className="text-link" onClick={() => confirmRoleAction(`Demote ${a.name || a.email || "this user"} from Super admin to Admin?`, a.id, "ADMIN")}>Demote Admin</button>{" "}
-                <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "SUSPENDED" })}>Suspend</button>{" "}
-                <button type="button" className="text-link" onClick={() => setActivityUserId(a.id)}>View activity</button>
-              </> : null}
-              {isOwner && (a.role === "ADMIN" || a.role === "SUPER_ADMIN") && a.status === "SUSPENDED" ? <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "ACTIVE" })}>Restore</button> : null}
+
+              {isOwner && a.role === "ADMIN" && a.status === "SUSPENDED" ? <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "ACTIVE" })}>Restore</button> : null}
             </td>
             <td>{new Date(a.createdAt).toLocaleDateString("en-IN")}</td>
           </tr>;
