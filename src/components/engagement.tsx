@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { createEnquiryFn, startConversationFn, listMyEnquiriesFn, listMyNotificationsFn, listMyVisitsFn, cancelMyVisitFn, listOwnerEnquiriesFn, listOwnerVisitsFn, ownerUpdateVisitFn, listConversationsFn, getConversationFn, sendMessageFn, markConversationReadFn, type OwnerVisit } from "@/lib/engagement.functions";
+import { listMyOwnerContactRequestsFn, listOwnerContactRequestsFn, requestOwnerCallFn, requestOwnerPhoneFn, respondOwnerContactRequestFn, type MyOwnerContactRequest, type OwnerContactRequestRow } from "@/lib/owner-contact-requests.functions";
 import { formatVisitDate, slotsFor, statusLabel, toISODate, visitTransitions, type VisitStatus } from "@/lib/visits";
 
 const when = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
@@ -97,51 +98,115 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name, ownerPhone, ownerContactChannels }: { slug: string; name: string; ownerPhone?: string | null | undefined; ownerContactChannels?: string[] | undefined }) {
+export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
+  const requestPhone = useServerFn(requestOwnerPhoneFn);
+  const requestCall = useServerFn(requestOwnerCallFn);
+  const fetchRequests = useServerFn(listMyOwnerContactRequestsFn);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [callDate, setCallDate] = useState("");
+  const [callTime, setCallTime] = useState("18:00");
   const [busy, setBusy] = useState(false);
-  const phone = ownerPhone?.replace(/[^+\d]/g, "");
-  const channels = ownerContactChannels?.map((channel) => channel.toUpperCase()) ?? [];
-  const canCall = !!phone && channels.some((channel) => channel.includes("PHONE") || channel.includes("CALL") || channel.includes("BOTH"));
-  const canWhatsApp = !!phone && channels.some((channel) => channel.includes("WHATSAPP") || channel.includes("BOTH"));
+  const requests = useQuery({
+    queryKey: ["owner-contact-requests", slug],
+    queryFn: () => fetchRequests(),
+    enabled: !!user,
+    refetchInterval: open ? 5000 : false,
+  });
+  const approved = (requests.data ?? []).find((r) => r.property.slug === slug && r.status === "ACCEPTED" && r.ownerPhone);
 
-  const messageButton = user
-    ? <DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
-    : <Button asChild variant="outline" className="detail-more"><Link to="/login"><MessageCircle size={17}/>Message Owner</Link></Button>;
+  const sendMessage = async () => {
+    if (!msg.trim() || busy) return;
+    setBusy(true);
+    try {
+      const r = await send({ data: { slug, message: msg.trim() } });
+      if (!r.ok) toast.error(r.message);
+      else {
+        setConversationId(r.conversationId);
+        setMsg("");
+        toast.success("Message sent to the owner");
+        qc.invalidateQueries({ queryKey: ["conversations"] });
+        qc.invalidateQueries({ queryKey: ["my-enquiries"] });
+        qc.invalidateQueries({ queryKey: ["my-notifications"] });
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn’t send the message.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const askPhone = async () => {
+    if (!conversationId || busy) return;
+    setBusy(true);
+    try {
+      const r = await requestPhone({ data: { conversationId } });
+      if (!r.ok) toast.error(r.message);
+      else { toast.success(r.alreadyAccepted ? "Phone number already approved" : "Phone request sent to the owner"); await requests.refetch(); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t request the phone number."); }
+    finally { setBusy(false); }
+  };
+
+  const askCall = async () => {
+    if (!conversationId || busy || !callDate || !callTime) return;
+    setBusy(true);
+    try {
+      const r = await requestCall({ data: { conversationId, preferredDate: callDate, preferredTime: callTime } });
+      if (!r.ok) toast.error(r.message);
+      else { toast.success("Call request sent to the owner"); await requests.refetch(); }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t request a call."); }
+    finally { setBusy(false); }
+  };
 
   return <div className="detail-contact-actions">
     {user ? <Dialog open={open} onOpenChange={setOpen}>
-      {messageButton}
-      <DialogContent className="visit-dialog"><DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Your message goes to the listing owner’s account. No email or phone is shared.</DialogDescription></DialogHeader>
+      <DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
+      <DialogContent className="visit-dialog">
+        <DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Start a private chat, then request the owner’s phone number or a call. Your contact request requires owner approval.</DialogDescription></DialogHeader>
         <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>
-        <Button disabled={busy || msg.trim().length < 5} onClick={async () => {
-          setBusy(true);
-          try {
-            const r = await send({ data: { slug, message: msg.trim() } });
-            if (!r.ok) toast.error(r.message);
-            else {
-              toast.success("Message sent to the owner");
-              setMsg("");
-              setOpen(false);
-              qc.invalidateQueries({ queryKey: ["my-enquiries"] });
-              qc.invalidateQueries({ queryKey: ["my-notifications"] });
-              qc.invalidateQueries({ queryKey: ["conversations"] });
-            }
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Couldn’t send the message.");
-          } finally {
-            setBusy(false);
-          }
-        }}>Send message</Button>
+        <Button disabled={busy || msg.trim().length < 5} onClick={sendMessage}><Send size={16}/> Send message</Button>
+        <div className="contact-request-card">
+          <strong>Private contact request</strong>
+          <p className="form-hint">The owner’s number is never public. You must start the private chat before requesting it.</p>
+          <div className="dash-row-actions">
+            <Button variant="outline" disabled={busy || !conversationId || !!approved} onClick={askPhone}><Phone size={16}/>{approved ? "Phone approved" : "Request phone number"}</Button>
+          </div>
+          <label className="visit-note">Preferred call date<input type="date" min={new Date().toISOString().slice(0, 10)} value={callDate} onChange={e => setCallDate(e.target.value)}/></label>
+          <label className="visit-note">Preferred call time<input type="time" value={callTime} onChange={e => setCallTime(e.target.value)}/></label>
+          <Button variant="outline" disabled={busy || !conversationId || !callDate || !callTime} onClick={askCall}><Phone size={16}/> Request a call</Button>
+          {!conversationId && <p className="form-hint">Send at least one private message to enable contact requests.</p>}
+        </div>
+        {approved?.ownerPhone && <div className="contact-approved-card"><strong>Owner approved your request</strong><a href={`tel:${approved.ownerPhone}`}><Phone size={15}/> ${approved.ownerPhone}</a></div>}
       </DialogContent>
-    </Dialog> : messageButton}
-    {canCall && <Button asChild variant="outline" className="detail-more"><a href={`tel:${phone}`}><Phone size={17}/>Call</a></Button>}
-    {canWhatsApp && <Button asChild variant="outline" className="detail-more"><a href={`https://wa.me/${phone.replace(/^\+/, "")}`} target="_blank" rel="noreferrer"><MessageCircle size={17}/>WhatsApp</a></Button>}
+    </Dialog> : <Button asChild variant="outline" className="detail-more"><Link to="/login"><MessageCircle size={17}/>Message Owner</Link></Button>}
+    {approved?.ownerPhone && <Button asChild variant="outline" className="detail-more"><a href={`tel:${approved.ownerPhone}`}><Phone size={17}/>Call owner</a></Button>}
   </div>;
+}
+
+export function OwnerContactRequests() {
+  const fetch = useServerFn(listOwnerContactRequestsFn);
+  const respond = useServerFn(respondOwnerContactRequestFn);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["owner-contact-requests"], queryFn: () => fetch(), refetchInterval: 5000 });
+  const rows = q.data ?? [];
+  if (q.isPending) return <p className="chart-empty">Loading contact requests…</p>;
+  if (!rows.length) return <EmptyState icon={<Phone size={30}/>} title="No contact requests">Phone and call requests from seekers will appear here.</EmptyState>;
+
+  return <ul className="dash-list">{rows.map((r: OwnerContactRequestRow) => <li key={r.id}>
+    <div>
+      <strong>{r.requester.name || "HouseProvider user"} · {r.property.title}</strong>
+      <small>{r.type === "CALL" ? `Request a call${r.preferredDate ? ` · ${r.preferredDate}${r.preferredTime ? ` at ${r.preferredTime}` : ""}` : ""}` : "Request phone number"}</small>
+      <span className={`status status-${r.status.toLowerCase()}`}>{r.status.toLowerCase()}</span>
+    </div>
+    {r.status === "REQUESTED" && <div className="dash-row-actions">
+      <Button size="sm" onClick={async () => { const x = await respond({ data: { id: r.id, status: "ACCEPTED" } }); if (!x.ok) toast.error(x.message); else { toast.success("Contact request accepted"); qc.invalidateQueries({ queryKey: ["owner-contact-requests"] }); } }}>Accept</Button>
+      <Button size="sm" variant="outline" onClick={async () => { const x = await respond({ data: { id: r.id, status: "REJECTED" } }); if (!x.ok) toast.error(x.message); else { toast.success("Contact request rejected"); qc.invalidateQueries({ queryKey: ["owner-contact-requests"] }); } }}>Reject</Button>
+    </div>}
+  </li>)}</ul>;
 }
 
 /** Seeker: own enquiries; falls back to `empty` when signed out or none. */
