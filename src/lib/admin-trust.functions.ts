@@ -25,7 +25,7 @@ export const adminListVerificationsFn = createServerFn({ method: "GET" }).handle
     await guard("verification.review");
     const rows = await (await db()).verification.findMany({
       orderBy: { updatedAt: "desc" }, take: 300,
-      select: { id: true, type: true, status: true, submittedAt: true, updatedAt: true, decidedAt: true, user: { select: { name: true } }, property: { select: { title: true } }, reviewer: { select: { name: true } } },
+      select: { id: true, type: true, status: true, submittedAt: true, updatedAt: true, decidedAt: true, user: { select: { name: true } }, property: { select: { id: true, title: true, slug: true, status: true } }, reviewer: { select: { name: true } } },
     });
     return rows.map(v => ({ id: v.id, type: v.type, status: v.status, subject: first(v.user.name), property: v.property?.title ?? "—", propertyId: v.property?.id ?? null, propertySlug: v.property?.slug ?? null, propertyStatus: v.property?.status ?? null, reviewer: first(v.reviewer?.name), submittedAt: v.submittedAt.toISOString(), updatedAt: v.updatedAt.toISOString(), decidedAt: v.decidedAt?.toISOString() ?? null }));
   } catch (e) { rethrow(e); }
