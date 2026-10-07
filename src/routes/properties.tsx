@@ -17,7 +17,8 @@ import { userActions, useUserData } from "@/lib/user-data";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
-  loader: async ({ search }) => {
+  loaderDeps: ({ search }) => ({ search }),
+  loader: async ({ deps: { search } }) => {
     const toPrice = (value?: string) => {
       const n = Number(value);
       return Number.isFinite(n) && n > 0 ? n : undefined;
