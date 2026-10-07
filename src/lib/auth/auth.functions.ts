@@ -29,7 +29,7 @@ export const listAdminPermissions = createServerFn({ method: "GET" })
       const { normaliseGranularAdminPermissions } = await import("../admin/permissions");
       const db = await requireDb();
       const subject = await db.user.findUnique({ where: { id: data.userId }, select: { role: true, adminPermissions: true } });
-      if (!subject || (subject.role !== "ADMIN" && subject.role !== "SUPER_ADMIN")) throw new AuthError(403, "Only Admin accounts have granular permissions.");
+      if (!subject || subject.role !== "ADMIN") throw new AuthError(403, "Only Admin accounts have granular permissions.");
       return { permissions: normaliseGranularAdminPermissions(subject.adminPermissions) };
     } catch (e) { rethrow(e); }
   });
@@ -50,7 +50,7 @@ export const setAdminPermissions = createServerFn({ method: "POST" })
         throw new AuthError(403, "One or more selected permissions are not assignable to Admin accounts.");
       }
       const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true, adminPermissions: true } });
-      if (!subject || (subject.role !== "ADMIN" && subject.role !== "SUPER_ADMIN")) throw new AuthError(403, "Only Admin accounts have granular permissions.");
+      if (!subject || subject.role !== "ADMIN") throw new AuthError(403, "Only Admin accounts have granular permissions.");
       await db.user.update({ where: { id: subject.id }, data: { adminPermissions: permissions } });
       await writeAudit({ actorId: actor.id, action: "admin.permissions.update", entityType: "User", entityId: subject.id, metadata: { permissions: permissions.join(",") } });
       return { ok: true as const, permissions };
@@ -89,7 +89,7 @@ export const changeUserRole = createServerFn({ method: "POST" })
       if (!subject) throw new AuthError(403, "Account not found.");
       if (subject.id === actor.id || !canAssignRole(actor.role, data.role, subject.role)) {
         await writeAudit({ actorId: actor.id, action: "role.change", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { from: subject.role, to: data.role, self: subject.id === actor.id } });
-        throw new AuthError(403, subject.id === actor.id ? "You can't change your own role." : "Only a Super admin can grant or remove admin roles.");
+        throw new AuthError(403, subject.id === actor.id ? "You can't change your own role." : "Only the platform Owner can grant or remove Admin roles.");
       }
       if (data.role === "ADMIN" && subject.role === "USER") {
         const personalDetailsVerified = Boolean(subject.profile?.fullName?.trim()) && Boolean(subject.emailVerified || subject.phoneVerified);
@@ -100,7 +100,7 @@ export const changeUserRole = createServerFn({ method: "POST" })
         }
       }
       await db.user.update({ where: { id: subject.id }, data: { role: data.role } });
-      const privileged = data.role === "ADMIN" || data.role === "SUPER_ADMIN";
+      const privileged = data.role === "ADMIN";
       await writeAudit({ actorId: actor.id, action: privileged ? "role.assign_admin" : "role.change", entityType: "User", entityId: subject.id, metadata: { from: subject.role, to: data.role } });
       return { ok: true as const };
     } catch (e) { rethrow(e); }
@@ -118,10 +118,10 @@ export const setAccountStatus = createServerFn({ method: "POST" })
       const db = await requireDb();
       const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true, status: true } });
       if (!subject) throw new AuthError(403, "Account not found.");
-      const privilegedSubject = subject.role === "OWNER" || subject.role === "ADMIN" || subject.role === "SUPER_ADMIN";
+      const privilegedSubject = subject.role === "OWNER" || subject.role === "ADMIN";
       if (subject.id === actor.id || (privilegedSubject && !hasPermission(actor.role, "users.assignAdmin"))) {
         await writeAudit({ actorId: actor.id, action: "account.status", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { to: data.status } });
-        throw new AuthError(403, subject.id === actor.id ? "You can't change your own account status." : "Only the platform Owner or a Super admin can change a privileged account's status.");
+        throw new AuthError(403, subject.id === actor.id ? "You can't change your own account status." : "Only the platform Owner can change a privileged account's status.");
       }
       await db.$transaction(async (tx) => {
         await tx.user.update({ where: { id: subject.id }, data: { status: data.status } });
