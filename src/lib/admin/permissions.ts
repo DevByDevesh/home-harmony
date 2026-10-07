@@ -15,13 +15,16 @@ const ADMIN: AdminPermission[] = [
   "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "audit.view",
 ];
 const matrix: Partial<Record<Role, AdminPermission[]>> = {
+  // OWNER is the company/platform holder: full administrative access plus
+  // the ability to assign privileged roles. SUPER_ADMIN remains the operational admin role.
+  OWNER: [...ADMIN, "users.assignAdmin", "payments.refund", "plans.edit", "settings.edit"],
   ADMIN,
   SUPER_ADMIN: [...ADMIN, "users.assignAdmin", "payments.refund", "plans.edit", "settings.edit"],
 };
 
 export function can(role: Role, permission: AdminPermission) { return matrix[role]?.includes(permission) ?? false; }
 export const isAdminRole = (role: Role) => can(role, "admin.access");
-/** Roles an actor may assign. ADMIN cannot create other admins. */
+/** Roles an actor may assign. OWNER is the platform holder; ADMIN cannot create other admins. */
 export function assignableRoles(actor: Role): Role[] {
   const base: Role[] = ["USER", "OWNER", "AGENT", "PROPERTY_MANAGER"];
   return can(actor, "users.assignAdmin") ? [...base, "ADMIN", "SUPER_ADMIN"] : base;
