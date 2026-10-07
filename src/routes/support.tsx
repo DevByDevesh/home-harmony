@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { createSupportTicketFn, listMySupportTicketsFn } from "@/lib/support.functions";
 import { SUPPORT_CATEGORIES, SUPPORT_EMAIL, SUPPORT_PRIORITIES, SUPPORT_STATUSES } from "@/lib/support";
@@ -43,7 +43,7 @@ function SupportPage() {
     setAttachments(converted);
   };
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault(); setSaving(true); setMessage(null);
     try {
       await createSupportTicketFn({ data: { category, priority, subject, description, attachments } });
