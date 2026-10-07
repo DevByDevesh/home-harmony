@@ -31,6 +31,11 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      # TanStack Router generates src/routeTree.gen.ts during the Vite build.
+      # Build first so typecheck sees routes added in the same commit.
+      - name: Production build
+        run: npm run build
+
       - name: Typecheck
         run: npx tsc --noEmit
 
@@ -39,6 +44,3 @@ jobs:
 
       - name: Tests
         run: npm test
-
-      - name: Production build
-        run: npm run build
