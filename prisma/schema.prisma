@@ -216,6 +216,10 @@ enum PricingModel {
   HOURLY
 }
 
+enum SupportTicketStatus { OPEN IN_PROGRESS WAITING_FOR_USER RESOLVED CLOSED }
+
+enum SupportTicketCategory { ACCOUNT LISTING PAYMENT ABUSE TECHNICAL OTHER }
+
 enum ServiceRequestStatus {
   NEW
   ASSIGNED
@@ -270,6 +274,8 @@ model User {
   payments                 Payment[]
   serviceProvider          ServiceProvider?
   serviceRequests          ServiceRequest[]
+  supportTickets            SupportTicket[] @relation("SupportTicketRequester")
+  assignedSupportTickets    SupportTicket[] @relation("SupportTicketAssignee")
   propertyReviews          PropertyReview[]
   featuredCreated          FeaturedListing[]
   buyerConversations       Conversation[]    @relation("ConversationBuyer")
@@ -832,6 +838,28 @@ model FeaturedListing {
 
   @@index([propertyId, active])
   @@index([startsAt, endsAt])
+}
+
+// ---------- Customer support ----------
+model SupportTicket {
+  id          String             @id @default(cuid())
+  userId      String
+  assigneeId  String?
+  category    SupportTicketCategory
+  subject     String
+  description String
+  attachments Json?
+  priority    Priority           @default(MEDIUM)
+  status      SupportTicketStatus @default(OPEN)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  resolvedAt  DateTime?
+  user        User               @relation("SupportTicketRequester", fields: [userId], references: [id], onDelete: Restrict)
+  assignee    User?              @relation("SupportTicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([status, priority])
+  @@index([assigneeId, status])
 }
 
 // ---------- Services marketplace ----------
