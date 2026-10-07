@@ -62,6 +62,20 @@ function CompanyOwnerDashboard() {
     </section>}
 
     <AdminMetricCard items={[
+      { label: "Total accounts", value: sum(c.users) },
+      { label: "Platform owners", value: c.users["OWNER"] ?? 0 },
+      { label: "Agents", value: c.users["AGENT"] ?? 0 },
+      { label: "Total properties", value: sum(c.properties) },
+      { label: "Active listings", value: c.properties["ACTIVE"] ?? 0 },
+      { label: "Under review", value: c.properties["UNDER_REVIEW"] ?? 0 },
+      { label: "Suspended listings", value: c.properties["SUSPENDED"] ?? 0 },
+      { label: "Total enquiries", value: sum(c.enquiries) },
+      { label: "Total visits", value: sum(c.visits) },
+      { label: "Verification waiting", value: pendingVerification },
+      { label: "Subscriptions", value: sum(c.subscriptions) },
+      { label: "Succeeded payments", value: c.paidCount },
+      { label: "Recorded revenue", value: `₹${c.paidTotal.toLocaleString("en-IN")}` },
+    ]}/>
 
     <section className="admin-section">
       <div className="admin-section-head"><h2>Platform management</h2><span className="form-hint">Owner-only entry point to existing live operational modules.</span></div>
