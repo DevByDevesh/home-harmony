@@ -3,8 +3,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { verificationTypeLabel } from "@/lib/admin/config";
 import { adminListReportsFn, adminListVerificationsFn, adminSetVerificationStatusFn, adminUpdateReportFn } from "@/lib/admin-trust.functions";
+import { moderateListingFn } from "@/lib/admin.functions";
 
 const date = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—");
 const lc = (s: string) => s.replace(/_/g, " ").toLowerCase();
@@ -37,14 +39,21 @@ const veriActions: Record<string, [("start" | "approve" | "reject" | "revert"), 
 export function LiveVerificationsPanel() {
   const q = useQuery({ queryKey: ["admin", "verifications"], queryFn: () => adminListVerificationsFn() });
   const run = useRun("verifications", "properties");
-  return <Panel id="live-veri" title="Verification requests in the database" hint="Real checks requested by owners when they submit or edit a listing. Approving a check never approves the listing itself and never means the owner is trustworthy. Decisions update the listing’s verification status, notify the requester in-app, and are recorded in the audit log. No evidence can be uploaded yet — decide only after verifying out of band.">
+  return <Panel id="live-veri" title="Verification requests in the database" hint="Real checks requested by owners when they submit or edit a listing. Approving a check confirms only that verification check. Listing publication is a separate moderation decision below. Decisions update the listing’s verification status, notify the requester in-app, and are recorded in the audit log. No evidence can be uploaded yet — decide only after verifying out of band.">
     <Table q={q} rows={q.data} head={["Type", "Requested by", "Listing", "Status", "Submitted", "Reviewer", "Actions"]} empty="No verification requests yet. Owners request checks when they submit or edit a listing.">
       {q.data?.map(v => <tr key={v.id}>
         <td>{typeLabel(v.type)}</td><td>{v.subject}</td><td>{v.property}</td><td>{lc(v.status)}</td><td>{date(v.submittedAt)}</td><td>{v.reviewer}</td>
         <td><div className="dash-row-actions">{(veriActions[v.status] ?? []).map(([a, label]) => <Button key={a} size="sm" variant="outline" onClick={() => {
           if ((a === "approve" || a === "reject") && !window.confirm(`${label} the ${typeLabel(v.type).toLowerCase()} check for ${v.subject}?`)) return;
           void run(adminSetVerificationStatusFn({ data: { id: v.id, action: a } }), `${label}: ${typeLabel(v.type)} · ${v.subject}`);
-        }}>{label}</Button>)}</div></td>
+        }}>{a === "approve" ? "Approve check" : label}</Button>)}
+          {v.propertyId && v.propertyStatus === "UNDER_REVIEW" && <Button size="sm" onClick={() => {
+            if (!window.confirm(`Approve “${v.property}” and make it visible to seekers?`)) return;
+            void run(moderateListingFn({ data: { propertyId: v.propertyId, action: "APPROVE" } }), `Listing approved: ${v.property}`);
+          }}>Approve listing</Button>}
+          {v.propertyId && v.propertyStatus === "ACTIVE" && <span className="admin-tag">Listing live</span>}
+          {v.propertyId && v.propertySlug && <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: v.propertySlug }}>View</Link></Button>}
+        </div></td>
       </tr>)}
     </Table>
   </Panel>;
