@@ -344,28 +344,26 @@ export async function autoReviewAndPublishListing(propertyId: string) {
       };
     }
 
-    const now = new Date();
-    // Structural safety review can decide publication eligibility, but it is
-    // not proof of ownership, location, photos or availability. Preserve the
-    // existing verification state instead of marking the listing VERIFIED.
+    // Safety checks are advisory only. Publication always requires an
+    // explicit admin moderation decision.
     await tx.property.update({
       where: { id: propertyId },
-      data: { status: "ACTIVE", publishedAt: now },
+      data: { status: "UNDER_REVIEW", publishedAt: null, verificationStatus: property.verificationStatus },
     });
 
     await tx.auditLog.create({
       data: {
         actorId: property.ownerId,
-        action: "Listing published by structural safety review",
+        action: "Listing automated safety review completed",
         entityType: "Property",
         entityId: propertyId,
-        metadata: { riskScore: 0, issues: [], verificationStatus: property.verificationStatus },
+        metadata: { riskScore: 0, issues: [], verificationStatus: property.verificationStatus, requiresAdminApproval: true },
       },
     });
 
     return {
-      published: true,
-      reason: "AUTO_APPROVED" as const,
+      published: false,
+      reason: "MANUAL_REVIEW" as const,
       riskScore: 0,
     };
   });
