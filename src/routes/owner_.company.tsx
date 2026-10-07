@@ -1,11 +1,11 @@
 import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, BadgeCheck, Building2, ClipboardList, Flag, Gauge, Settings, ShieldCheck, Users, UserCog } from "lucide-react";
+import type { ReactNode } from "react";
+import { BarChart3, BadgeCheck, Building2, ClipboardList, Flag, Gauge, Settings , Users, UserCog } from "lucide-react";
 import { AdminAuditTimeline, AdminChartCard, AdminHeader, AdminLoadingState, AdminMetricCard, Distribution } from "@/components/admin/admin-kit";
 import { liveCountsFn, adminTrendsFn } from "@/lib/admin-business.functions";
 import { adminListAuditFn } from "@/lib/admin-trust.functions";
-import { total } from "@/lib/analytics";
 
 export const Route = createFileRoute("/owner/company")({
   beforeLoad: guardArea("owner"),
@@ -94,7 +94,7 @@ function CompanyOwnerDashboard() {
   </main>;
 }
 
-function OwnerAction({ href, icon, title, text }: { href: string; icon: React.ReactNode; title: string; text: string }) {
+function OwnerAction({ href, icon, title, text }: { href: string; icon: ReactNode; title: string; text: string }) {
   return <Link to={href} className="admin-section" style={{ textDecoration: "none", display: "block" }}>
     <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
       <span aria-hidden="true">{icon}</span>
