@@ -35,6 +35,27 @@ export const total = (s: SeriesPoint[]) => s.reduce((n, p) => n + p.value, 0);
 export const rate = (num: number, den: number) => den ? `${((num / den) * 100).toFixed(1)}%` : "—";
 
 
+export type AdminAnalyticsScope = {
+  listings: boolean; moderation: boolean; enquiries: boolean; visits: boolean;
+  users: boolean; payments: boolean; subscriptions: boolean; services: boolean; audit: boolean;
+};
+
+/** Server/API display scope for operational Admin analytics. Owner gets the full platform scope elsewhere. */
+export function adminAnalyticsScope(permissions: readonly string[]): AdminAnalyticsScope {
+  const has = (p: string) => permissions.includes(p);
+  return {
+    listings: has("analytics.view") || has("listings.moderate"),
+    moderation: has("analytics.view") || has("verification.review") || has("reports.moderate"),
+    enquiries: has("analytics.view") || has("enquiries.manage"),
+    visits: has("analytics.view") || has("visits.manage"),
+    users: has("users.manage"),
+    payments: has("payments.view"),
+    subscriptions: has("subscriptions.manage"),
+    services: has("services.manage"),
+    audit: has("audit.view"),
+  };
+}
+
 export type OwnerAnalyticsMetrics = {
   totalUsers: number; activeUsers: number; bannedUsers: number;
   totalListings: number; activeListings: number; pendingListings: number; rejectedListings: number; expiredListings: number; suspendedListings: number;
