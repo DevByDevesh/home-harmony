@@ -22,6 +22,7 @@ const groups = [
   [["/admin/enquiries", "Enquiries", MessagesSquare], ["/admin/visits", "Visits", CalendarCheck]],
   [["/admin/payments", "Payments", CreditCard], ["/admin/subscriptions", "Subscriptions", Layers]],
   [["/admin/services", "Services", Wrench]],
+  [["/admin/support", "Customer Support", MessagesSquare]],
   [["/admin/analytics", "Analytics", BarChart3]],
   [["/admin/settings", "Settings", Settings], ["/admin/audit", "Audit log", ClipboardList]],
 ] as const;
