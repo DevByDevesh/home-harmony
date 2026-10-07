@@ -249,6 +249,30 @@ export const liveCountsFn = createServerFn({ method: "GET" }).handler(async () =
   } catch (e) { rethrow(e); }
 });
 
+export type OwnerAnalytics = import("./analytics").OwnerAnalyticsMetrics;
+
+/** Owner-only business snapshot used by the company dashboard. New users/listings are the last 30 days. */
+export const ownerAnalyticsFn = createServerFn({ method: "GET" }).handler(async (): Promise<OwnerAnalytics> => {
+  try {
+    await guard("analytics.view");
+    const d = await db();
+    const since = new Date(Date.now() - 30 * 864e5);
+    const [users, properties, enquiries, visits, messages, newUsers, newListings, rejected, approved] = await Promise.all([
+      d.user.groupBy({ by: ["role"], _count: { _all: true } }),
+      d.property.groupBy({ by: ["status"], _count: { _all: true } }),
+      d.enquiry.count(), d.visit.count(), d.message.count(),
+      d.user.count({ where: { createdAt: { gte: since } } }),
+      d.property.count({ where: { createdAt: { gte: since } } }),
+      d.property.count({ where: { status: "REJECTED" } }),
+      d.property.count({ where: { status: { in: ["ACTIVE", "PAUSED", "RENTED", "SOLD", "EXPIRED", "SUSPENDED", "ARCHIVED"] } } }),
+    ]);
+    const userCounts = Object.fromEntries(users.map(x => [x.role, x._count._all]));
+    const propertyCounts = Object.fromEntries(properties.map(x => [x.status, x._count._all]));
+    const { ownerAnalyticsMetrics } = await import("./analytics");
+    return ownerAnalyticsMetrics({ users: userCounts, properties: propertyCounts, enquiries, visits, messages, newUsers, newListings, approvedListings: approved, rejectedListings: rejected });
+  } catch (e) { rethrow(e); }
+});
+
 /**
  * Real activity trends: daily counts of records created in the database over the period.
  * No series is projected or fabricated — days without records show zero. View/search
