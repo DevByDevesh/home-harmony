@@ -8,7 +8,6 @@ export const roleInfo: Record<Role, { label: string; home: "/dashboard" | "/owne
   AGENT: { label: "Agent", home: "/agent" },
   PROPERTY_MANAGER: { label: "Property manager", home: null },
   ADMIN: { label: "Admin", home: "/admin" },
-  SUPER_ADMIN: { label: "Super admin", home: "/admin" },
 };
 /** Roles with a working dashboard in this phase. */
 export const previewableRoles: Role[] = ["USER", "OWNER", "AGENT", "ADMIN"];
