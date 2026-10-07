@@ -41,7 +41,7 @@ function CompanyOwnerDashboard() {
 
     <AdminMetricCard items={[
       { label: "Total accounts", value: sum(c.users) },
-      { label: "Property owners", value: c.users["OWNER"] ?? 0 },
+      { label: "Platform owners", value: c.users["OWNER"] ?? 0 },
       { label: "Agents", value: c.users["AGENT"] ?? 0 },
       { label: "Total properties", value: sum(c.properties) },
       { label: "Active listings", value: c.properties["ACTIVE"] ?? 0 },
