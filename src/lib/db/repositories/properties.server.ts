@@ -63,7 +63,7 @@ export async function purgeExpiredListings() {
     }
 
     return { count: expired.length };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 
 
