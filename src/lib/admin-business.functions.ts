@@ -346,13 +346,13 @@ export const adminAnalyticsFn = createServerFn({ method: "GET" })
       return {
         scope,
         metrics: {
-          ...(scope.listings ? { totalListings: Object.values(propertyCounts).reduce((a, b) => a + b, 0), activeListings: propertyCounts.ACTIVE ?? 0, pendingListings: propertyCounts.UNDER_REVIEW ?? 0, rejectedListings: propertyCounts.REJECTED ?? 0 } : {}),
+          ...(scope.listings ? { totalListings: Object.values(propertyCounts).reduce((a, b) => a + b, 0), activeListings: propertyCounts["ACTIVE"] ?? 0, pendingListings: propertyCounts["UNDER_REVIEW"] ?? 0, rejectedListings: propertyCounts["REJECTED"] ?? 0 } : {}),
           ...(scope.enquiries ? { totalEnquiries: enquiries } : {}),
           ...(scope.visits ? { totalVisits: visits } : {}),
           ...(scope.moderation ? { totalReports: reports, totalVerifications: verifications } : {}),
-          ...(scope.users ? { totalUsers: Object.values(userCounts).reduce((a, b) => a + b, 0), activeUsers: userCounts.ACTIVE ?? 0, bannedUsers: userCounts.SUSPENDED ?? 0 } : {}),
+          ...(scope.users ? { totalUsers: Object.values(userCounts).reduce((a, b) => a + b, 0), activeUsers: userCounts["ACTIVE"] ?? 0, bannedUsers: userCounts["SUSPENDED"] ?? 0 } : {}),
           ...(scope.payments ? { totalPayments: payments?._count._all ?? 0, paidRevenue: payments?._sum.amount ?? 0 } : {}),
-          ...(scope.subscriptions ? { totalSubscriptions: Object.values(subscriptionCounts).reduce((a, b) => a + b, 0), activeSubscriptions: subscriptionCounts.ACTIVE ?? 0 } : {}),
+          ...(scope.subscriptions ? { totalSubscriptions: Object.values(subscriptionCounts).reduce((a, b) => a + b, 0), activeSubscriptions: subscriptionCounts["ACTIVE"] ?? 0 } : {}),
           ...(scope.services ? { totalServiceRequests: services } : {}),
         },
         series,
