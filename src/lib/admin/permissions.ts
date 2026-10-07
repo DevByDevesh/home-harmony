@@ -12,7 +12,7 @@ export type AdminPermission =
 
 const ADMIN: AdminPermission[] = [
   "admin.access", "users.manage", "users.changeRole", "listings.moderate", "verification.review", "reports.moderate",
-  "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "audit.view", "support.manage", "support.manage",
+  "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "audit.view", "support.manage",
 ];
 const matrix: Partial<Record<Role, AdminPermission[]>> = {
   // OWNER is the company/platform holder: full administrative access plus
@@ -35,7 +35,7 @@ export function assignableRoles(actor: Role): Role[] {
 export const GRANULAR_ADMIN_PERMISSIONS: AdminPermission[] = [
   "listings.moderate", "users.manage", "users.changeRole", "verification.review", "reports.moderate",
   "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage",
-  "analytics.view", "settings.view", "audit.view",
+  "analytics.view", "settings.view", "audit.view", "support.manage",
 ];
 
 /** Stable labels shown in the Owner's Admin permission editor. */
