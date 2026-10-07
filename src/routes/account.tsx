@@ -9,10 +9,10 @@ import { useSignOut } from "@/lib/auth/use-current-user";
 import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
 import { useState } from "react";
 
-const areaName = { owner: "the owner dashboard", agent: "the agent CRM", admin: "the admin area", dashboard: "the dashboard" } as const;
+const areaName = { owner: "the owner dashboard", ownerCompany: "the company owner dashboard", agent: "the agent CRM", admin: "the admin area", dashboard: "the dashboard" } as const;
 
 export const Route = createFileRoute("/account")({
-  validateSearch: z.object({ denied: z.enum(["owner", "agent", "admin", "dashboard"]).optional() }),
+  validateSearch: z.object({ denied: z.enum(["owner", "ownerCompany", "agent", "admin", "dashboard"]).optional() }),
   beforeLoad: guardArea("dashboard"),
   head: () => ({ meta: [
     { title: "Your account — HouseProvider.in" }, { name: "description", content: "Your HouseProvider.in profile and account details." },
