@@ -17,6 +17,30 @@ export type OwnerVisit = { id: string; slug: string; title: string; visitor: str
 export type EnquiryRow = { id: string; slug: string; title: string; message: string; status: string; createdAt: string; from?: string };
 export type NotificationRow = { id: string; type: string; title: string; message: string; read: boolean; createdAt: string };
 
+export const listNotificationsFn = createServerFn({ method: "GET" }).handler(async (): Promise<NotificationRow[]> => {
+  try {
+    const u = await me();
+    return (await (await repo()).listUserNotifications(u.id)).map((n) => ({
+      id: n.id,
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      read: !!n.readAt,
+      createdAt: n.createdAt.toISOString(),
+    }));
+  } catch (e) { rethrow(e); }
+});
+
+export const markNotificationReadFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: cuid }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const u = await me();
+      const changed = await (await repo()).markNotificationRead(data.id, u.id);
+      return { ok: changed.count > 0 };
+    } catch (e) { rethrow(e); }
+  });
+
 export const createVisitFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     slug,
