@@ -23,7 +23,7 @@ import { listMyListingsFn, setMyListingStatusFn, setMyListingArchiveFn, repostMy
 import { listOwnerEnquiriesFn, listOwnerVisitsFn } from "@/lib/engagement.functions";
 import { getMyOwnerContactFn, updateMyOwnerContactFn, type OwnerContactProfile } from "@/lib/owner-profile.functions";
 import { toListing } from "@/lib/property-mapper";
-import { OwnerDbEnquiries, OwnerDbVisits } from "@/components/engagement";
+import { OwnerContactRequests, OwnerDbEnquiries, OwnerDbVisits } from "@/components/engagement";
 
 const tabs = [["overview", "Overview", LayoutDashboard], ["listings", "Listings", ShieldCheck], ["enquiries", "Enquiries", Send], ["visits", "Visits", CalendarCheck], ["analytics", "Analytics", BarChart3], ["verification", "Verification", CheckCircle2], ["profile", "Profile", User]] as const;
 const statusGroups: (ListingStatus | "ALL")[] = ["ALL", "DRAFT", "UNDER_REVIEW", "ACTIVE", "REJECTED", "SUSPENDED", "EXPIRED", "ARCHIVED"];
@@ -93,7 +93,7 @@ function Panel({ id }: { id: string }) {
   const newListing = <Button asChild><Link to="/owner/new"><Plus size={16}/> Create a listing</Link></Button>;
   switch (id) {
     case "listings": return <ListingsPanel/>;
-    case "enquiries": return <OwnerDbEnquiries empty={<EmptyState icon={<Send size={30}/>} title="No enquiries yet">Enquiries from seekers about your listings will appear here.</EmptyState>}/>;
+    case "enquiries": return <><div className="profile-card"><div className="owner-contact-heading"><div><p className="kicker">PRIVATE CONTACT</p><h3>Phone & call requests</h3></div></div><OwnerContactRequests/></div><OwnerDbEnquiries empty={<EmptyState icon={<Send size={30}/>} title="No enquiries yet">Enquiries from seekers about your listings will appear here.</EmptyState>}/></>;
     case "visits": return <OwnerDbVisits/>;
         case "analytics": return <OwnerLiveStats events/>;
     case "verification": { const items = data.listings.filter(l => !l.archived); return items.length ? <div className="verify-list">{items.map(l => <div key={l.id}><h3>{draftToHome(l.draft).name} <ListingStatusPill status={l.status}/></h3><VerificationPanel record={l.verification} compact onRequest={keys => { ownerActions.requestVerification(l.id, keys); toast.success("Checks requested — pending review"); }}/></div>)}</div> : <EmptyState icon={<ShieldCheck size={30}/>} title="No verification requests" action={newListing}>Create a listing to request verification checks.</EmptyState>; }
