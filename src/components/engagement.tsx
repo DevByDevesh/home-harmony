@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
+import { propertyContactRedirect } from "@/lib/property-contact";
 import { createEnquiryFn, startConversationFn, listMyEnquiriesFn, listMyNotificationsFn, listMyVisitsFn, cancelMyVisitFn, listOwnerEnquiriesFn, listOwnerVisitsFn, ownerUpdateVisitFn, listConversationsFn, getConversationFn, sendMessageFn, markConversationReadFn, type OwnerVisit } from "@/lib/engagement.functions";
 import { listMyOwnerContactRequestsFn, listOwnerContactRequestsFn, requestOwnerCallFn, requestOwnerPhoneFn, respondOwnerContactRequestFn, type OwnerContactRequestRow } from "@/lib/owner-contact-requests.functions";
 import { formatVisitDate, slotsFor, statusLabel, toISODate, visitTransitions, type VisitStatus } from "@/lib/visits";
@@ -98,7 +99,7 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
+export function EnquiryButton({ slug, name, compact = false, autoOpen = false }: { slug: string; name: string; compact?: boolean; autoOpen?: boolean }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
   const requestPhone = useServerFn(requestOwnerPhoneFn);
@@ -111,10 +112,11 @@ export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
   const [callDate, setCallDate] = useState("");
   const [callTime, setCallTime] = useState("18:00");
   const [busy, setBusy] = useState(false);
+  useEffect(() => { if (autoOpen && user) setOpen(true); }, [autoOpen, user]);
   const requests = useQuery({
     queryKey: ["owner-contact-requests", slug],
     queryFn: () => fetchRequests(),
-    enabled: !!user,
+    enabled: !!user && open,
     refetchInterval: open ? 5000 : false,
   });
   const approved = (requests.data ?? []).find((r) => r.property.slug === slug && r.status === "ACCEPTED" && r.ownerPhone);
@@ -164,7 +166,7 @@ export function EnquiryButton({ slug, name }: { slug: string; name: string }) {
 
   return <div className="detail-contact-actions">
     {user ? <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button variant="outline" className="detail-more"><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
+      <DialogTrigger asChild><Button onClick={e => e.stopPropagation()} variant="outline" className={compact ? "tile-contact-button" : "detail-more"}><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
       <DialogContent className="visit-dialog">
         <DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Start a private chat, then request the owner’s phone number or a call. Your contact request requires owner approval.</DialogDescription></DialogHeader>
         <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>

@@ -4,6 +4,7 @@ import { availabilityLabel, displayPrice, getListing, type Home, type Listing } 
 import type { MatchResult } from "@/lib/match";
 import { CompareButton, SaveButton } from "./listing-actions";
 import { MatchBadge } from "./match-badge";
+import { EnquiryButton } from "./engagement";
 
 type Props = { home: Home; listing?: Listing; match?: MatchResult | null; compact?: boolean; highlighted?: boolean; onHover?: (slug: string | null) => void; onSelect?: (slug: string) => void };
 export function HomeTile({ home, listing: known, match, compact, highlighted, onHover, onSelect }: Props) {
@@ -17,6 +18,7 @@ export function HomeTile({ home, listing: known, match, compact, highlighted, on
     <Link to="/property/$slug" params={{ slug: home.slug }} className="tile-name">{home.name}</Link>
     <div className="tile-specs"><span>{home.beds} BHK</span><span>{home.area.toLocaleString("en-IN")} sq.ft.</span><span>{home.furnishing}</span></div>
     {listing && <div className="tile-meta"><span>{availabilityLabel(listing)}</span><span className="tile-unverified">Not verified</span>{match && <MatchBadge match={match}/>}</div>}
+    <div className="tile-contact"><EnquiryButton slug={home.slug} name={home.name} compact /></div>
   </article>;
 }
 
