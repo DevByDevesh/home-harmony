@@ -135,3 +135,23 @@ export const adminUpdateReportFn = createServerFn({ method: "POST" })
       return { ok: true as const };
     } catch (e) { rethrow(e); }
   });
+
+
+export type AdminActivityEntry = { id: string; at: string; actor: string; action: string; result: string; metadata: unknown };
+
+/** Owner-only activity feed for a specific Admin/Super Admin account. */
+export const adminListAdminActivityFn = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ userId: id }).strict().parse(d))
+  .handler(async ({ data }): Promise<AdminActivityEntry[]> => {
+    try {
+      const { requirePermission, AuthError } = await import("./auth/guards.server");
+      const actor = await requirePermission("users.assignAdmin");
+      if (actor.role !== "OWNER") throw new AuthError(403, "Only the platform Owner can view Admin activity.");
+      const rows = await (await db()).auditLog.findMany({
+        where: { entityType: "User", entityId: data.userId },
+        orderBy: { createdAt: "desc" }, take: 100,
+        select: { id: true, action: true, result: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
+      });
+      return rows.map(a => ({ id: a.id, at: a.createdAt.toISOString(), actor: first(a.actor?.name), action: a.action, result: a.result, metadata: a.metadata }));
+    } catch (e) { rethrow(e); }
+  });
