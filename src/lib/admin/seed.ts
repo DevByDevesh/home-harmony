@@ -13,7 +13,7 @@ const people: [string, Role, string, string?][] = [
   ["Sana Qureshi", "AGENT", "Mumbai", "Harbourline Realty (fictional)"], ["Vikram Rao", "AGENT", "Hyderabad", "Deccan Keys (fictional)"],
   ["Ishita Banerjee", "USER", "Delhi NCR"], ["Kabir Malhotra", "OWNER", "Mumbai"], ["Ananya Pillai", "PROPERTY_MANAGER", "Chennai"],
   ["Dev Patel", "USER", "Ahmedabad"], ["Nisha Wankhede", "OWNER", "Nagpur"], ["Arjun Menon", "AGENT", "Bengaluru", "Lakeview Homes (fictional)"],
-  ["Tara Joshi", "USER", "Pune"], ["Farhan Shaikh", "USER", "Mumbai"], ["Priya Nair", "ADMIN", "Pune"], ["Admin Demo", "SUPER_ADMIN", "Pune"],
+  ["Tara Joshi", "USER", "Pune"], ["Farhan Shaikh", "USER", "Mumbai"], ["Priya Nair", "ADMIN", "Pune"],
   ["Lakshmi Reddy", "OWNER", "Hyderabad"],
 ];
 const statuses: AdminUser["status"][] = ["ACTIVE", "ACTIVE", "ACTIVE", "PENDING", "ACTIVE", "SUSPENDED", "ACTIVE", "ACTIVE", "DEACTIVATED", "ACTIVE", "ACTIVE", "PENDING", "ACTIVE", "ACTIVE", "ACTIVE", "ACTIVE"];
