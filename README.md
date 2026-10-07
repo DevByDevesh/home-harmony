@@ -57,6 +57,9 @@ See `.env.example` for the required authentication, database, OAuth, storage, an
 - Mapbox for map rendering
 
 
+### Listing moderation
+Admin listing approval is separate from verification. Listings start under review and can be approved or rejected from Admin → Properties. Rejection reasons are configurable with the server-only `LISTING_REJECTION_REASON_REQUIRED` setting (defaults to required). Rejection reasons are stored with the moderation record and sent to the owner in the in-app notification.
+
 ### Listing expiry scheduler
 Staging/production should configure `LISTING_EXPIRY_CRON_SECRET` and call `POST /api/public/expire-listings` from the hosting scheduler at least daily. The job:
 - marks active listings older than 30 days from `publishedAt` as `EXPIRED`;
