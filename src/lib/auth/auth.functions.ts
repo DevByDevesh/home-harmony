@@ -25,13 +25,11 @@ export const listAccounts = createServerFn({ method: "GET" }).handler(async () =
     const { requireDb } = await import("@/lib/db/client.server");
     const db = await requireDb();
     const rows = await db.user.findMany({
-      orderBy: { createdAt: "desc" }, take: 100,
-      select: { id: true, name: true, email: true, role: true, status: true, createdAt: true, emailVerified: true, phoneVerified: true, profile: { select: { fullName: true } }, verifications: { where: { type: "OWNER_IDENTITY", status: "VERIFIED" }, select: { id: true }, take: 1 } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
     });
-    return rows.map(r => ({
-      id: r.id, name: r.name, email: r.email, role: r.role, status: r.status, createdAt: r.createdAt.toISOString(),
-      adminVerification: { personalDetailsVerified: Boolean(r.profile?.fullName?.trim()) && Boolean(r.emailVerified || r.phoneVerified), identityVerified: r.verifications.length > 0 },
-    }));
+    return rows.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }));
   } catch (e) { rethrow(e); }
 });
 
