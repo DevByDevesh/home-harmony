@@ -38,7 +38,7 @@ export const listAdminPropertiesFn = createServerFn({ method: "GET" }).handler(a
 
 const actionSchema = z.object({
   propertyId: id,
-  action: z.enum(["APPROVE", "REQUEST_CHANGES", "REJECT", "PAUSE", "RESUME", "ARCHIVE", "RESTORE"]),
+  action: z.enum(["APPROVE", "REQUEST_CHANGES", "REJECT", "PAUSE", "RESUME", "ARCHIVE", "RESTORE", "DELETE"]),
   note: z.string().trim().max(500).optional(),
 }).strict();
 
@@ -63,6 +63,7 @@ export const moderateListingFn = createServerFn({ method: "POST" })
       RESUME: "ACTIVE",
       ARCHIVE: "ARCHIVED",
       RESTORE: "UNDER_REVIEW",
+      DELETE: "DELETED",
     }[data.action] as "ACTIVE" | "UNDER_REVIEW" | "REJECTED" | "SUSPENDED" | "PAUSED" | "ARCHIVED";
 
     if (data.action === "APPROVE" && current.status !== "UNDER_REVIEW") {
