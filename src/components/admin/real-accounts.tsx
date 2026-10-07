@@ -30,7 +30,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
               {ROLES.filter(r => r === a.role || (user && canAssignRole(user.role, r, a.role as AuthRole))).map(r => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </select></td>
             <td>
-              {a.status === "ACTIVE" && !self ? <button type="button" className="text-link" onClick={() => setConfirmBan({ id: a.id, name: a.name || a.email })}>Ban user</button> : null}
+              {a.status === "ACTIVE" && !self ? <button type="button" className="text-link" onClick={() => setConfirmBan({ id: a.id, name: a.name || a.email || "Account" })}>Ban user</button> : null}
               <select aria-label={`Status for ${a.email}`} value={a.status} disabled={self} onChange={e => status.mutate({ userId: a.id, status: e.target.value as AccountStatus })}>
               {ACCOUNT_STATUSES.map(s => <option key={s} value={s}>{s.toLowerCase()}</option>)}
             </select></td>
