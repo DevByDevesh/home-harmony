@@ -33,7 +33,8 @@ export function searchHomes(catalog: Home[], query: HomeQuery): Home[] {
     (!place || `${home.city} ${home.neighborhood} ${home.name}`.toLocaleLowerCase().includes(place)) &&
     (!query.mode || home.mode === query.mode) &&
     (!query.kind || home.kind === query.kind) &&
-    (!query.max || !Number.isFinite(budget) || home.price <= budget)
+    (!query.min || !Number.isFinite(minBudget) || home.price >= minBudget) &&
+    (!query.max || !Number.isFinite(maxBudget) || home.price <= maxBudget)
   );
 }
 export function displayPrice(home: Home) {
