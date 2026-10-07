@@ -512,3 +512,21 @@ export async function markConversationRead(userId: string, conversationId: strin
 
   return { ok: true as const };
 }
+
+
+export async function listUserNotifications(userId: string) {
+  const db = await requireDb();
+  return db.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+}
+
+export async function markNotificationRead(id: string, userId: string) {
+  const db = await requireDb();
+  return db.notification.updateMany({
+    where: { id, userId, readAt: null },
+    data: { readAt: new Date() },
+  });
+}
