@@ -216,9 +216,22 @@ enum PricingModel {
   HOURLY
 }
 
-enum SupportTicketStatus { OPEN IN_PROGRESS WAITING_FOR_USER RESOLVED CLOSED }
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_USER
+  RESOLVED
+  CLOSED
+}
 
-enum SupportTicketCategory { ACCOUNT LISTING PAYMENT ABUSE TECHNICAL OTHER }
+enum SupportTicketCategory {
+  ACCOUNT
+  LISTING
+  PAYMENT
+  ABUSE
+  TECHNICAL
+  OTHER
+}
 
 enum ServiceRequestStatus {
   NEW
