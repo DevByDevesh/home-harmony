@@ -37,8 +37,7 @@ export function hasPermission(role: AuthRole, permission: AppPermission): boolea
 export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent: AuthRole): boolean {
   if (!hasPermission(actor, "users.changeRole")) return false;
   const privileged = PRIVILEGED_ROLES.includes(target) || PRIVILEGED_ROLES.includes(subjectCurrent);
-  // The company/platform OWNER is the highest-level account and may manage roles.
-  if (actor === "OWNER") return true;
+  // The company/platform OWNER is the highest-level account and may manage every lower role.\n  if (actor === "OWNER") return target !== "OWNER" && subjectCurrent !== "OWNER";
   return privileged ? hasPermission(actor, "users.assignAdmin") : true;
 }
 
