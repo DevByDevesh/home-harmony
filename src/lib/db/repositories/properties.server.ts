@@ -7,13 +7,63 @@ import { requireDb } from "../client.server";
 
 export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; maxPrice?: number; take?: number };
 export const LISTING_VALIDITY_DAYS = 30;
-const LISTING_VALIDITY_MS = LISTING_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+export const LISTING_REPOST_WINDOW_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const LISTING_VALIDITY_MS = LISTING_VALIDITY_DAYS * DAY_MS;
+const LISTING_REPOST_WINDOW_MS = LISTING_REPOST_WINDOW_DAYS * DAY_MS;
 
 /** Marks active listings expired once their publication window reaches 30 days. */
 export async function expireListings() {
   const db = await requireDb();
   const cutoff = new Date(Date.now() - LISTING_VALIDITY_MS);
   return db.property.updateMany({ where: { status: "ACTIVE", publishedAt: { not: null, lte: cutoff } }, data: { status: "EXPIRED" } });
+}
+
+/**
+ * Permanently removes expired listings whose 7-day repost window has elapsed.
+ * Listing-specific interactions are removed with the listing; audit history is
+ * retained separately so the deletion remains traceable.
+ */
+export async function purgeExpiredListings() {
+  const db = await requireDb();
+  const cutoff = new Date(Date.now() - (LISTING_VALIDITY_MS + LISTING_REPOST_WINDOW_MS));
+
+  return db.$transaction(async (tx) => {
+    const expired = await tx.property.findMany({
+      where: {
+        status: "EXPIRED",
+        publishedAt: { not: null, lte: cutoff },
+      },
+      select: { id: true, ownerId: true, publishedAt: true },
+    });
+
+    for (const property of expired) {
+      await tx.enquiry.deleteMany({ where: { propertyId: property.id } });
+      await tx.visit.deleteMany({ where: { propertyId: property.id } });
+      await tx.propertyReview.deleteMany({ where: { propertyId: property.id } });
+      await tx.savedProperty.deleteMany({ where: { propertyId: property.id } });
+      await tx.comparisonProperty.deleteMany({ where: { propertyId: property.id } });
+      await tx.verification.deleteMany({ where: { propertyId: property.id } });
+      await tx.report.updateMany({ where: { propertyId: property.id }, data: { propertyId: null } });
+      await tx.serviceRequest.updateMany({ where: { propertyId: property.id }, data: { propertyId: null } });
+      await tx.auditLog.create({
+        data: {
+          actorId: null,
+          action: "Listing permanently deleted after repost window",
+          entityType: "Property",
+          entityId: property.id,
+          metadata: {
+            reason: "REPOST_WINDOW_EXPIRED",
+            repostWindowDays: LISTING_REPOST_WINDOW_DAYS,
+            expiredAt: property.publishedAt,
+          },
+        },
+      });
+      await tx.property.delete({ where: { id: property.id } });
+    }
+
+    return { count: expired.length };
+  });
 }
 
 
