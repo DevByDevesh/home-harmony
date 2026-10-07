@@ -8,7 +8,7 @@ import { liveCountsFn, adminTrendsFn } from "@/lib/admin-business.functions";
 import { adminListAuditFn } from "@/lib/admin-trust.functions";
 
 export const Route = createFileRoute("/owner/company")({
-  beforeLoad: guardArea("owner"),
+  beforeLoad: guardArea("ownerCompany"),
   head: () => ({ meta: [
     { title: "Company Owner Dashboard — HouseProvider.in" },
     { name: "robots", content: "noindex, nofollow" },
