@@ -258,7 +258,7 @@ export const ownerAnalyticsFn = createServerFn({ method: "GET" }).handler(async 
     const d = await db();
     const since = new Date(Date.now() - 30 * 864e5);
     const [users, properties, enquiries, visits, messages, newUsers, newListings, rejected, approved] = await Promise.all([
-      d.user.groupBy({ by: ["role"], _count: { _all: true } }),
+      d.user.groupBy({ by: ["status"], _count: { _all: true } }),
       d.property.groupBy({ by: ["status"], _count: { _all: true } }),
       d.enquiry.count(), d.visit.count(), d.message.count(),
       d.user.count({ where: { createdAt: { gte: since } } }),
@@ -266,7 +266,7 @@ export const ownerAnalyticsFn = createServerFn({ method: "GET" }).handler(async 
       d.property.count({ where: { status: "REJECTED" } }),
       d.property.count({ where: { status: { in: ["ACTIVE", "PAUSED", "RENTED", "SOLD", "EXPIRED", "SUSPENDED", "ARCHIVED"] } } }),
     ]);
-    const userCounts = Object.fromEntries(users.map(x => [x.role, x._count._all]));
+    const userCounts = Object.fromEntries(users.map(x => [x.status, x._count._all]));
     const propertyCounts = Object.fromEntries(properties.map(x => [x.status, x._count._all]));
     const { ownerAnalyticsMetrics } = await import("./analytics");
     return ownerAnalyticsMetrics({ users: userCounts, properties: propertyCounts, enquiries, visits, messages, newUsers, newListings, approvedListings: approved, rejectedListings: rejected });
