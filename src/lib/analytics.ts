@@ -1,4 +1,4 @@
-import { createLocalStore, uid } from "./local-store";
+import { createLocalStore, uid } from "./local-store.ts";
 
 /** Event concepts shared with the future analytics backend. Events here are recorded on this device only. */
 export type AnalyticsEventType = "PROPERTY_VIEW" | "PROPERTY_SAVE" | "PROPERTY_COMPARE" | "SEARCH" | "ENQUIRY" | "VISIT_REQUEST" | "LISTING_CREATED" | "LISTING_PUBLISHED";
