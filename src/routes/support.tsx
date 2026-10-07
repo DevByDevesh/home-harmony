@@ -13,7 +13,7 @@ export const Route = createFileRoute("/support")({
   component: SupportPage,
 });
 
-const supportPhone = import.meta.env.VITE_SUPPORT_PHONE as string | undefined;
+const supportPhone = import.meta.env["VITE_SUPPORT_PHONE"] as string | undefined;
 
 function SupportPage() {
   const queryClient = useQueryClient();
