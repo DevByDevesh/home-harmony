@@ -33,3 +33,36 @@ export function dailyCounts(rows: { createdAt: string }[], days = 30): SeriesPoi
 }
 export const total = (s: SeriesPoint[]) => s.reduce((n, p) => n + p.value, 0);
 export const rate = (num: number, den: number) => den ? `${((num / den) * 100).toFixed(1)}%` : "—";
+
+
+export type OwnerAnalyticsMetrics = {
+  totalUsers: number; activeUsers: number; bannedUsers: number;
+  totalListings: number; activeListings: number; pendingListings: number; rejectedListings: number; expiredListings: number; suspendedListings: number;
+  totalEnquiries: number; totalVisits: number; totalMessages: number;
+  newUsers: number; newListings: number; listingApprovalRate: string;
+};
+
+/** Pure metric contract used by the Owner analytics dashboard. */
+export function ownerAnalyticsMetrics(input: {
+  users: Record<string, number>; properties: Record<string, number>; enquiries: number; visits: number; messages: number;
+  newUsers: number; newListings: number; approvedListings: number; rejectedListings: number;
+}): OwnerAnalyticsMetrics {
+  const approvalDenominator = input.approvedListings + input.rejectedListings;
+  return {
+    totalUsers: Object.values(input.users).reduce((a, b) => a + b, 0),
+    activeUsers: input.users.ACTIVE ?? 0,
+    bannedUsers: input.users.SUSPENDED ?? 0,
+    totalListings: Object.values(input.properties).reduce((a, b) => a + b, 0),
+    activeListings: input.properties.ACTIVE ?? 0,
+    pendingListings: input.properties.UNDER_REVIEW ?? 0,
+    rejectedListings: input.properties.REJECTED ?? 0,
+    expiredListings: input.properties.EXPIRED ?? 0,
+    suspendedListings: input.properties.SUSPENDED ?? 0,
+    totalEnquiries: input.enquiries,
+    totalVisits: input.visits,
+    totalMessages: input.messages,
+    newUsers: input.newUsers,
+    newListings: input.newListings,
+    listingApprovalRate: approvalDenominator ? (input.approvedListings / approvalDenominator * 100).toFixed(1) + "%" : "—",
+  };
+}
