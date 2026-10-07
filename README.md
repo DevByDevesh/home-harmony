@@ -58,4 +58,10 @@ See `.env.example` for the required authentication, database, OAuth, storage, an
 
 
 ### Listing expiry scheduler
-Staging/production should configure `LISTING_EXPIRY_CRON_SECRET` and call `POST /api/public/expire-listings` from the hosting scheduler at least daily. The endpoint marks active listings older than 30 days from `publishedAt` as `EXPIRED`. Public reads also run the same expiry sweep as a safety net.
+Staging/production should configure `LISTING_EXPIRY_CRON_SECRET` and call `POST /api/public/expire-listings` from the hosting scheduler at least daily. The job:
+- marks active listings older than 30 days from `publishedAt` as `EXPIRED`;
+- keeps expired listings available to the owner for a 7-day repost window;
+- permanently removes expired listings after that 7-day window, including listing-specific images, saves, comparisons, visits, enquiries, reviews, and verification records;
+- preserves report/service references by detaching the deleted property and writes an audit record for the permanent deletion.
+
+Reposting changes the expired listing back to `UNDER_REVIEW`, so it leaves the purge set and starts a fresh 30-day validity period only after it is published again. Public reads also run the 30-day expiry sweep as a safety net.
