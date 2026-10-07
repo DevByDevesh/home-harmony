@@ -3,7 +3,7 @@
  * TODO(server-auth): these checks are UX only. A real backend must re-check every
  * permission server-side against a user_roles table before mutating anything.
  */
-import type { Role } from "@/lib/roles";
+export type Role = "USER" | "OWNER" | "AGENT" | "PROPERTY_MANAGER" | "ADMIN" | "SUPER_ADMIN";
 
 export type AdminPermission =
   | "admin.access" | "users.manage" | "users.changeRole" | "users.assignAdmin" | "listings.moderate" | "verification.review"
