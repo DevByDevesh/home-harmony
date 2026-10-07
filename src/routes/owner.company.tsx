@@ -33,7 +33,7 @@ function CompanyOwnerDashboard() {
   const counts = useQuery({ queryKey: ["owner-company", "counts"], queryFn: () => liveCountsFn() });
   const users = counts.data?.users ?? {};
   const properties = counts.data?.properties ?? {};
-  const totalUsers = Object.values(users).reduce((n, v) => n + (typeof v === "number" ? v : 0), 0);
+  const sumGroup = (group: unknown) => group && typeof group === "object" ? Object.values(group as Record<string, unknown>).reduce((n, v) => n + (typeof v === "number" ? v : 0), 0) : 0;\n  const totalUsers = sumGroup(users);
   const activeUsers = users.ACTIVE ?? 0;
   const suspendedUsers = users.SUSPENDED ?? 0;
   const activeListings = properties.ACTIVE ?? 0;
