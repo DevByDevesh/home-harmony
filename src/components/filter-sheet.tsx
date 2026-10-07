@@ -8,8 +8,8 @@ import { amenityList, applyFilters, clearFilters, type Filters } from "@/lib/fil
 
 function Group({ label, children }: { label: string; children: ReactNode }) { return <fieldset className="filter-group"><legend>{label}</legend>{children}</fieldset>; }
 
-const RENT_BUDGET = { min: 5000, max: 500000, step: 1000 } as const;
-const BUY_BUDGET = { min: 1000000, max: 200000000, step: 500000 } as const;
+const RENT_BUDGET = { min: 1000, max: 500000, step: 1000 } as const;
+const BUY_BUDGET = { min: 10000, max: 200000000, step: 500000 } as const;
 
 function formatBudget(value: number, mode: string | undefined) {
   if (mode === "Buy") {
