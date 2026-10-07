@@ -4,7 +4,7 @@ import { ownerAnalyticsMetrics } from "./analytics.ts";
 
 test("Owner analytics returns requested live metrics and approval rate", () => {
   const m = ownerAnalyticsMetrics({
-    users: { USER: 8, ADMIN: 2, ACTIVE: 7, SUSPENDED: 3 },
+    users: { ACTIVE: 7, SUSPENDED: 3 },
     properties: { ACTIVE: 5, UNDER_REVIEW: 2, REJECTED: 1, EXPIRED: 1, SUSPENDED: 1 },
     enquiries: 12, visits: 9, messages: 20, newUsers: 4, newListings: 3, approvedListings: 8, rejectedListings: 2,
   });
