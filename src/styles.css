@@ -547,6 +547,12 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .nav-auth-strong { padding: 11px 14px; background: var(--primary); color: var(--primary-foreground); border-radius: 3px; }
 .navigation-home .nav-auth-strong { background: var(--accent); color: var(--accent-foreground); }
 .nav-account { background: transparent; border: 0; color: inherit; cursor: pointer; }
+.nav-notifications-menu { width: min(380px, calc(100vw - 32px)); max-height: 460px; overflow-y: auto; }
+.nav-notifications-menu [data-slot="dropdown-menu-item"] { align-items: flex-start; white-space: normal; }
+.nav-notifications-menu [data-slot="dropdown-menu-item"] > span { display: grid; gap: 4px; width: 100%; }
+.nav-notifications-menu [data-slot="dropdown-menu-item"] strong { font-size: 12px; }
+.nav-notifications-menu [data-slot="dropdown-menu-item"] small { display: block; color: var(--muted-foreground); line-height: 1.4; }
+.nav-notifications-menu .notification-unread { background: color-mix(in srgb, var(--primary) 7%, transparent); }
 .nav-account-menu { min-width: 220px; }
 .nav-account-menu small { display: block; color: var(--muted-foreground); font-weight: 500; font-size: 11px; margin-top: 2px; }
 .mobile-menu-btn { text-align: left; padding: 15px 3px; background: none; border: 0; border-bottom: 1px solid var(--border); font: inherit; font-size: 15px; color: var(--primary); cursor: pointer; }
