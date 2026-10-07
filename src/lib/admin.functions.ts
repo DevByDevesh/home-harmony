@@ -4,6 +4,9 @@ import { z } from "zod";
 
 const id = z.string().min(1).max(64);
 
+/** Admin-configurable listing rejection policy. Defaults to requiring a reason for safer moderation. */
+export const LISTING_REJECTION_REASON_REQUIRED = process.env.LISTING_REJECTION_REASON_REQUIRED !== "false";
+
 async function admin() {
   const { requirePermission } = await import("./auth/guards.server");
   return requirePermission("listings.moderate");
@@ -68,6 +71,12 @@ export const moderateListingFn = createServerFn({ method: "POST" })
     if (data.action === "REQUEST_CHANGES" && current.status !== "UNDER_REVIEW") {
       return { ok: false as const, message: "Only listings under review can receive change requests." };
     }
+    if (data.action === "REJECT" && current.status !== "UNDER_REVIEW") {
+      return { ok: false as const, message: "Only listings under review can be rejected." };
+    }
+    if (data.action === "REJECT" && LISTING_REJECTION_REASON_REQUIRED && !data.note?.trim()) {
+      return { ok: false as const, message: "A rejection reason is required." };
+    }
     if (data.action === "RESUME" && current.status !== "PAUSED") {
       return { ok: false as const, message: "Only paused listings can be resumed." };
     }
@@ -77,9 +86,11 @@ export const moderateListingFn = createServerFn({ method: "POST" })
 
     const changesRequested = data.action === "REQUEST_CHANGES"
       ? (data.note || "Please review and update the listing details before resubmitting.")
-      : data.action === "APPROVE" || data.action === "RESTORE"
-        ? null
-        : undefined;
+      : data.action === "REJECT"
+        ? (data.note?.trim() || "Rejected during admin review.")
+        : data.action === "APPROVE" || data.action === "RESTORE"
+          ? null
+          : undefined;
 
     const owner = await db.property.findUnique({
       where: { id: data.propertyId },
@@ -136,3 +147,9 @@ export const moderateListingFn = createServerFn({ method: "POST" })
 
     return { ok: true as const, status: next };
   });
+
+
+export const getListingModerationConfigFn = createServerFn({ method: "GET" }).handler(async () => {
+  await admin();
+  return { rejectionReasonRequired: LISTING_REJECTION_REASON_REQUIRED };
+});
