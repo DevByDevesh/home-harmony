@@ -206,7 +206,7 @@ function ListingsPanel() {
         <ViewListing listing={l}/><Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ edit: l.id }}><Pencil size={14}/> Edit</Link></Button>
         {l.archived ? <Button size="sm" variant="outline" onClick={() => { ownerActions.restore(l.id); toast.success("Listing restored"); }}><RotateCcw size={14}/> Restore</Button> : <>
           {l.status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "PAUSED"); toast.success("Listing paused"); }}><Pause size={14}/> Pause</Button>}
-          {l.status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "ACTIVE"); toast.success("Listing resumed "); }}><Play size={14}/> Resume</Button>}
+          {l.status === "PAUSED" || status === "SUSPENDED" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, "ACTIVE"); toast.success("Listing resumed "); }}><Play size={14}/> Resume</Button>}
           {(l.status === "ACTIVE" || l.status === "PAUSED") && <Button size="sm" variant="outline" onClick={() => { ownerActions.confirmAvailability(l.id); toast.success("Availability confirmed — freshness updated"); }}><CheckCircle2 size={14}/> Confirm availability</Button>}
           {l.status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => { ownerActions.setStatus(l.id, l.draft.mode === "Rent" ? "RENTED" : "SOLD"); toast.success(`Marked ${l.draft.mode === "Rent" ? "rented" : "sold"}`); }}>Mark {l.draft.mode === "Rent" ? "rented" : "sold"}</Button>}
           <Button size="sm" variant="ghost" onClick={() => { ownerActions.archive(l.id); toast("Listing archived", { action: { label: "Undo", onClick: () => ownerActions.restore(l.id) } }); }}><Archive size={14}/> Archive</Button></>}
@@ -229,8 +229,8 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
   const setStatus = useServerFn(setMyListingStatusFn);
   const setArchive = useServerFn(setMyListingArchiveFn);
   const repost = useServerFn(repostMyExpiredListingFn);
-  const change = async (to: "ACTIVE" | "PAUSED") => {
-    try { const r = await setStatus({ data: { id: listing.id, status: to } }); if (!r.ok) { toast.error(r.message); return; } await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "PAUSED" ? "Listing paused" : "Listing resumed"); }
+  const change = async (to: "ACTIVE" | "SUSPENDED" | "PAUSED") => {
+    try { const r = await setStatus({ data: { id: listing.id, status: to } }); if (!r.ok) { toast.error(r.message); return; } await qc.invalidateQueries({ queryKey: ["owner-db-listings"] }); toast.success(to === "SUSPENDED" ? "Listing suspended" : "Listing resumed"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not update this listing."); }
   };
   const archive = async () => {
@@ -270,8 +270,8 @@ function DbListingRow({ listing }: { listing: OwnerDbListing }) {
         </DialogContent></Dialog>
       <Button asChild size="sm" variant="outline"><Link to="/owner/new" search={{ dbEdit: listing.id }}><Pencil size={14}/> Edit</Link></Button>
       {listing.status === "ARCHIVED" ? <Button size="sm" variant="outline" onClick={restore}><RotateCcw size={14}/> Restore</Button> : listing.status === "EXPIRED" ? <Button size="sm" variant="outline" onClick={repostExpired}><RotateCcw size={14}/> Repost</Button> : <>
-        {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("PAUSED")}><Pause size={14}/> Pause</Button>}
-        {status === "PAUSED" && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")}><Play size={14}/> Resume</Button>}
+        {status === "ACTIVE" && <Button size="sm" variant="outline" onClick={() => change("SUSPENDED") }><Pause size={14}/> Pause</Button>}
+        {(status === "PAUSED" || status === "SUSPENDED") && <Button size="sm" variant="outline" onClick={() => change("ACTIVE")><Play size={14}/> Resume</Button>}
         <Button size="sm" variant="ghost" onClick={archive}><Archive size={14}/> Delete</Button>
       </>}
     </div></li>;
