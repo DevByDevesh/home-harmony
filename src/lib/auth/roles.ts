@@ -47,7 +47,7 @@ export const AREA_ROLES = {
   dashboard: ROLES as readonly AuthRole[],
   owner: ["USER", "OWNER", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
   agent: ["AGENT", "ADMIN", "SUPER_ADMIN"] as AuthRole[],
-  admin: ADMIN_ROLES,
+  admin: ["OWNER", ...ADMIN_ROLES] as AuthRole[],
 } as const;
 export type Area = keyof typeof AREA_ROLES;
 
