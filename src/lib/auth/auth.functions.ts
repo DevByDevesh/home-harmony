@@ -4,7 +4,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { ROLES, ACCOUNT_STATUSES, type SafeUser } from "./roles";
+import { ROLES, ACCOUNT_STATUSES, isVerifiedAdminCandidate, type SafeUser } from "./roles";
 
 async function guards() { return import("./guards.server"); }
 
@@ -24,13 +24,19 @@ export const listAccounts = createServerFn({ method: "GET" }).handler(async () =
     await requirePermission("users.manage");
     const { requireDb } = await import("@/lib/db/client.server");
     const db = await requireDb();
-    const rows = await db.user.findMany({ orderBy: { createdAt: "desc" }, take: 100, select: { id: true, name: true, email: true, role: true, status: true, createdAt: true } });
-    return rows.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }));
+    const rows = await db.user.findMany({
+      orderBy: { createdAt: "desc" }, take: 100,
+      select: { id: true, name: true, email: true, role: true, status: true, createdAt: true, emailVerified: true, phoneVerified: true, profile: { select: { fullName: true } }, verifications: { where: { type: "OWNER_IDENTITY", status: "VERIFIED" }, select: { id: true }, take: 1 } },
+    });
+    return rows.map(r => ({
+      id: r.id, name: r.name, email: r.email, role: r.role, status: r.status, createdAt: r.createdAt.toISOString(),
+      adminVerification: { personalDetailsVerified: Boolean(r.profile?.fullName?.trim()) && Boolean(r.emailVerified || r.phoneVerified), identityVerified: r.verifications.length > 0 },
+    }));
   } catch (e) { rethrow(e); }
 });
 
 export const changeUserRole = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ userId: z.string().min(1), role: z.enum(ROLES) }).parse(d))
+  .inputValidator((d) => z.object({ userId: z.string().min(1), role: z.enum(ROLES), adminConfirmation: z.boolean().optional().default(false) }).parse(d))
   .handler(async ({ data }) => {
     try {
       const { requirePermission, AuthError } = await guards();
@@ -39,11 +45,22 @@ export const changeUserRole = createServerFn({ method: "POST" })
       const actor = await requirePermission("users.changeRole");
       const { requireDb } = await import("@/lib/db/client.server");
       const db = await requireDb();
-      const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true } });
+      const subject = await db.user.findUnique({
+        where: { id: data.userId },
+        select: { id: true, role: true, status: true, emailVerified: true, phoneVerified: true, profile: { select: { fullName: true } }, verifications: { where: { type: "OWNER_IDENTITY", status: "VERIFIED" }, select: { id: true }, take: 1 } },
+      });
       if (!subject) throw new AuthError(403, "Account not found.");
       if (subject.id === actor.id || !canAssignRole(actor.role, data.role, subject.role)) {
         await writeAudit({ actorId: actor.id, action: "role.change", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { from: subject.role, to: data.role, self: subject.id === actor.id } });
         throw new AuthError(403, subject.id === actor.id ? "You can't change your own role." : "Only a Super admin can grant or remove admin roles.");
+      }
+      if (data.role === "ADMIN" && subject.role === "USER") {
+        const personalDetailsVerified = Boolean(subject.profile?.fullName?.trim()) && Boolean(subject.emailVerified || subject.phoneVerified);
+        const identityVerified = subject.verifications.length > 0;
+        if (!isVerifiedAdminCandidate({ targetRole: subject.role, targetStatus: subject.status, hasPersonalDetails: personalDetailsVerified, identityVerified, confirmed: data.adminConfirmation })) {
+          await writeAudit({ actorId: actor.id, action: "role.assign_admin", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { reason: "ADMIN_APPOINTMENT_VERIFICATION_REQUIRED", personalDetailsVerified, identityVerified, confirmed: data.adminConfirmation } });
+          throw new AuthError(403, !personalDetailsVerified ? "Personal details and a verified contact method are required before Admin appointment." : !identityVerified ? "Identity verification must be completed before Admin appointment." : "Owner confirmation is required before Admin appointment.");
+        }
       }
       await db.user.update({ where: { id: subject.id }, data: { role: data.role } });
       const privileged = data.role === "ADMIN" || data.role === "SUPER_ADMIN";
