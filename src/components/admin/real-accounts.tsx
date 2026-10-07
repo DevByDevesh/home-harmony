@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 import { changeUserRole, listAccounts, setAccountStatus } from "@/lib/auth/auth.functions";
 import { ACCOUNT_STATUSES, ROLES, canAssignRole, roleLabel, type AccountStatus, type AuthRole } from "@/lib/auth/roles";
@@ -7,6 +8,7 @@ import { useCurrentUser } from "@/lib/auth/use-current-user";
 /** Live accounts from the database. Every change is authorized and audited on the server. */
 export function RealAccountsPanel({ roles, title = "Registered accounts" }: { roles?: AuthRole[]; title?: string }) {
   const { user } = useCurrentUser();
+  const [confirmBan, setConfirmBan] = useState<{ id: string; name: string } | null>(null);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
   const rows = roles ? q.data?.filter(a => roles.includes(a.role as AuthRole)) : q.data;
@@ -27,7 +29,9 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
             <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user} onChange={e => role.mutate({ userId: a.id, role: e.target.value as AuthRole })}>
               {ROLES.filter(r => r === a.role || (user && canAssignRole(user.role, r, a.role as AuthRole))).map(r => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </select></td>
-            <td><select aria-label={`Status for ${a.email}`} value={a.status} disabled={self} onChange={e => status.mutate({ userId: a.id, status: e.target.value as AccountStatus })}>
+            <td>
+              {a.status === "ACTIVE" && !self ? <button type="button" className="text-link" onClick={() => setConfirmBan({ id: a.id, name: a.name || a.email })}>Ban user</button> : null}
+              <select aria-label={`Status for ${a.email}`} value={a.status} disabled={self} onChange={e => status.mutate({ userId: a.id, status: e.target.value as AccountStatus })}>
               {ACCOUNT_STATUSES.map(s => <option key={s} value={s}>{s.toLowerCase()}</option>)}
             </select></td>
             <td>{new Date(a.createdAt).toLocaleDateString("en-IN")}</td>
