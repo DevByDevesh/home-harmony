@@ -13,7 +13,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
   const rows = roles ? q.data?.filter(a => roles.includes(a.role as AuthRole)) : q.data;
   const done = (msg: string) => ({ onSuccess: () => { toast.success(msg); void qc.invalidateQueries({ queryKey: ["admin", "accounts"] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Action failed") });
-  const role = useMutation({ mutationFn: (d: { userId: string; role: AuthRole }) => changeUserRole({ data: d }), ...done("Role updated") });
+  const role = useMutation({ mutationFn: (d: { userId: string; role: AuthRole; adminConfirmation?: boolean }) => changeUserRole({ data: d }), ...done("Role updated") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
 
   return <section className="admin-accounts dash-panel" aria-labelledby="real-accounts">
@@ -26,7 +26,21 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
           const self = a.id === user?.id;
           return <tr key={a.id}>
             <td>{a.name || "—"}{self && " (you)"}</td><td>{a.email}</td>
-            <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user} onChange={e => role.mutate({ userId: a.id, role: e.target.value as AuthRole })}>
+            <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user} onChange={e => {
+                const nextRole = e.target.value as AuthRole;
+                if (nextRole === "ADMIN" && a.role === "USER") {
+                  if (!a.adminVerification.personalDetailsVerified || !a.adminVerification.identityVerified) {
+                    toast.error(!a.adminVerification.personalDetailsVerified
+                      ? "Verify personal details and a contact method before appointing this user as Admin."
+                      : "Complete identity verification before appointing this user as Admin.");
+                    return;
+                  }
+                  if (!window.confirm(`Confirm Admin appointment for ${a.name || a.email || "this user"}? Personal details and identity verification are complete.`)) return;
+                  role.mutate({ userId: a.id, role: nextRole, adminConfirmation: true });
+                  return;
+                }
+                role.mutate({ userId: a.id, role: nextRole });
+              }}>
               {ROLES.filter(r => r === a.role || (user && canAssignRole(user.role, r, a.role as AuthRole))).map(r => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </select></td>
             <td>
