@@ -14,7 +14,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   const [confirmBan, setConfirmBan] = useState<{ id: string; name: string } | null>(null);
   const [activityUserId, setActivityUserId] = useState<string | null>(null);
   const [permissionUserId, setPermissionUserId] = useState<string | null>(null);
-  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
+  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[] | null>(null);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin", "accounts"], queryFn: () => listAccounts() });
   const permissionQuery = useQuery({ queryKey: ["admin", "permissions", permissionUserId], queryFn: () => listAdminPermissions({ data: { userId: permissionUserId! } }), enabled: Boolean(permissionUserId) });
@@ -32,7 +32,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   const permissions = useMutation({ mutationFn: (d: { userId: string; permissions: AdminPermission[] }) => setAdminPermissions({ data: d }), onSuccess: () => { toast.success("Admin permissions updated"); void qc.invalidateQueries({ queryKey: ["admin", "permissions", permissionUserId] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Permission update failed") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
   const isOwner = user?.role === "OWNER";
-  const openPermissions = (userId: string) => { setPermissionUserId(userId); setSelectedPermissions([]); };
+  const openPermissions = (userId: string) => { setPermissionUserId(userId); setSelectedPermissions(null); };
   const confirmRoleAction = (message: string, userId: string, nextRole: AuthRole) => {
     if (!window.confirm(message)) return;
     role.mutate({ userId, role: nextRole, ...(nextRole === "ADMIN" ? { adminConfirmation: true } : {}) });
@@ -88,18 +88,19 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
         <p className="form-hint">Owner-controlled operational permissions. Admin Management and Owner Management are intentionally excluded from this editor.</p>
         <div className="admin-permission-grid">
           {GRANULAR_ADMIN_PERMISSIONS.map(permission => {
-            const checked = selectedPermissions.length ? selectedPermissions.includes(permission) : (permissionQuery.data?.permissions ?? []).includes(permission);
+            const current = selectedPermissions ?? (permissionQuery.data?.permissions ?? []);
+            const checked = current.includes(permission);
             return <label key={permission}><input type="checkbox" checked={checked} onChange={e => {
-              const current = selectedPermissions.length ? selectedPermissions : (permissionQuery.data?.permissions ?? []);
+              const current = selectedPermissions ?? (permissionQuery.data?.permissions ?? []);
               setSelectedPermissions(e.target.checked ? [...current, permission] : current.filter(p => p !== permission));
             }} /> {ADMIN_PERMISSION_LABELS[permission]}</label>;
           })}
         </div>
         <button type="button" className="text-link" disabled={permissions.isPending} onClick={() => {
-          const current = selectedPermissions.length ? selectedPermissions : (permissionQuery.data?.permissions ?? []);
+          const current = selectedPermissions ?? (permissionQuery.data?.permissions ?? []);
           permissions.mutate({ userId: permissionUserId, permissions: current });
         }}>Save permissions</button>{" "}
-        <button type="button" className="text-link" onClick={() => { setPermissionUserId(null); setSelectedPermissions([]); }}>Close</button>
+        <button type="button" className="text-link" onClick={() => { setPermissionUserId(null); setSelectedPermissions(null); }}>Close</button>
       </>}
     </section> : null}
     {isOwner && activityUserId ? <section className="dash-panel" aria-labelledby="admin-activity-title">
