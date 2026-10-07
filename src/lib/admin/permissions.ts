@@ -8,11 +8,11 @@ export type Role = "USER" | "OWNER" | "AGENT" | "PROPERTY_MANAGER" | "ADMIN" | "
 export type AdminPermission =
   | "admin.access" | "users.manage" | "users.changeRole" | "users.assignAdmin" | "listings.moderate" | "verification.review"
   | "reports.moderate" | "enquiries.manage" | "visits.manage" | "payments.view" | "payments.refund"
-  | "plans.edit" | "subscriptions.manage" | "services.manage" | "analytics.view" | "settings.view" | "settings.edit" | "audit.view";
+  | "plans.edit" | "subscriptions.manage" | "services.manage" | "analytics.view" | "settings.view" | "settings.edit" | "audit.view" | "support.manage";
 
 const ADMIN: AdminPermission[] = [
   "admin.access", "users.manage", "users.changeRole", "listings.moderate", "verification.review", "reports.moderate",
-  "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "audit.view",
+  "enquiries.manage", "visits.manage", "payments.view", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "audit.view", "support.manage", "support.manage",
 ];
 const matrix: Partial<Record<Role, AdminPermission[]>> = {
   // OWNER is the company/platform holder: full administrative access plus
@@ -44,7 +44,7 @@ export const ADMIN_PERMISSION_LABELS: Record<AdminPermission, string> = {
   "users.assignAdmin": "Admin Management", "listings.moderate": "Listings Management", "verification.review": "Verification Review",
   "reports.moderate": "Reports", "enquiries.manage": "Enquiries", "visits.manage": "Visits", "payments.view": "Payments View",
   "payments.refund": "Payment Refunds", "plans.edit": "Plans", "subscriptions.manage": "Subscriptions", "services.manage": "Services",
-  "analytics.view": "Analytics", "settings.view": "Settings View", "settings.edit": "Settings Edit", "audit.view": "Audit Activity",
+  "analytics.view": "Analytics", "settings.view": "Settings View", "settings.edit": "Settings Edit", "audit.view": "Audit Activity", "support.manage": "Customer Support",
 };
 
 export function defaultGranularAdminPermissions(): AdminPermission[] { return [...GRANULAR_ADMIN_PERMISSIONS]; }
