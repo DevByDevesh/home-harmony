@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/properties")({ head: adminHead("Pro
 
 type LiveProperty = Awaited<ReturnType<typeof listAdminPropertiesFn>>[number];
 
-const statuses = ["ACTIVE", "UNDER_REVIEW", "PAUSED", "ARCHIVED"];
+const statuses = ["DRAFT", "UNDER_REVIEW", "ACTIVE", "REJECTED", "SUSPENDED", "PAUSED", "EXPIRED", "DELETED", "ARCHIVED"];
 
 function AdminProperties() {
   const [rows, setRows] = useState<LiveProperty[]>([]);
@@ -65,8 +65,8 @@ function AdminProperties() {
       }
       void moderate(p, "REJECT", reason || undefined);
     } },
-    { label: "Pause", hidden: p.status !== "ACTIVE", onSelect: () => void moderate(p, "PAUSE") },
-    { label: "Resume", hidden: p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
+    { label: "Suspend", hidden: p.status !== "ACTIVE", onSelect: () => void moderate(p, "PAUSE") },
+    { label: "Resume", hidden: p.status !== "SUSPENDED" && p.status !== "PAUSED", onSelect: () => void moderate(p, "RESUME") },
     { label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
       title: `Archive “${p.title}”?`,
       description: "Archived listings are hidden from seekers but retained in the database.",
