@@ -26,7 +26,8 @@ const AGENT: AppPermission[] = [...USER, "agent.access", "listings.own", "leads.
 // Property managers: architecture only — no extra product capability exists yet.
 const PROPERTY_MANAGER: AppPermission[] = [...USER, "manager.access"];
 
-const base: Record<AuthRole, AppPermission[]> = { USER, OWNER, AGENT, PROPERTY_MANAGER, ADMIN: USER, SUPER_ADMIN: USER };
+const ADMIN_BASE: AppPermission[] = USER.filter((permission) => !["owner.access", "listings.own", "verification.request"].includes(permission));
+const base: Record<AuthRole, AppPermission[]> = { USER, OWNER, AGENT, PROPERTY_MANAGER, ADMIN: ADMIN_BASE, SUPER_ADMIN: ADMIN_BASE };
 
 export function hasPermission(role: AuthRole, permission: AppPermission): boolean {
   if (base[role].includes(permission)) return true;
