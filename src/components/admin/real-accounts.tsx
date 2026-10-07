@@ -29,13 +29,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
             <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user} onChange={e => {
                 const nextRole = e.target.value as AuthRole;
                 if (nextRole === "ADMIN" && a.role === "USER") {
-                  if (!a.adminVerification.personalDetailsVerified || !a.adminVerification.identityVerified) {
-                    toast.error(!a.adminVerification.personalDetailsVerified
-                      ? "Verify personal details and a contact method before appointing this user as Admin."
-                      : "Complete identity verification before appointing this user as Admin.");
-                    return;
-                  }
-                  if (!window.confirm(`Confirm Admin appointment for ${a.name || a.email || "this user"}? Personal details and identity verification are complete.`)) return;
+                  if (!window.confirm(`Confirm Admin appointment for ${a.name || a.email || "this user"}? The system will verify personal details and identity before applying the role.`)) return;
                   role.mutate({ userId: a.id, role: nextRole, adminConfirmation: true });
                   return;
                 }
