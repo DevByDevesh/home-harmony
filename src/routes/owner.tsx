@@ -141,8 +141,8 @@ function OwnerContactForm({
   };
 
   return <div className="profile-card owner-contact-card">
-    <div className="owner-contact-heading"><div><p className="kicker">PUBLIC CONTACT</p><h3>Owner contact settings</h3></div><span className="owner-contact-badge">Optional</span></div>
-    <p>These details control the optional Call and WhatsApp actions shown on your published property pages. Your private chat continues to work separately.</p>
+    <div className="owner-contact-heading"><div><p className="kicker">PRIVATE CONTACT</p><h3>Owner contact settings</h3></div><span className="owner-contact-badge">Optional</span></div>
+    <p>Your phone number is kept private. It is revealed to a seeker only after you explicitly accept a phone or call request.</p>
     <label className="owner-contact-field">Phone number
       <input
         type="tel"
@@ -162,7 +162,7 @@ function OwnerContactForm({
         <option value="BOTH">Call + WhatsApp</option>
       </select>
     </label>
-    <div className="owner-contact-hint"><Phone size={15}/><span>Call</span><MessageCircle size={15}/><span>WhatsApp</span><p>These buttons appear on your published property only when a phone number and preference are saved.</p></div>
+    <div className="owner-contact-hint"><Phone size={15}/><span>Call</span><MessageCircle size={15}/><span>WhatsApp</span><p>This number is never included in public listing or search data. You control every contact request from the Enquiries section.</p></div>
     <div className="owner-contact-actions">
       <Button disabled={busy} onClick={submit}><Save size={15}/>{busy ? "Saving…" : "Save contact settings"}</Button>
       <Button variant="outline" disabled={busy} onClick={() => { setPhone(profile.phone ?? ""); setPreferredContact(profile.preferredContact); }}><RotateCcw size={15}/> Reset</Button>
