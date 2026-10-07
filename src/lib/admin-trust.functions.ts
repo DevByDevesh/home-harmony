@@ -18,7 +18,7 @@ const first = (n: string | null | undefined) => n || "—";
 
 // ---- Verification review ----
 
-export type AdminLiveVerification = { id: string; type: string; status: string; subject: string; property: string; reviewer: string; submittedAt: string; updatedAt: string; decidedAt: string | null };
+export type AdminLiveVerification = { id: string; type: string; status: string; subject: string; property: string; propertyId: string | null; propertySlug: string | null; propertyStatus: string | null; reviewer: string; submittedAt: string; updatedAt: string; decidedAt: string | null };
 
 export const adminListVerificationsFn = createServerFn({ method: "GET" }).handler(async (): Promise<AdminLiveVerification[]> => {
   try {
@@ -27,7 +27,7 @@ export const adminListVerificationsFn = createServerFn({ method: "GET" }).handle
       orderBy: { updatedAt: "desc" }, take: 300,
       select: { id: true, type: true, status: true, submittedAt: true, updatedAt: true, decidedAt: true, user: { select: { name: true } }, property: { select: { title: true } }, reviewer: { select: { name: true } } },
     });
-    return rows.map(v => ({ id: v.id, type: v.type, status: v.status, subject: first(v.user.name), property: v.property?.title ?? "—", reviewer: first(v.reviewer?.name), submittedAt: v.submittedAt.toISOString(), updatedAt: v.updatedAt.toISOString(), decidedAt: v.decidedAt?.toISOString() ?? null }));
+    return rows.map(v => ({ id: v.id, type: v.type, status: v.status, subject: first(v.user.name), property: v.property?.title ?? "—", propertyId: v.property?.id ?? null, propertySlug: v.property?.slug ?? null, propertyStatus: v.property?.status ?? null, reviewer: first(v.reviewer?.name), submittedAt: v.submittedAt.toISOString(), updatedAt: v.updatedAt.toISOString(), decidedAt: v.decidedAt?.toISOString() ?? null }));
   } catch (e) { rethrow(e); }
 });
 
