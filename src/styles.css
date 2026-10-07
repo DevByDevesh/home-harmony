@@ -1816,6 +1816,8 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 }
 
 .detail-contact-actions { display: grid; gap: 8px; margin-top: 16px; }
+.tile-contact { margin-top: 14px; }
+.tile-contact-button { width: 100%; justify-content: center; }
 .detail-contact-actions .detail-more { margin-top: 0; }\n
 
 .property-reviews { margin-top: 3rem; }
