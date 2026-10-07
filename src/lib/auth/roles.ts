@@ -21,7 +21,7 @@ export type AppPermission =
   | AdminPermission;
 
 const USER: AppPermission[] = ["profile.manage", "saved.manage", "searches.manage", "comparisons.manage", "visits.own", "enquiries.own", "owner.access", "listings.own", "verification.request"];
-const OWNER: AppPermission[] = [...USER, "owner.access", "listings.own", "verification.request", "admin.access", "users.manage", "users.changeRole", "users.assignAdmin", "listings.moderate", "verification.review", "reports.moderate", "enquiries.manage", "visits.manage", "payments.view", "payments.refund", "plans.edit", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "settings.edit", "audit.view"];
+const OWNER: AppPermission[] = [...USER, "owner.access", "listings.own", "verification.request", "admin.access", "users.manage", "users.changeRole", "users.assignAdmin", "listings.moderate", "verification.review", "reports.moderate", "enquiries.manage", "visits.manage", "payments.view", "payments.refund", "plans.edit", "subscriptions.manage", "services.manage", "analytics.view", "settings.view", "settings.edit", "audit.view", "support.manage"];
 const AGENT: AppPermission[] = [...USER, "agent.access", "listings.own", "leads.manage", "clients.manage", "followups.manage"];
 // Property managers: architecture only — no extra product capability exists yet.
 const PROPERTY_MANAGER: AppPermission[] = [...USER, "manager.access"];
