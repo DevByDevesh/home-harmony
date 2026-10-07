@@ -9,7 +9,7 @@ CREATE TABLE "OwnerContactRequest" (
   "conversationId" TEXT,
   "type" "OwnerContactRequestType" NOT NULL,
   "status" "OwnerContactRequestStatus" NOT NULL DEFAULT 'REQUESTED',
-  "preferredDate" TIMESTAMP(3),
+  "preferredDate" DATE,
   "preferredTime" TEXT,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL,
