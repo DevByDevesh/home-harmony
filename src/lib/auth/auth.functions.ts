@@ -47,7 +47,7 @@ export const setAdminPermissions = createServerFn({ method: "POST" })
       const db = await requireDb();
       const permissions = normaliseGranularAdminPermissions(data.permissions);
       if (permissions.length !== new Set(data.permissions).size || data.permissions.some(p => !GRANULAR_ADMIN_PERMISSIONS.includes(p as typeof GRANULAR_ADMIN_PERMISSIONS[number]))) {
-        throw new AuthError(400, "One or more selected permissions are not assignable to Admin accounts.");
+        throw new AuthError(403, "One or more selected permissions are not assignable to Admin accounts.");
       }
       const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true, adminPermissions: true } });
       if (!subject || (subject.role !== "ADMIN" && subject.role !== "SUPER_ADMIN")) throw new AuthError(403, "Only Admin accounts have granular permissions.");
