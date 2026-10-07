@@ -18,6 +18,45 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
   return await (await guards()).getSessionUser();
 });
 
+export const listAdminPermissions = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ userId: z.string().min(1) }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requirePermission, AuthError } = await guards();
+      const actor = await requirePermission("users.assignAdmin");
+      if (actor.role !== "OWNER") throw new AuthError(403, "Only the platform Owner can manage Admin permissions.");
+      const { requireDb } = await import("@/lib/db/client.server");
+      const { normaliseGranularAdminPermissions } = await import("../admin/permissions");
+      const db = await requireDb();
+      const subject = await db.user.findUnique({ where: { id: data.userId }, select: { role: true, adminPermissions: true } });
+      if (!subject || (subject.role !== "ADMIN" && subject.role !== "SUPER_ADMIN")) throw new AuthError(403, "Only Admin accounts have granular permissions.");
+      return { permissions: normaliseGranularAdminPermissions(subject.adminPermissions) };
+    } catch (e) { rethrow(e); }
+  });
+
+export const setAdminPermissions = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ userId: z.string().min(1), permissions: z.array(z.string()).max(50) }).strict().parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const { requirePermission, AuthError } = await guards();
+      const actor = await requirePermission("users.assignAdmin");
+      if (actor.role !== "OWNER") throw new AuthError(403, "Only the platform Owner can manage Admin permissions.");
+      const { requireDb } = await import("@/lib/db/client.server");
+      const { GRANULAR_ADMIN_PERMISSIONS, normaliseGranularAdminPermissions } = await import("../admin/permissions");
+      const { writeAudit } = await import("./audit.server");
+      const db = await requireDb();
+      const permissions = normaliseGranularAdminPermissions(data.permissions);
+      if (permissions.length !== new Set(data.permissions).size || data.permissions.some(p => !GRANULAR_ADMIN_PERMISSIONS.includes(p as typeof GRANULAR_ADMIN_PERMISSIONS[number]))) {
+        throw new AuthError(400, "One or more selected permissions are not assignable to Admin accounts.");
+      }
+      const subject = await db.user.findUnique({ where: { id: data.userId }, select: { id: true, role: true, adminPermissions: true } });
+      if (!subject || (subject.role !== "ADMIN" && subject.role !== "SUPER_ADMIN")) throw new AuthError(403, "Only Admin accounts have granular permissions.");
+      await db.user.update({ where: { id: subject.id }, data: { adminPermissions: permissions } });
+      await writeAudit({ actorId: actor.id, action: "admin.permissions.update", entityType: "User", entityId: subject.id, metadata: { permissions: permissions.join(",") } });
+      return { ok: true as const, permissions };
+    } catch (e) { rethrow(e); }
+  });
+
 export const listAccounts = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const { requirePermission } = await guards();
