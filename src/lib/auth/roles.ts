@@ -11,7 +11,7 @@ export const ACCOUNT_STATUSES = ["ACTIVE", "SUSPENDED", "PENDING", "DEACTIVATED"
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
 export const ADMIN_ROLES: AuthRole[] = ["ADMIN", "SUPER_ADMIN"];
-export const PRIVILEGED_ROLES: AuthRole[] = ["ADMIN", "SUPER_ADMIN"];
+export const PRIVILEGED_ROLES: AuthRole[] = ["OWNER", "ADMIN", "SUPER_ADMIN"];
 
 export type AppPermission =
   | "profile.manage" | "saved.manage" | "searches.manage" | "comparisons.manage" | "visits.own" | "enquiries.own"
@@ -37,6 +37,8 @@ export function hasPermission(role: AuthRole, permission: AppPermission): boolea
 export function canAssignRole(actor: AuthRole, target: AuthRole, subjectCurrent: AuthRole): boolean {
   if (!hasPermission(actor, "users.changeRole")) return false;
   const privileged = PRIVILEGED_ROLES.includes(target) || PRIVILEGED_ROLES.includes(subjectCurrent);
+  // The company/platform OWNER is the highest-level account and may manage roles.
+  if (actor === "OWNER") return true;
   return privileged ? hasPermission(actor, "users.assignAdmin") : true;
 }
 
@@ -50,7 +52,7 @@ export const AREA_ROLES = {
 export type Area = keyof typeof AREA_ROLES;
 
 export const roleLabel: Record<AuthRole, string> = {
-  USER: "Home seeker", OWNER: "Owner", AGENT: "Agent", PROPERTY_MANAGER: "Property manager", ADMIN: "Admin", SUPER_ADMIN: "Super admin",
+  USER: "Home seeker", OWNER: "Platform Owner", AGENT: "Agent", PROPERTY_MANAGER: "Property manager", ADMIN: "Admin", SUPER_ADMIN: "Super admin",
 };
 
 /** Minimum safe user shape sent to the browser. Never includes tokens or hashes. */
