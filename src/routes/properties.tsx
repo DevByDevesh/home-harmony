@@ -69,7 +69,7 @@ function ResultsPage() {
         <input value={place} onChange={e => setPlace(e.target.value)} placeholder="Where do you want to live?" aria-label="City or locality"/>
       </form>
       <FilterSheet filters={filters} onApply={go} activeCount={chips.length}/>
-      <select className="sort-select" aria-label="Sort" value={filters.sort ?? ""} onChange={e => go({ ...filters, sort: e.target.value || undefined })}><option value="">Recommended order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="area">Largest area</option><option value="recent">Recently updated</option></select>
+      <select className="sort-select" aria-label="Sort" value={filters.sort ?? ""} onChange={e => go({ ...filters, sort: e.target.value || undefined })}><option value="">Recommended order</option><option value="relevance">Relevance</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="area">Largest area</option><option value="recent">Newest</option></select>
       <div className="view-toggle" role="group" aria-label="View">
         {([["list", LayoutGrid, "List"], ["map", MapIcon, "Map"], ["satellite", Satellite, "Satellite"]] as const).map(([v, Icon, label]) => <button type="button" key={v} aria-pressed={view === v} onClick={() => go({ ...filters, view: v === "list" ? undefined : v })}><Icon size={15}/><span>{label}</span></button>)}
       </div>
