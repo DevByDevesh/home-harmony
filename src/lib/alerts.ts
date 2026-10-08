@@ -1,4 +1,4 @@
-import { applyFilters, type Filters } from "./filters";
+import { applyFilters, type Filters } from "./filters.ts";
 import type { Listing } from "./catalog";
 
 /**
