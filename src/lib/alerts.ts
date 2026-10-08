@@ -18,7 +18,7 @@ export const alertTypes: { type: AlertType; label: string; how: string }[] = [
   { type: "VERIFICATION_UPDATE", label: "Verification updates", how: "A matching home completes verification checks." },
 ];
 export const frequencies: { value: AlertFrequency; label: string }[] = [{ value: "INSTANT", label: "Instant" }, { value: "DAILY", label: "Daily digest" }, { value: "WEEKLY", label: "Weekly digest" }];
-export const defaultAlerts = (): AlertSettings => ({ enabled: true, frequency: "DAILY", types: ["NEW_MATCH", "PRICE_DROP"] });
+export const defaultAlerts = (): AlertSettings => ({ enabled: true, frequency: "INSTANT", types: ["NEW_MATCH"] });
 
 /** Which of `source` match the saved criteria right now. */
 export function matchingSlugs(filters: Filters, source: Listing[]): string[] { return applyFilters(source, filters).map(l => l.slug); }
