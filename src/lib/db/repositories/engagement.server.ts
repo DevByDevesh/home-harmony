@@ -190,7 +190,7 @@ export async function listOwnerEnquiries(ownerId: string) {
 
 export async function listMyNotifications(userId: string) {
   const db = await requireDb();
-  return db.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: { id: true, type: true, title: true, message: true, readAt: true, createdAt: true } });
+  return db.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: { id: true, type: true, title: true, message: true, readAt: true, metadata: true, createdAt: true } });
 }
 
 // ---- Recently viewed (stored in SearchPreference.extra.recent; no schema change) ----
