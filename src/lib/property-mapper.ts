@@ -34,7 +34,7 @@ export function toListing(p: PublicProperty): Listing {
     description: p.description, features: p.amenities,
     lat: p.latitude ?? 0, lng: p.longitude ?? 0, deposit: p.deposit ?? 0,
     brokerage: (brokerages as readonly string[]).includes(p.brokerage ?? "") ? (p.brokerage as Listing["brokerage"]) : "None",
-    parking: p.parking, propertyAgeYears: p.propertyAgeYears ?? undefined, floor: p.floor ?? undefined, totalFloors: p.totalFloors ?? undefined, availableFrom: p.availableFrom ? p.availableFrom.slice(0, 10) : null,
+    parking: p.parking, ...(p.propertyAgeYears != null ? { propertyAgeYears: p.propertyAgeYears } : {}), ...(p.floor != null ? { floor: p.floor } : {}), ...(p.totalFloors != null ? { totalFloors: p.totalFloors } : {}), availableFrom: p.availableFrom ? p.availableFrom.slice(0, 10) : null,
     updatedAt: p.updatedAt.slice(0, 10), status: "ACTIVE",
     // Verification is never inferred; DB listings are unverified until a real record exists.
     verification: unverified,
