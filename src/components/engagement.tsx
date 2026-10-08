@@ -306,7 +306,7 @@ export function MyNotifications() {
         </div>
         <div className="dash-row-actions">
           {!n.read && <Button size="sm" variant="outline" onClick={() => void readOne(n.id)}>Mark read</Button>}
-          {n.metadata?.slug && <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: n.metadata.slug }}>View</Link></Button>}
+          {n.metadata?.["slug"] && <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: n.metadata.slug }}>View</Link></Button>}
         </div>
       </li>)}
     </ul> : fresh.length === 0 ? <EmptyState icon={<Bell size={30}/>} title="No notifications yet">Activity from your HouseProvider account will appear here.</EmptyState> : null}
