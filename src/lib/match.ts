@@ -82,3 +82,16 @@ export function explainMatch(r: MatchResult): string {
   if (r.unmatched.length) parts.push(`${r.unmatched.length} not met`);
   return parts.join(" · ");
 }
+
+export type RankedMatch = { listing: Listing; match: MatchResult };
+
+/** Rank a listing set for one saved requirement. Insufficient requirements produce no recommendations. */
+export function rankMatches(items: Listing[], criteria: MatchCriteria): RankedMatch[] {
+  return items
+    .map((listing) => {
+      const match = computeMatch(listing, criteria);
+      return match ? { listing, match } : null;
+    })
+    .filter((item): item is RankedMatch => item !== null)
+    .sort((a, b) => b.match.score - a.match.score || b.listing.updatedAt.localeCompare(a.listing.updatedAt));
+}
