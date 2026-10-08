@@ -430,6 +430,9 @@ model Property {
   bedrooms           Int
   bathrooms          Int
   parking            Int                @default(0)
+  propertyAgeYears   Int?
+  floor              Int?
+  totalFloors        Int?
   furnishing         Furnishing
   availableFrom      DateTime?
   city               String
