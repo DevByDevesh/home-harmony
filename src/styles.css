@@ -2327,3 +2327,7 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .detail-image:has(.detail-gallery-controls) .detail-gallery > span:not(.detail-photo-count) {
   z-index: 3;
 }
+
+/* ---------- Story preferences button contrast ---------- */
+.homepage-v2 .story-preferences-button { background: #fff !important; color: #542a52 !important; border-color: rgba(255,255,255,.72) !important; font-weight: 800; }
+.homepage-v2 .story-preferences-button:hover { background: #ffb39a !important; color: #3e213b !important; border-color: #ffb39a !important; }
