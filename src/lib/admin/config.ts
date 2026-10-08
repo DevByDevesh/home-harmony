@@ -38,7 +38,7 @@ export type PlatformSettings = {
 };
 
 export const defaultSettings: PlatformSettings = {
-  general: { platformName: "HouseProvider.in", supportEmail: "support@example.com", defaultCity: "Pune" },
+  general: { platformName: "HouseProvider.in", supportEmail: "support@example.com", defaultCity: "Nagpur" },
   platform: { maintenanceMode: false, allowNewSignups: true },
   listings: { freshnessDays: 14, expireAfterDays: 60, maxPhotos: 20 },
   verification: { availabilityReconfirmDays: 14, requireOwnerIdentity: true, requirePhone: true },
