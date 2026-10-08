@@ -236,7 +236,7 @@ export function MyNotifications() {
     label: search.label,
     filters: search.filters,
     alerts: search.alerts ?? { enabled: true, frequency: "INSTANT" as const, types: ["NEW_MATCH" as const] },
-    seen: search.seen,
+    ...(search.seen ? { seen: search.seen } : {}),
   })), live.data) : [];
 
   return <>
