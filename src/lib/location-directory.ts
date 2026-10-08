@@ -39,12 +39,12 @@ export async function listStates(country: string): Promise<string[]> {
   if (!key) return [];
   const cached = stateCache.get(key);
   if (cached) return cached;
-  const rows = await request<Array<{ name?: string }>>(`${BASE_URL}/countries/states`, {
+  const payload = await request<{ states?: Array<{ name?: string }> }>(`${BASE_URL}/countries/states`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ country: key }),
   });
-  const states = rows.map(row => row.name ?? "").filter(Boolean).sort((a, b) => a.localeCompare(b));
+  const states = (payload.states ?? []).map(row => row.name ?? "").filter(Boolean).sort((a, b) => a.localeCompare(b));
   stateCache.set(key, states);
   return states;
 }
