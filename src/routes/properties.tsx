@@ -63,13 +63,18 @@ function ResultsPage() {
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readRecentSearches());
   const view = filters.view === "map" || filters.view === "satellite" ? filters.view : "list";
   const results = applyFilters(listings, filters).filter(listing => !drawnPolygon || pointInPolygon([listing.lng, listing.lat], drawnPolygon));
+  const sortedResults = [...results].sort((a, b) => {
+    if (filters.sort) return 0;
+    const rank = (p: typeof a) => p.promotion === "FEATURED" ? 2 : p.promotion === "BOOST" ? 1 : 0;
+    return rank(b) - rank(a);
+  });
   const chips = activeChips(filters);
   const prefs = data.preferences;
   const criteria = criteriaFrom(prefs, filters);
   const go = (next: Filters) => navigate({ search: next });
   const suggestions = buildSearchSuggestions(place, recentSearches);
   const select = (slug: string) => { setSelected(slug); document.getElementById(`tile-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
-   const grid = results.map(h => <HomeTile key={h.slug} home={h} listing={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
+   const grid = sortedResults.map(h => <HomeTile key={h.slug} home={h} listing={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
 
   return <main className={`results-page view-${view}`}><div className="wrap">
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
@@ -86,7 +91,7 @@ function ResultsPage() {
       </div>
     </div>
     {chips.length > 0 && <div className="chip-row" aria-label="Active filters">{chips.map(c => <EditableChip key={c.key + (c.value ?? "") + (filters[c.key] ?? "")} chip={c} filters={filters} onChange={next => { setPlace(next.location ?? ""); go(next); }}/>)}<button type="button" className="chip-clear" onClick={() => { setPlace(""); go(clearFilters(filters)); }}>Clear all</button></div>}
-    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Property listings</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }, listings); toast("Search saved — you’ll be notified when a matching property is posted"); }}><Bell size={15}/>Save & notify</Button>}</div></div>
+    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2><p className="promotion-note">🔥 Featured and ⭐ promoted listings may appear first and are clearly labelled.</p></div><div className="results-line-end"><span>Property listings</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }, listings); toast("Search saved — you’ll be notified when a matching property is posted"); }}><Bell size={15}/>Save & notify</Button>}</div></div>
      {view === "list" ? (results.length ? <div key="list" className="home-grid results-grid results-entrance">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
        : <div key={view} className="map-layout results-entrance">
           <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
