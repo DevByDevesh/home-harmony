@@ -1,10 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowUpRight, Bell, Heart, Home, Map, Menu, MessageSquare, Search, User, X } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, Bell, Heart, Home, Map, Menu, MessageSquare, Search, User, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserData } from "@/lib/user-data";
 import { useCurrentUser, useSignOut } from "@/lib/auth/use-current-user";
-import { AREA_ROLES, roleLabel } from "@/lib/auth/roles";
+import { AREA_ROLES, getRoleDashboardPath, roleLabel } from "@/lib/auth/roles";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listConversationsFn, listNotificationsFn, markNotificationReadFn } from "@/lib/engagement.functions";
@@ -23,6 +23,8 @@ export function Navigation() {
   const unreadNotifications = user ? (notifications.data ?? []).filter(n => !n.read).length : 0;
   const unreadMessages = user ? (conversations.data ?? []).filter(c => c.lastMessage && c.lastMessage.senderId !== user.id && !c.lastMessage.readAt).length : 0;
   const canOwner = !!user && AREA_ROLES.owner.includes(user.role), canAgent = !!user && AREA_ROLES.agent.includes(user.role), canAdmin = !!user && AREA_ROLES.admin.includes(user.role);
+  const dashboardPath = user ? getRoleDashboardPath(user.role) : "/dashboard";
+  const dashboardLabel = user?.role === "OWNER" ? "Owner dashboard" : user?.role === "ADMIN" ? "Admin dashboard" : "Dashboard";
   const onMap = path === "/properties" && (view === "map" || view === "satellite");
   return <>
     <header className={`navigation ${path === "/" ? "navigation-home" : ""}`}><div className="wrap navigation-inner">
@@ -43,9 +45,9 @@ export function Navigation() {
         {user
           ? <DropdownMenu><DropdownMenuTrigger className="nav-icon nav-account" aria-label={`Account menu for ${user.name || user.email}`}><User size={18}/></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="nav-account-menu">
-                <DropdownMenuLabel>{user.name || user.email}<small>{roleLabel[user.role]}</small></DropdownMenuLabel><DropdownMenuSeparator/>
+                <DropdownMenuLabel><span className="nav-profile-name">{user.name || user.email}{user.verifiedBadge && <BadgeCheck className="verified-badge-icon" size={15} aria-label="Verified HouseProvider member" />}</span><small>{roleLabel[user.role]}</small></DropdownMenuLabel><DropdownMenuSeparator/>
                 <DropdownMenuItem asChild><Link to="/account">Profile</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/dashboard">Dashboard</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to={dashboardPath}>{dashboardLabel}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/messages"><MessageSquare size={15}/> Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link></DropdownMenuItem>
                 {canOwner && <DropdownMenuItem asChild><Link to="/owner">Owner dashboard</Link></DropdownMenuItem>}
                 {canAgent && <DropdownMenuItem asChild><Link to="/agent">Agent dashboard</Link></DropdownMenuItem>}
@@ -58,7 +60,7 @@ export function Navigation() {
       </div>
     </div></header>
     {open && <nav className="mobile-menu" aria-label="Mobile menu" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/properties" search={{ mode: "Rent" }}>Rent a home</Link><Link to="/properties" search={{ mode: "Buy" }}>Buy a home</Link><Link to="/compare">Compare</Link><Link to="/list-property">List your property</Link>
-      {user ? <><Link to="/account">Profile</Link><Link to="/dashboard">Dashboard</Link><Link to="/messages">Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link>{canOwner && <Link to="/owner">Owner dashboard</Link>}{canAgent && <Link to="/agent">Agent dashboard</Link>}{canAdmin && <Link to="/admin">Admin</Link>}<button type="button" className="mobile-menu-btn" onClick={signOut}>Sign out</button></>
+      {user ? <><Link to="/account">Profile</Link><Link to={dashboardPath}>{dashboardLabel}</Link><Link to="/messages">Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link>{canOwner && <Link to="/owner">Owner dashboard</Link>}{canAgent && <Link to="/agent">Agent dashboard</Link>}{canAdmin && <Link to="/admin">Admin</Link>}<button type="button" className="mobile-menu-btn" onClick={signOut}>Sign out</button></>
         : <><Link to="/login">Sign in</Link><Link to="/signup">Create account</Link></>}</nav>}
     <nav className="bottom-nav" aria-label="Mobile navigation">
       <Link to="/" aria-current={path === "/" ? "page" : undefined}><Home size={20}/><span>Home</span></Link>
