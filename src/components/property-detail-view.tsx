@@ -7,7 +7,7 @@ import { Reveal } from "@/components/cinematic-motion";
 import { PropertyIntelligence, PropertySectionNav } from "@/components/property-intelligence";
 
 /** Shared property presentation used by the public detail page and the owner listing preview. */
-export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer, images }: { home: Home; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] | undefined }) {
+export function PropertyDetailView({ home, listings, actions, aside, imageNote, disclaimer, images }: { home: Home; listings?: Home[]; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] | undefined }) {
   const galleryImages = images?.length ? images : [home.image];
   const [activePhoto, setActivePhoto] = useState(0);
   const currentPhoto = galleryImages[Math.min(activePhoto, galleryImages.length - 1)] ?? home.image;
@@ -50,7 +50,7 @@ export function PropertyDetailView({ home, actions, aside, imageNote, disclaimer
       <Reveal><section id="overview" className="detail-block"><p className="kicker">THE SPACE</p><h2>A closer look.</h2><p>{home.description}</p><p className="disclaimer">{disclaimer}</p></section></Reveal>
       <Reveal><section id="amenities" className="detail-block"><p className="kicker">WHAT’S INCLUDED</p><h2>The everyday details.</h2><div className="features-grid">{[home.furnishing, ...home.features].map(feature => <span key={feature}><Check size={17}/>{feature}</span>)}</div></section></Reveal>
     </div><aside className="detail-aside">{aside}</aside></div>
-    <PropertyIntelligence home={home} />
+    <PropertyIntelligence home={home} listings={(listings ?? []).filter((item): item is import("@/lib/catalog").Listing => "lat" in item && "lng" in item) as import("@/lib/catalog").Listing[]} />
   </>;
 }
 
