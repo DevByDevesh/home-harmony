@@ -49,7 +49,6 @@ export function Navigation() {
                 <DropdownMenuItem asChild><Link to="/account">Profile</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to={dashboardPath}>{dashboardLabel}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/messages"><MessageSquare size={15}/> Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link></DropdownMenuItem>
-                {canOwner && <DropdownMenuItem asChild><Link to="/owner">Owner dashboard</Link></DropdownMenuItem>}
                 {canAgent && <DropdownMenuItem asChild><Link to="/agent">Agent dashboard</Link></DropdownMenuItem>}
                 {canAdmin && <DropdownMenuItem asChild><Link to="/admin">Admin</Link></DropdownMenuItem>}
                 <DropdownMenuSeparator/><DropdownMenuItem onSelect={() => { void signOut(); }}>Sign out</DropdownMenuItem>
@@ -60,7 +59,7 @@ export function Navigation() {
       </div>
     </div></header>
     {open && <nav className="mobile-menu" aria-label="Mobile menu" onClick={() => setOpen(false)}><Link to="/">Home</Link><Link to="/properties" search={{ mode: "Rent" }}>Rent a home</Link><Link to="/properties" search={{ mode: "Buy" }}>Buy a home</Link><Link to="/compare">Compare</Link><Link to="/list-property">List your property</Link>
-      {user ? <><Link to="/account">Profile</Link><Link to={dashboardPath}>{dashboardLabel}</Link><Link to="/messages">Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link>{canOwner && <Link to="/owner">Owner dashboard</Link>}{canAgent && <Link to="/agent">Agent dashboard</Link>}{canAdmin && <Link to="/admin">Admin</Link>}<button type="button" className="mobile-menu-btn" onClick={signOut}>Sign out</button></>
+      {user ? <><Link to="/account">Profile</Link><Link to={dashboardPath}>{dashboardLabel}</Link><Link to="/messages">Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link>{canAgent && <Link to="/agent">Agent dashboard</Link>}{canAdmin && <Link to="/admin">Admin</Link>}<button type="button" className="mobile-menu-btn" onClick={signOut}>Sign out</button></>
         : <><Link to="/login">Sign in</Link><Link to="/signup">Create account</Link></>}</nav>}
     <nav className="bottom-nav" aria-label="Mobile navigation">
       <Link to="/" aria-current={path === "/" ? "page" : undefined}><Home size={20}/><span>Home</span></Link>
