@@ -39,11 +39,7 @@ export async function listStates(country: string): Promise<string[]> {
   if (!key) return [];
   const cached = stateCache.get(key);
   if (cached) return cached;
-  const payload = await request<{ states?: Array<{ name?: string }> }>(`${BASE_URL}/countries/states`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ country: key }),
-  });
+  const payload = await request<{ states?: Array<{ name?: string }> }>(`${BASE_URL}/countries/states/q?country=${encodeURIComponent(key)}`);
   const states = (payload.states ?? []).map(row => row.name ?? "").filter(Boolean).sort((a, b) => a.localeCompare(b));
   stateCache.set(key, states);
   return states;
@@ -56,17 +52,13 @@ export async function listCities(country: string, state: string): Promise<string
   const key = `${countryKey}::${stateKey}`;
   const cached = cityCache.get(key);
   if (cached) return cached;
-  const rows = await request<string[]>(`${BASE_URL}/countries/state/cities`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ country: countryKey, state: stateKey }),
-  });
+  const rows = await request<string[]>(`${BASE_URL}/countries/state/cities/q?country=${encodeURIComponent(countryKey)}&state=${encodeURIComponent(stateKey)}`);
   const cities = [...new Set(rows.filter(Boolean))].sort((a, b) => a.localeCompare(b));
   cityCache.set(key, cities);
   return cities;
 }
 
 export function findExactLocation(options: string[], value: string): string | null {
-  const normalized = value.trim().toLocaleLowerCase();
-  return options.find(option => option.toLocaleLowerCase() === normalized) ?? null;
+  const normalized = value.trim().toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, "");
+  return options.find(option => option.trim().toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, "") === normalized) ?? null;
 }
