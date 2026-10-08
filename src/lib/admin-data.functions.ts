@@ -37,8 +37,20 @@ export const adminPropertyActionFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const u = await guard("listings.moderate"); const m = propMoves[data.action]!;
-      const r = await (await db()).property.updateMany({ where: { id: data.id, status: { in: m.from as never } }, data: { status: m.to, ...(m.to === "ACTIVE" && data.action === "approve" ? { publishedAt: new Date() } : {}) } });
+      const d = await db();
+      const r = await d.property.updateMany({ where: { id: data.id, status: { in: m.from as never } }, data: { status: m.to, ...(m.to === "ACTIVE" && data.action === "approve" ? { publishedAt: new Date(), verificationStatus: "VERIFIED" } : {}) } });
       if (!r.count) return { ok: false as const, message: "This listing can’t take that action in its current status." };
+
+      // In HouseProvider, admin approval is the final moderation decision for a listing.
+      // Keep the verification badge in sync with that decision so an approved listing
+      // does not continue to display "Not verified" on public cards.
+      if (data.action === "approve") {
+        await d.verification.updateMany({
+          where: { propertyId: data.id, status: { not: "VERIFIED" } },
+          data: { status: "VERIFIED", reviewerId: u.id, decidedAt: new Date() },
+        });
+      }
+
       await audit(u.id, `admin.property.${data.action}`, "Property", data.id, { to: m.to });
       return { ok: true as const };
     } catch (e) { rethrow(e); }
