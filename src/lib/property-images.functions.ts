@@ -1,5 +1,5 @@
 /**
- * Owner photo uploads. Identity comes from the session; the property must belong to the caller
+ * Listing photo uploads. Identity comes from the session; the property must belong to the caller
  * (checked in the database query). Files are validated by size, declared type and real signature.
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -60,7 +60,14 @@ export const uploadPropertyImageFn = createServerFn({ method: "POST" })
       const key = `${s.UPLOAD_PREFIX}${p.id}/${crypto.randomUUID()}.${s.IMAGE_TYPES[real]}`;
       await s.putImage(key, bytes, real);
       const sortOrder = existing.reduce((m, x) => Math.max(m, x.sortOrder), 999) + 1;
-      await db.propertyImage.create({ data: { propertyId: p.id, storageKey: key, url: s.publicImageUrl(key), altText: `${p.title} (owner photo)`, sortOrder } });
+      try {
+        await db.propertyImage.create({ data: { propertyId: p.id, storageKey: key, url: s.publicImageUrl(key), altText: `${p.title} (owner photo)`, sortOrder } });
+      } catch (e) {
+        // Storage and PostgreSQL are separate systems. Never leave an orphaned
+        // object behind when the DB record cannot be persisted.
+        try { await s.removeImages([key]); } catch { /* best-effort cleanup */ }
+        throw e;
+      }
       return { ok: true as const, images: await listImages(db, p.id) };
     } catch (e) { rethrow(e); }
   });
