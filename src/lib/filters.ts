@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { Listing } from "./catalog.ts";
-import { isVerified } from "./catalog";
+import { isListingVerified } from "./listing-trust.ts";
 import { computeMatch } from "./match.ts";
 
 /** URL-safe discovery filters. Everything is a string so links stay shareable. */
