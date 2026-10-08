@@ -15,7 +15,10 @@ export function guardArea(area: Area) {
     }
     if (!user) throw redirect({ to: "/login", search: { redirect: location.href } });
     const allowedRoles = AREA_ROLES[area] as readonly AuthRole[];
-    if (!allowedRoles.includes(user.role)) throw redirect({ to: "/account", search: { denied: area } });
+    if (!allowedRoles.includes(user.role)) {
+      if (area === "authenticated") throw redirect({ to: "/account" });
+      throw redirect({ to: "/account", search: { denied: area } });
+    }
     return { user };
   };
 }
