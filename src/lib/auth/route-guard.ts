@@ -1,6 +1,6 @@
 import { redirect } from "@tanstack/react-router";
 import { getCurrentUser } from "./auth.functions";
-import { AREA_ROLES, type Area, type AuthRole } from "./roles";
+import { AREA_ROLES, LISTING_ROLES, type Area, type AuthRole } from "./roles";
 
 /**
  * Route `beforeLoad` guard. Runs on the server during SSR (reading the HttpOnly
@@ -19,6 +19,21 @@ export function guardArea(area: Area) {
       if (area === "authenticated") throw redirect({ to: "/account" });
       throw redirect({ to: "/account", search: { denied: area } });
     }
+    return { user };
+  };
+}
+
+
+/** Route guard for the self-service property listing workspace. */
+export function guardListingAccess() {
+  return async ({ location }: { location: { href: string } }) => {
+    let user = await getCurrentUser();
+    if (!user) {
+      await new Promise(resolve => setTimeout(resolve, 75));
+      user = await getCurrentUser();
+    }
+    if (!user) throw redirect({ to: "/login", search: { redirect: location.href } });
+    if (!LISTING_ROLES.includes(user.role)) throw redirect({ to: "/account" });
     return { user };
   };
 }
