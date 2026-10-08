@@ -2216,3 +2216,9 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
   .account-actions > button,
   .account-actions > a { width:100%; justify-content:center; }
 }
+
+/* Phase 12 search controls */
+.property-map-draw { position:absolute; top:12px; left:12px; z-index:3; display:flex; gap:6px; flex-wrap:wrap; }
+.property-map-draw button { height:34px; padding:0 11px; font-size:12px; }
+.filter-range-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media (max-width:520px) { .property-map-draw { left:10px; right:10px; } .property-map-draw button { flex:1; } }
