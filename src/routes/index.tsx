@@ -38,7 +38,9 @@ function HomePage() {
     return () => window.clearTimeout(id);
   }, []);
   const { data: liveListings = [], isLoading, isError } = useLiveListings({ enabled: loadLive });
-  const featured = liveListings.slice(0, 3);
+  const promoted = liveListings.filter(item => item.promotion === "FEATURED");
+  const boosted = liveListings.filter(item => item.promotion === "BOOST");
+  const featured = [...promoted, ...liveListings.filter(item => item.promotion !== "FEATURED")].slice(0, 3);
   const cities = Array.from(new Set(liveListings.map(item => item.city))).slice(0, 4);
 
   return <main className="homepage-v2">
@@ -72,7 +74,9 @@ function HomePage() {
       <div className="wrap">
         <Reveal><div className="feature-heading"><div><p className="kicker">LIVE COLLECTION / 02</p><h2>Homes worth a <em>closer look.</em></h2></div><Button asChild variant="outline" className="outline-cta"><Link to="/properties">Explore all homes <ArrowUpRight size={16}/></Link></Button></div></Reveal>
         {isLoading ? <div className="homepage-state"><LoaderCircle size={24} className="spin"/><span>Loading live homes…</span></div> : isError ? <div className="homepage-state homepage-state-error"><strong>Homes are temporarily unavailable.</strong><span>Please try again in a moment.</span><Link to="/properties">Open property search <ArrowUpRight size={15}/></Link></div> : featured.length === 0 ? <div className="homepage-state homepage-state-empty"><strong>No live homes yet.</strong><span>Be the first to list a property on HouseProvider.</span><Link to="/list-property">List your property <ArrowUpRight size={15}/></Link></div> : <div className="home-grid">{featured.map((home, i) => <Reveal key={home.slug} delay={i * 0.07}><HomeTile home={home} listing={home}/></Reveal>)}</div>}
-        {!isLoading && !isError && featured.length > 0 && <p className="collection-note">Showing live HouseProvider listings. Availability and verification status come from listing records.</p>}
+        {!isLoading && !isError && featured.length > 0 && <p className="collection-note">Featured listings are promoted placements and are clearly labelled. Availability and verification status come from listing records.</p>}
+        {!isLoading && !isError && promoted.length > 0 && <p className="collection-note">🔥 Featured Properties · {promoted.length} promoted placement{promoted.length === 1 ? "" : "s"}.</p>}
+        {!isLoading && !isError && boosted.length > 0 && <p className="collection-note">⭐ Promoted Listings · {boosted.length} boosted listing{boosted.length === 1 ? "" : "s"}.</p>}
       </div>
     </section>
 
