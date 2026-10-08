@@ -54,7 +54,7 @@ export type ListingDetails = {
   propertyAgeYears?: number; floor?: number; totalFloors?: number;
   ownerPhone?: string | null; ownerContactChannels?: string[];
 };
-export type Listing = Home & ListingDetails;
+export type Listing = Home & ListingDetails & { promotion?: "FEATURED" | "BOOST" | null };
 
 const unverified: Verification = { ownerIdentity: false, phone: false, location: false, listingReviewed: false, photosChecked: false, availabilityConfirmed: false };
 const details: Record<string, Omit<ListingDetails, "verification" | "status">> = {
