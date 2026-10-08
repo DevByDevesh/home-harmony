@@ -37,7 +37,7 @@ export function applyFilters(items: Listing[], f: Filters): Listing[] {
     (totalFloorsMin === undefined || (h.totalFloors !== undefined && h.totalFloors >= totalFloorsMin)) &&
     (!f.parking || h.parking > 0) && (baths === undefined || h.baths >= baths) &&
     amenities.every(a => h.features.includes(a)) && (!f.available || !h.availableFrom) &&
-    (!f.verified || isVerified(h)) &&
+    (!f.verified || isListingVerified(h)) &&
     (match === undefined || (computeMatch(h, f)?.score ?? 0) >= match));
   return sortListings(result, f.sort, f);
 }
