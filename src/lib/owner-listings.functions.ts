@@ -24,7 +24,7 @@ export const listMyListingsFn = createServerFn({ method: "GET" }).handler(async 
     return rows.map((p) => ({
       id: p.id, slug: p.slug, title: p.title, description: p.description,
       propertyType: p.propertyType, listingType: p.listingType, price: p.price, deposit: p.deposit,
-      areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, furnishing: p.furnishing,
+      areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, ...(p.propertyAgeYears != null ? { propertyAgeYears: p.propertyAgeYears } : {}), ...(p.floor != null ? { floor: p.floor } : {}), ...(p.totalFloors != null ? { totalFloors: p.totalFloors } : {}), furnishing: p.furnishing,
       availableFrom: p.availableFrom?.toISOString() ?? null, city: p.city, locality: p.locality,
       verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null, updatedAt: p.updatedAt.toISOString(),
       brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
