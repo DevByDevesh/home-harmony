@@ -5,7 +5,7 @@
 import { Prisma, PropertyStatus, type PropertyType, type VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
-export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; take?: number };
+export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; minBedrooms?: number; maxBedrooms?: number; minArea?: number; furnishing?: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; parkingOnly?: boolean; minBathrooms?: number; amenities?: string[]; availableNow?: boolean; verifiedOnly?: boolean; propertyAgeMax?: number; floorMin?: number; floorMax?: number; totalFloorsMin?: number; take?: number };
 export const LISTING_VALIDITY_DAYS = 30;
 export const LISTING_REPOST_WINDOW_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,9 +76,20 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.city ? { city: q.city } : {}),
       ...(q.listingType ? { listingType: q.listingType } : {}),
       ...(q.propertyType ? { propertyType: q.propertyType } : {}),
-      ...((q.minPrice !== undefined || q.maxPrice !== undefined)
-        ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } }
-        : {}),
+      ...((q.minPrice !== undefined || q.maxPrice !== undefined) ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } } : {}),
+      ...(q.minBedrooms !== undefined ? { bedrooms: { gte: q.minBedrooms } } : {}),
+      ...(q.maxBedrooms !== undefined ? { bedrooms: { lte: q.maxBedrooms } } : {}),
+      ...(q.minArea !== undefined ? { areaSqft: { gte: q.minArea } } : {}),
+      ...(q.furnishing ? { furnishing: q.furnishing } : {}),
+      ...(q.parkingOnly ? { parking: { gt: 0 } } : {}),
+      ...(q.minBathrooms !== undefined ? { bathrooms: { gte: q.minBathrooms } } : {}),
+      ...(q.availableNow ? { availableFrom: null } : {}),
+      ...(q.verifiedOnly ? { verificationStatus: "VERIFIED" } : {}),
+      ...(q.propertyAgeMax !== undefined ? { propertyAgeYears: { lte: q.propertyAgeMax } } : {}),
+      ...(q.floorMin !== undefined ? { floor: { gte: q.floorMin } } : {}),
+      ...(q.floorMax !== undefined ? { floor: { lte: q.floorMax } } : {}),
+      ...(q.totalFloorsMin !== undefined ? { totalFloors: { gte: q.totalFloorsMin } } : {}),
+      ...(q.amenities?.length ? { amenities: { every: { amenity: { name: { in: q.amenities } } } } } : {}),
     },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
