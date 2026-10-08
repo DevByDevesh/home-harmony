@@ -26,9 +26,13 @@ function HomePage() {
   const [loadLive, setLoadLive] = useState(false);
   useEffect(() => {
     const start = () => setLoadLive(true);
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(start, { timeout: 1500 });
-      return () => window.cancelIdleCallback(id);
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const id = idleWindow.requestIdleCallback(start, { timeout: 1500 });
+      return () => idleWindow.cancelIdleCallback?.(id);
     }
     const id = window.setTimeout(start, 900);
     return () => window.clearTimeout(id);
