@@ -21,3 +21,15 @@ test("withinRadius keeps points at or inside the requested radius and sorts near
 
   assert.deepEqual(withinRadius(points, origin, 3).map(point => point.id), ["near", "edge"]);
 });
+
+test("withinRadius returns an empty list for an invalid radius", () => {
+  const point = { id: "home", lat: 21.1458, lng: 79.0882 };
+  assert.deepEqual(withinRadius([point], point, -1), []);
+  assert.deepEqual(withinRadius([point], point, Number.NaN), []);
+});
+
+test("withinRadius includes the origin at a zero-kilometre radius", () => {
+  const origin = { lat: 21.1458, lng: 79.0882 };
+  const point = { id: "same", ...origin };
+  assert.deepEqual(withinRadius([point], origin, 0).map(item => item.id), ["same"]);
+});

@@ -1818,7 +1818,8 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .detail-contact-actions { display: grid; gap: 8px; margin-top: 16px; }
 .tile-contact { margin-top: 14px; }
 .tile-contact-button { width: 100%; justify-content: center; }
-.detail-contact-actions .detail-more { margin-top: 0; }\n
+.detail-contact-actions .detail-more { margin-top: 0; }
+
 
 .property-reviews { margin-top: 3rem; }
 .property-reviews .feature-heading { align-items: end; }
@@ -2243,6 +2244,8 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .radius-search-card { display:grid; gap:18px; padding:22px; border:1px solid var(--border); background:var(--card); }
 .radius-search-card h3 { margin:6px 0 5px; font-size:25px; }
 .radius-search-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+.radius-search-actions { display:flex; gap:8px; }
+.radius-search-actions > * { white-space:nowrap; }
 .radius-search-controls input { min-width:0; height:46px; border:1px solid var(--border); background:var(--background); color:var(--foreground); padding:0 13px; font:600 13px var(--font-sans); outline:none; }
 .radius-search-controls input:focus { border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 10%,transparent); }
 .radius-origin { display:flex; align-items:center; gap:10px; padding:12px 0; color:var(--primary); border-top:1px solid var(--border); }
@@ -2263,6 +2266,28 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
   .location-map-panel,.location-map { min-height:310px; height:310px; }
   .radius-search-controls { grid-template-columns:1fr; }
   .radius-search-controls button { width:100%; justify-content:center; }
+  .radius-search-actions { display:grid; grid-template-columns:1fr; }
   .radius-list { grid-template-columns:1fr; }
   .radius-list a:nth-child(odd) { border-right:0; }
+}
+
+
+/* Phase 15 — location intelligence UX polish */
+.location-explorer-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); background:var(--muted); }
+.location-explorer-heading > div { display:grid; gap:4px; }
+.location-explorer-heading .kicker { margin:0; }
+.location-explorer-heading strong { font-size:12px; }
+.location-explorer-heading > span { flex:none; color:var(--muted-foreground); font-size:10px; font-weight:700; }
+.location-empty { display:grid; gap:5px; padding:24px 20px; color:var(--muted-foreground); }
+.location-empty strong { color:var(--foreground); font-size:12px; }
+.location-empty span { font-size:11px; line-height:1.5; }
+.radius-list-item { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:stretch; border-bottom:1px solid var(--border); }
+.radius-list-item > a:first-child { border-bottom:0; }
+.radius-list-item .radius-map-link { display:inline-flex; align-items:center; justify-content:center; min-width:92px; padding:0 10px; border-left:1px solid var(--border); color:var(--primary); font-size:10px; font-weight:800; text-decoration:none; }
+.radius-list-item .radius-map-link:hover { background:var(--muted); }
+.radius-list-item:nth-child(odd) { border-right:0; }
+@media (max-width:560px) {
+  .location-explorer-heading { padding:12px 13px; }
+  .radius-list-item { grid-template-columns:1fr; }
+  .radius-list-item .radius-map-link { min-height:36px; border-left:0; border-top:1px solid var(--border); justify-content:flex-start; padding-inline:12px; }
 }

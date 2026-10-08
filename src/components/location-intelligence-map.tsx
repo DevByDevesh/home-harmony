@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Building2, Cross, GraduationCap, MapPin, Navigation, Search, ShoppingBag, Utensils, WalletCards } from "lucide-react";
+import { Building2, Cross, GraduationCap, LocateFixed, MapPin, Navigation, Search, ShoppingBag, Utensils, WalletCards } from "lucide-react";
 import type mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Listing } from "@/lib/catalog";
@@ -33,6 +33,28 @@ const categories: Category[] = [
 ];
 
 const token = import.meta.env["VITE_MAPBOX_PUBLIC_TOKEN"] as string | undefined;
+
+const RADIUS_SOURCE_ID = "property-radius-2km";
+const RADIUS_FILL_ID = "property-radius-2km-fill";
+const RADIUS_LINE_ID = "property-radius-2km-line";
+
+function radiusPolygon(lng: number, lat: number, radiusKm: number, steps = 64) {
+  const coordinates: [number, number][] = [];
+  const latScale = 110.574;
+  const lngScale = 111.32 * Math.cos((lat * Math.PI) / 180);
+  for (let index = 0; index <= steps; index += 1) {
+    const angle = (index / steps) * Math.PI * 2;
+    coordinates.push([
+      lng + (Math.cos(angle) * radiusKm) / lngScale,
+      lat + (Math.sin(angle) * radiusKm) / latScale,
+    ]);
+  }
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: { type: "Polygon" as const, coordinates: [coordinates] },
+  };
+}
 
 function formatDistance(value: number) {
   if (value < 1) return `${Math.round(value * 1000)} m`;
@@ -96,9 +118,11 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
   const [placeError, setPlaceError] = useState("");
   const [destination, setDestination] = useState("");
   const [destinationError, setDestinationError] = useState("");
+  const [locating, setLocating] = useState(false);
   const [destinationPoint, setDestinationPoint] = useState<{ lat: number; lng: number; name: string; address?: string } | null>(null);
 
   const category = categories.find(item => item.id === categoryId) ?? categories[0]!;
+  const categorySummary = loadingPlaces ? "Searching nearby…" : placeError ? "Unavailable right now" : places.length === 0 ? "No results in 3 km" : `${places.length} nearby result${places.length === 1 ? "" : "s"}`;
   const nearbyListings = useMemo(() => {
     if (!destinationPoint) return [];
     return withinRadius(
@@ -140,6 +164,9 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
       radiusMarkersRef.current = [];
       destinationMarkerRef.current?.remove();
       destinationMarkerRef.current = null;
+      if (mapRef.current?.getLayer(RADIUS_FILL_ID)) mapRef.current.removeLayer(RADIUS_FILL_ID);
+      if (mapRef.current?.getLayer(RADIUS_LINE_ID)) mapRef.current.removeLayer(RADIUS_LINE_ID);
+      if (mapRef.current?.getSource(RADIUS_SOURCE_ID)) mapRef.current.removeSource(RADIUS_SOURCE_ID);
       setMapReady(false);
       mapRef.current?.remove();
       mapRef.current = null;
@@ -184,11 +211,32 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
     if (!map || !mapboxgl || !mapReady) return;
     radiusMarkersRef.current.forEach(marker => marker.remove());
     radiusMarkersRef.current = [];
+    if (map.getLayer(RADIUS_FILL_ID)) map.removeLayer(RADIUS_FILL_ID);
+    if (map.getLayer(RADIUS_LINE_ID)) map.removeLayer(RADIUS_LINE_ID);
+    if (map.getSource(RADIUS_SOURCE_ID)) map.removeSource(RADIUS_SOURCE_ID);
     if (!destinationPoint) {
       destinationMarkerRef.current?.remove();
       destinationMarkerRef.current = null;
       return;
     }
+
+    map.addSource(RADIUS_SOURCE_ID, {
+      type: "geojson",
+      data: radiusPolygon(destinationPoint.lng, destinationPoint.lat, 2),
+    });
+    map.addLayer({
+      id: RADIUS_FILL_ID,
+      type: "fill",
+      source: RADIUS_SOURCE_ID,
+      paint: { "fill-color": "#f97316", "fill-opacity": 0.09 },
+    });
+    map.addLayer({
+      id: RADIUS_LINE_ID,
+      type: "line",
+      source: RADIUS_SOURCE_ID,
+      paint: { "line-color": "#f97316", "line-width": 2, "line-opacity": 0.72 },
+    });
+
     destinationMarkerRef.current?.remove();
     destinationMarkerRef.current = new mapboxgl.default.Marker({ color: "#f97316" })
       .setLngLat([destinationPoint.lng, destinationPoint.lat])
@@ -201,7 +249,48 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
         .addTo(map);
       radiusMarkersRef.current.push(marker);
     });
+
+    if (nearbyListings.length > 0) {
+      const bounds = new mapboxgl.default.LngLatBounds(
+        [destinationPoint.lng, destinationPoint.lat],
+        [destinationPoint.lng, destinationPoint.lat],
+      );
+      nearbyListings.forEach(item => bounds.extend([item.lng, item.lat]));
+      map.fitBounds(bounds, { padding: 70, maxZoom: 14, duration: 700 });
+    } else {
+      map.flyTo({ center: [destinationPoint.lng, destinationPoint.lat], zoom: 13, essential: true });
+    }
   }, [destinationPoint, nearbyListings, mapReady]);
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      setDestinationError("Location services are not supported by this browser.");
+      return;
+    }
+    setLocating(true);
+    setDestinationError("");
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const point = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          name: "Your location",
+        };
+        setDestination("");
+        setDestinationPoint(point);
+        setLocating(false);
+      },
+      error => {
+        setLocating(false);
+        setDestinationError(
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission was denied. You can search your workplace or college instead."
+            : "We couldn't get your location right now. Please try again or search manually.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
 
   const searchDestination = async () => {
     if (!destination.trim()) return;
@@ -236,6 +325,7 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
           <div ref={mapContainer} className="location-map" aria-label="Interactive property location map" />
         </div>
         <div className="location-explorer">
+          <div className="location-explorer-heading"><div><p className="kicker">NEARBY PLACES</p><strong>{categorySummary}</strong></div><span>Within 3 km</span></div>
           <div className="location-category-tabs" role="tablist" aria-label="Nearby categories">
             {categories.map(item => {
               const Icon = item.icon;
@@ -243,16 +333,16 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
             })}
           </div>
           <div className="location-results">
-            {loadingPlaces ? <p className="property-muted">Finding nearby {category.label.toLowerCase()}…</p> : placeError ? <p className="property-muted">{placeError}</p> : places.length === 0 ? <p className="property-muted">No nearby results found.</p> : places.map(place => <a key={place.id} href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`} target="_blank" rel="noreferrer"><span><strong>{place.name}</strong><small>{formatDistance(place.distanceKm ?? 0)}{place.address ? ` · ${place.address}` : ""}</small></span><Navigation size={14}/></a>)}
+            {loadingPlaces ? <p className="property-muted" role="status">Finding nearby {category.label.toLowerCase()}…</p> : placeError ? <p className="property-muted" role="status">{placeError}</p> : places.length === 0 ? <div className="location-empty"><strong>No {category.label.toLowerCase()} found nearby.</strong><span>Try another category or check the map around the property.</span></div> : places.map(place => <a key={place.id} href={`https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`} target="_blank" rel="noreferrer"><span><strong>{place.name}</strong><small>{formatDistance(place.distanceKm ?? 0)}{place.address ? ` · ${place.address}` : ""}</small></span><Navigation size={14}/></a>)}
           </div>
         </div>
       </div>
 
       <div className="radius-search-card">
         <div><p className="kicker">2 KM RADIUS</p><h3>Properties near your workplace or college.</h3><p className="property-muted">Search a destination and we’ll show active listings within 2 km of that point.</p></div>
-        <div className="radius-search-controls"><input value={destination} onChange={event => setDestination(event.target.value)} onKeyDown={event => { if (event.key === "Enter") void searchDestination(); }} placeholder="e.g. VNIT Nagpur or your workplace" aria-label="Workplace or college" /><Button type="button" onClick={() => void searchDestination()}><Search size={15}/> Find properties</Button></div>
+        <div className="radius-search-controls"><input value={destination} onChange={event => setDestination(event.target.value)} onKeyDown={event => { if (event.key === "Enter") void searchDestination(); }} placeholder="e.g. VNIT Nagpur or your workplace" aria-label="Workplace or college" /><div className="radius-search-actions"><Button type="button" variant="outline" onClick={useMyLocation} disabled={locating}><LocateFixed size={15}/>{locating ? "Locating…" : "Use my location"}</Button><Button type="button" onClick={() => void searchDestination()}><Search size={15}/> Find properties</Button></div></div>
         {destinationError ? <p className="radius-error" role="alert">{destinationError}</p> : null}
-        {destinationPoint ? <div className="radius-results"><div className="radius-origin"><MapPin size={16}/><span><strong>{destinationPoint.name}</strong><small>{destinationPoint.address ?? "Destination"} · 2 km radius</small></span></div>{nearbyListings.length === 0 ? <p className="property-muted">No active listings within 2 km.</p> : <div className="radius-list">{nearbyListings.map(item => <a key={item.slug} href={`/property/${item.slug}`}><span><strong>{item.name}</strong><small>{item.neighborhood}, {item.city} · {formatDistance(distanceKm(destinationPoint, item))}</small></span><Building2 size={14}/></a>)}</div>}</div> : null}
+        {destinationPoint ? <div className="radius-results"><div className="radius-origin"><MapPin size={16}/><span><strong>{destinationPoint.name}</strong><small>{destinationPoint.address ?? "Destination"} · 2 km radius</small></span></div>{nearbyListings.length === 0 ? <p className="property-muted" role="status">No active listings within 2 km.</p> : <div className="radius-list">{nearbyListings.map(item => <div className="radius-list-item" key={item.slug}><a href={`/property/${item.slug}`}><span><strong>{item.name}</strong><small>{item.neighborhood}, {item.city} · {formatDistance(distanceKm(destinationPoint, item))}</small></span><Building2 size={14}/></a>{Number.isFinite(item.lat) && Number.isFinite(item.lng) ? <a className="radius-map-link" href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`} target="_blank" rel="noreferrer">Open in Maps</a> : null}</div>)}</div>}</div> : null}
       </div>
     </section>
   );
