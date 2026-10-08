@@ -36,6 +36,6 @@ export function toListing(p: PublicProperty): Listing {
     brokerage: (brokerages as readonly string[]).includes(p.brokerage ?? "") ? (p.brokerage as Listing["brokerage"]) : "None",
     parking: p.parking, ...(p.propertyAgeYears != null ? { propertyAgeYears: p.propertyAgeYears } : {}), ...(p.floor != null ? { floor: p.floor } : {}), ...(p.totalFloors != null ? { totalFloors: p.totalFloors } : {}), availableFrom: p.availableFrom ? p.availableFrom.slice(0, 10) : null,
     updatedAt: p.updatedAt.slice(0, 10), status: "ACTIVE",
-    verification: verificationFromStatus(p.verificationStatus),
+    verification: verificationFromStatus(p.verificationStatus), promotion: p.promotion,
   };
 }
