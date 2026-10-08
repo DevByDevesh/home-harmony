@@ -59,7 +59,7 @@ export const roleLabel: Record<AuthRole, string> = {
 
 export type SafeUser = {
   id: string; name: string; email: string | null; phone: string | null;
-  role: AuthRole; status: AccountStatus; emailVerified: boolean; createdAt: string; updatedAt: string;
+  role: AuthRole; status: AccountStatus; emailVerified: boolean; verifiedBadge: boolean; createdAt: string; updatedAt: string;
 };
 
 export const AUTH_ERRORS = { SUSPENDED: "ACCOUNT_SUSPENDED", DEACTIVATED: "ACCOUNT_DEACTIVATED", PENDING: "ACCOUNT_PENDING" } as const;
