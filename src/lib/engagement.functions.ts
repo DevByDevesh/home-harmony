@@ -15,7 +15,7 @@ const slug = z.string().min(1).max(120);
 
 export type OwnerVisit = { id: string; slug: string; title: string; visitor: string; date: string; slot: string; note: string | null; status: VisitStatus; createdAt: string };
 export type EnquiryRow = { id: string; slug: string; title: string; message: string; status: string; createdAt: string; from?: string };
-export type NotificationRow = { id: string; type: string; title: string; message: string; read: boolean; createdAt: string };
+export type NotificationRow = { id: string; type: string; title: string; message: string; read: boolean; createdAt: string; metadata: Record<string, string> | null };
 
 export const listNotificationsFn = createServerFn({ method: "GET" }).handler(async (): Promise<NotificationRow[]> => {
   try {
@@ -27,6 +27,7 @@ export const listNotificationsFn = createServerFn({ method: "GET" }).handler(asy
       message: n.message,
       read: !!n.readAt,
       createdAt: n.createdAt.toISOString(),
+      metadata: (n.metadata as Record<string, string> | null) ?? null,
     }));
   } catch (e) { rethrow(e); }
 });
@@ -120,10 +121,18 @@ export const listOwnerEnquiriesFn = createServerFn({ method: "GET" }).handler(as
   try { const u = await me(); return (await (await repo()).listOwnerEnquiries(u.id)).map(toEnquiry); } catch (e) { rethrow(e); }
 });
 
+export const markAllNotificationsReadFn = createServerFn({ method: "POST" }).handler(async () => {
+  try {
+    const u = await me();
+    const changed = await (await repo()).markAllNotificationsRead(u.id);
+    return { ok: true as const, count: changed.count };
+  } catch (e) { rethrow(e); }
+});
+
 export const listMyNotificationsFn = createServerFn({ method: "GET" }).handler(async (): Promise<NotificationRow[] | null> => {
   try {
     const u = await maybeMe(); if (!u) return null;
-    return (await (await repo()).listMyNotifications(u.id)).map((n) => ({ id: n.id, type: n.type, title: n.title, message: n.message, read: !!n.readAt, createdAt: n.createdAt.toISOString() }));
+    return (await (await repo()).listMyNotifications(u.id)).map((n) => ({ id: n.id, type: n.type, title: n.title, message: n.message, read: !!n.readAt, createdAt: n.createdAt.toISOString(), metadata: (n.metadata as Record<string, string> | null) ?? null }));
   } catch (e) { rethrow(e); }
 });
 
