@@ -13,8 +13,8 @@ const fail = (message: string) => ({ ok: false as const, message });
 
 async function owned(propertyId: string) {
   const { requireRole } = await import("./auth/guards.server");
-  const { AREA_ROLES } = await import("./auth/roles");
-  const me = await requireRole(AREA_ROLES.owner, "owner.listings");
+  const { LISTING_ROLES } = await import("./auth/roles");
+  const me = await requireRole(LISTING_ROLES, "owner.listings");
   const { requireDb } = await import("./db/client.server"); const db = await requireDb();
   const p = await db.property.findFirst({ where: { id: propertyId, ownerId: me.id }, select: { id: true, title: true } });
   return { me, db, p };
