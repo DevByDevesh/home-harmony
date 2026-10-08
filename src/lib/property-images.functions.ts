@@ -1,5 +1,5 @@
 /**
- * Owner photo uploads. Identity comes from the session; the property must belong to the caller
+ * Listing photo uploads. Identity comes from the session; the property must belong to the caller
  * (checked in the database query). Files are validated by size, declared type and real signature.
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -13,8 +13,8 @@ const fail = (message: string) => ({ ok: false as const, message });
 
 async function owned(propertyId: string) {
   const { requireRole } = await import("./auth/guards.server");
-  const { AREA_ROLES } = await import("./auth/roles");
-  const me = await requireRole(AREA_ROLES.owner, "owner.listings");
+  const { LISTING_ROLES } = await import("./auth/roles");
+  const me = await requireRole(LISTING_ROLES, "owner.listings");
   const { requireDb } = await import("./db/client.server"); const db = await requireDb();
   const p = await db.property.findFirst({ where: { id: propertyId, ownerId: me.id }, select: { id: true, title: true } });
   return { me, db, p };
@@ -60,7 +60,14 @@ export const uploadPropertyImageFn = createServerFn({ method: "POST" })
       const key = `${s.UPLOAD_PREFIX}${p.id}/${crypto.randomUUID()}.${s.IMAGE_TYPES[real]}`;
       await s.putImage(key, bytes, real);
       const sortOrder = existing.reduce((m, x) => Math.max(m, x.sortOrder), 999) + 1;
-      await db.propertyImage.create({ data: { propertyId: p.id, storageKey: key, url: s.publicImageUrl(key), altText: `${p.title} (owner photo)`, sortOrder } });
+      try {
+        await db.propertyImage.create({ data: { propertyId: p.id, storageKey: key, url: s.publicImageUrl(key), altText: `${p.title} (owner photo)`, sortOrder } });
+      } catch (e) {
+        // Storage and PostgreSQL are separate systems. Never leave an orphaned
+        // object behind when the DB record cannot be persisted.
+        try { await s.removeImages([key]); } catch { /* best-effort cleanup */ }
+        throw e;
+      }
       return { ok: true as const, images: await listImages(db, p.id) };
     } catch (e) { rethrow(e); }
   });

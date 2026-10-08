@@ -33,6 +33,7 @@ export const Route = createFileRoute("/owner_/new")({
 
 function Wizard() {
   const { edit, dbEdit } = Route.useSearch();
+  const navigate = useNavigate();
   const { data, ready } = useOwnerData();
   const [draft, setDraft] = useState<ListingDraft | null>(null);
   const [step, setStep] = useState(0);
@@ -81,8 +82,15 @@ function Wizard() {
     if (!data.editingId) { if (publishing) return; setPublishing(true); createListing({ data: draft }).then(async r => {
       if (!r.ok) { toast.error(r.message); return; }
       ownerActions.discardDraft(); const failed = staged.length ? await uploadAll(r.id, staged) : 0; setStaged([]);
-      setSavedToDb(true); setSubmitted(r.id);
-      toast.success(failed ? `Listing submitted for review — ${failed} photo${failed > 1 ? "s" : ""} couldn’t be uploaded; add them by editing the listing` : "Listing submitted for review");
+      setSavedToDb(true);
+      if (failed) {
+        toast.error(`Listing was saved, but ${failed} photo${failed > 1 ? "s" : ""} could not be uploaded. Please add the missing photos now.`);
+        setDraft(null); setSubmitted(null); setStep(5);
+        await navigate({ to: "/owner/new", search: { dbEdit: r.id } });
+        return;
+      }
+      setSubmitted(r.id);
+      toast.success("Listing submitted for review");
     }).catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not submit this listing.")).finally(() => setPublishing(false)); return; }
     const id = ownerActions.submit(); if (id) { setSubmitted(id); toast.success("Listing submitted for review"); } else toast.error("Nothing to submit"); };
   const previewImages = stagedPreviewUrls.length ? stagedPreviewUrls : uploads.map(upload => upload.url);

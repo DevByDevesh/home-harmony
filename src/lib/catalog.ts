@@ -2,6 +2,7 @@ import pune from "@/assets/new-home-pune.jpg";
 import mumbai from "@/assets/new-home-mumbai.jpg";
 import bengaluru from "@/assets/new-home-bengaluru.jpg";
 import house from "@/assets/new-home-house.jpg";
+import { formatDisplayPrice } from "./price-format";
 
 export type Home = {
   slug: string; name: string; city: string; neighborhood: string;
@@ -40,7 +41,7 @@ export function searchHomes(catalog: Home[], query: HomeQuery): Home[] {
   );
 }
 export function displayPrice(home: Home) {
-  return home.mode === "Buy" ? `₹${(home.price / 10000000).toFixed(2)} Cr` : `₹${home.price.toLocaleString("en-IN")}`;
+  return formatDisplayPrice(home.mode, home.price);
 }
 
 /* ---------- Phase 2: listing details (fictional) ---------- */
