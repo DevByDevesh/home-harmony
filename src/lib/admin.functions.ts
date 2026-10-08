@@ -1,4 +1,5 @@
 /** Server-authorized admin listing operations. UI/demo stores must not be trusted for moderation. */
+import { hasPublishablePhotos } from "./listing-publication";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -51,7 +52,7 @@ export const moderateListingFn = createServerFn({ method: "POST" })
 
     const current = await db.property.findUnique({
       where: { id: data.propertyId },
-      select: { id: true, status: true, title: true },
+      select: { id: true, status: true, title: true, _count: { select: { images: true } } },
     });
     if (!current) return { ok: false as const, message: "Listing not found." };
 
@@ -68,6 +69,9 @@ export const moderateListingFn = createServerFn({ method: "POST" })
 
     if (data.action === "APPROVE" && current.status !== "UNDER_REVIEW") {
       return { ok: false as const, message: "Only listings under review can be approved." };
+    }
+    if ((data.action === "APPROVE" || data.action === "RESUME") && !hasPublishablePhotos(current._count.images)) {
+      return { ok: false as const, message: "Add at least one property photo before making this listing live." };
     }
     if (data.action === "REQUEST_CHANGES" && current.status !== "UNDER_REVIEW") {
       return { ok: false as const, message: "Only listings under review can receive change requests." };

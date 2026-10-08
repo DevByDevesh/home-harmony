@@ -4,6 +4,7 @@
  */
 import { Prisma, PropertyStatus, type PropertyType, type VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
+import { hasPublishablePhotos } from "../../listing-publication";
 
 export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; minBedrooms?: number; maxBedrooms?: number; minArea?: number; furnishing?: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; parkingOnly?: boolean; minBathrooms?: number; amenities?: string[]; availableNow?: boolean; verifiedOnly?: boolean; propertyAgeMax?: number; floorMin?: number; floorMax?: number; totalFloorsMin?: number; take?: number };
 export const LISTING_VALIDITY_DAYS = 30;
@@ -73,6 +74,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
   return db.property.findMany({
     where: {
       status: "ACTIVE",
+      images: { some: {} },
       ...(q.city ? { city: q.city } : {}),
       ...(q.listingType ? { listingType: q.listingType } : {}),
       ...(q.propertyType ? { propertyType: q.propertyType } : {}),
@@ -99,7 +101,10 @@ export async function listPublicProperties(q: PropertySearch = {}) {
 
 export async function getPropertyBySlug(slug: string) {
   const db = await requireDb();
-  return db.property.findUnique({ where: { slug }, include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } } });
+  return db.property.findFirst({
+    where: { slug, status: "ACTIVE", images: { some: {} } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+  });
 }
 
 /** Public detail read: ACTIVE listings only, matched by id or slug. */
@@ -107,7 +112,7 @@ export async function getPublicProperty(idOrSlug: string) {
   const db = await requireDb();
   await expireListings();
   return db.property.findFirst({
-    where: { status: "ACTIVE", OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    where: { status: "ACTIVE", images: { some: {} }, OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
   });
 }
@@ -201,6 +206,12 @@ export async function notifySavedSearchesForProperty(propertyId: string) {
 
 export async function approveListing(propertyId: string, actorId: string) {
   const db = await requireDb();
+  const property = await db.property.findFirst({
+    where: { id: propertyId, status: "UNDER_REVIEW", images: { some: {} } },
+    select: { id: true, _count: { select: { images: true } } },
+  });
+  if (!property || !hasPublishablePhotos(property._count.images)) return null;
+
   const result = await db.$transaction([
     db.property.update({ where: { id: propertyId }, data: { status: "ACTIVE", publishedAt: new Date() } }),
     db.auditLog.create({ data: { actorId, action: "Listing approved", entityType: "Property", entityId: propertyId } }),
@@ -266,7 +277,10 @@ export async function repostExpiredOwnerProperty(id: string, ownerId: string) {
 export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "ACTIVE" | "PAUSED") {
   const db = await requireDb();
   const from: Prisma.PropertyWhereInput["status"] = to === "ACTIVE" ? { in: [PropertyStatus.PAUSED] } : { in: [PropertyStatus.ACTIVE] };
-  const r = await db.property.updateMany({ where: { id, ownerId, status: from }, data: to === "ACTIVE" ? { status: to, publishedAt: new Date() } : { status: to } });
+  const r = await db.property.updateMany({
+    where: { id, ownerId, status: from, ...(to === "ACTIVE" ? { images: { some: {} } } : {}) },
+    data: to === "ACTIVE" ? { status: to, publishedAt: new Date() } : { status: to },
+  });
   return r.count;
 }
 
