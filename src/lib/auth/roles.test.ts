@@ -36,6 +36,11 @@ test("account dashboard CTA points each role to its permitted dashboard", () => 
   assert.equal(getRoleDashboardPath("OWNER"), "/owner");
 });
 
+test("authenticated-only routes accept every signed-in role without widening the user dashboard", async () => {
+  const { AREA_ROLES } = await import("./roles.ts");
+  assert.deepEqual(AREA_ROLES.authenticated, ["USER", "OWNER", "AGENT", "PROPERTY_MANAGER", "ADMIN"]);
+});
+
 test("dashboard boundaries stay separate by role", async () => {
   const { AREA_ROLES } = await import("./roles.ts");
   assert.deepEqual(AREA_ROLES.dashboard, ["USER"]);

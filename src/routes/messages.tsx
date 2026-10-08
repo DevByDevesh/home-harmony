@@ -3,7 +3,7 @@ import { guardArea } from "@/lib/auth/route-guard";
 import { ChatPanel } from "@/components/engagement";
 
 export const Route = createFileRoute("/messages")({
-  beforeLoad: guardArea("dashboard"),
+  beforeLoad: guardArea("authenticated"),
   head: () => ({ meta: [
     { title: "Messages — HouseProvider.in" },
     { name: "description", content: "Your HouseProvider conversations." },
