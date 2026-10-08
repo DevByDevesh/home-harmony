@@ -13,6 +13,7 @@ const listing = (slug: string, status: Listing["status"] = "ACTIVE"): Listing =>
 
 test("keeps live saved listings active", () => {
   const result = resolveSavedListingState(["home"], [listing("home")]);
+  assert.ok(result.active);
   assert.equal(result.active.length, 1);
   assert.equal(result.stale.length, 0);
 });
