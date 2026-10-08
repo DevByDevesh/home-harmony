@@ -2169,13 +2169,6 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 }
 
 
-/* The preview uses a background layer instead of an img element to avoid the legacy image animation/overlay artifact. */
-.detail-image:has(.detail-gallery-controls) .detail-main-photo {
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-}
-
 .contact-request-card,.contact-approved-card{margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--card);}
 .contact-request-card{display:grid;gap:10px;}
 .contact-request-card strong,.contact-approved-card strong{display:block;}
@@ -2293,33 +2286,57 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 }
 
 
-/* Property gallery image rendering guard — use a real image element and never allow legacy overlays/clipping to cover it. */
-.detail-image:has(.detail-gallery-controls) .detail-gallery { position: relative; overflow: hidden; background: var(--muted); }
-.detail-image:has(.detail-gallery-controls) .detail-main-photo,
-.detail-image:has(.detail-gallery-controls) .detail-main-photo::before,
-.detail-image:has(.detail-gallery-controls) .detail-main-photo::after {
+/* Property gallery image isolation — keep the actual photo in its own layer so legacy/global styles cannot paint over it. */
+.detail-image:has(.detail-gallery-controls) .detail-gallery {
   position: relative;
+  overflow: hidden;
+  background: var(--muted);
+  isolation: isolate;
+}
+.detail-image:has(.detail-gallery-controls) .detail-gallery-photo {
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--muted);
+  box-shadow: none !important;
+}
+.detail-image:has(.detail-gallery-controls) .detail-gallery-photo::before,
+.detail-image:has(.detail-gallery-controls) .detail-gallery-photo::after {
+  content: none !important;
+  display: none !important;
+}
+.detail-image:has(.detail-gallery-controls) .detail-gallery-photo-image {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1;
+  display: block !important;
   width: 100% !important;
   height: 100% !important;
-  min-width: 0;
-  min-height: 0;
-  max-width: none;
-  max-height: none;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-}
-.detail-image:has(.detail-gallery-controls) .detail-main-photo {
   object-fit: cover !important;
-  object-position: center;
+  object-position: center !important;
   opacity: 1 !important;
   transform: none !important;
+  filter: none !important;
+  clip-path: none !important;
+  mask: none !important;
   animation: none !important;
 }
-.detail-image:has(.detail-gallery-controls) .detail-main-photo::before,
-.detail-image:has(.detail-gallery-controls) .detail-main-photo::after { content: none !important; }
+.detail-image:has(.detail-gallery-controls) .detail-photo-count,
+.detail-image:has(.detail-gallery-controls) .detail-gallery > span:not(.detail-photo-count) {
+  z-index: 3;
+}
