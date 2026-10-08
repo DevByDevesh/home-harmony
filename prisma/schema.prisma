@@ -53,6 +53,11 @@ enum Furnishing {
   UNFURNISHED
 }
 
+enum PromotionType {
+  FEATURED
+  BOOST
+}
+
 enum PropertyStatus {
   DRAFT
   ACTIVE
@@ -857,8 +862,9 @@ model Transaction {
 /// Promotional placement only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â independent of verification, match score, quality or safety.
 /// Overlapping active windows per property are prevented in the service layer.
 model FeaturedListing {
-  id          String   @id @default(cuid())
-  propertyId  String
+  id            String        @id @default(cuid())
+  propertyId    String
+  promotionType PromotionType @default(FEATURED)
   startsAt    DateTime
   endsAt      DateTime
   active      Boolean  @default(true)
