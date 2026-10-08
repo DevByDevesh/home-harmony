@@ -19,7 +19,10 @@ export const claimFreeSixMonthsFn = createServerFn({ method: "POST" }).handler(a
     where: { userId: me.id, plan: { slug: PLAN_SLUG } },
     select: { id: true },
   });
-  if (existingClaim) return { ok: false as const, message: "Your 6-month free subscription has already been claimed." };
+  if (existingClaim) {
+    await d.user.update({ where: { id: me.id }, data: { verifiedBadge: true } });
+    return { ok: false as const, message: "Your 6-month free subscription has already been claimed." };
+  }
 
   const openSubscription = await d.subscription.findFirst({
     where: { userId: me.id, status: { in: ["TRIAL", "ACTIVE", "PAST_DUE", "PAUSED"] } },
@@ -43,10 +46,12 @@ export const claimFreeSixMonthsFn = createServerFn({ method: "POST" }).handler(a
       update: { name: "Free 6 Months", description: "Six months free for HouseProvider members.", monthlyPrice: 0, annualPrice: 0, active: true },
       select: { id: true },
     });
-    return tx.subscription.create({
+    const subscription = await tx.subscription.create({
       data: { userId: me.id, planId: plan.id, status: "ACTIVE", cycle: "ANNUAL", startedAt: now, renewsAt, provider: "DEMO", providerReference: "FREE6M-" + me.id },
       select: { id: true, renewsAt: true },
     });
+    await tx.user.update({ where: { id: me.id }, data: { verifiedBadge: true } });
+    return subscription;
   });
 
   const { writeAudit } = await import("@/lib/auth/audit.server");
