@@ -11,10 +11,17 @@ function formatInr(value: number) {
 }
 
 function googleMapsUrl(home: IntelligenceHome) {
-  if (home.lat && home.lng) {
-    return "https://www.google.com/maps/search/?api=1&query=" + home.lat + "," + home.lng;
-  }
-  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(home.neighborhood + ", " + home.city);
+  const query = typeof home.lat === "number" && typeof home.lng === "number" && home.lat !== 0 && home.lng !== 0
+    ? `${home.lat},${home.lng}`
+    : `${home.neighborhood}, ${home.city}`;
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+}
+
+function googleDirectionsUrl(home: IntelligenceHome) {
+  const destination = typeof home.lat === "number" && typeof home.lng === "number" && home.lat !== 0 && home.lng !== 0
+    ? `${home.lat},${home.lng}`
+    : `${home.neighborhood}, ${home.city}`;
+  return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(destination);
 }
 
 export function PropertySectionNav({ home }: { home: IntelligenceHome }) {
@@ -90,7 +97,7 @@ export function PropertyIntelligence({ home, listings }: { home: IntelligenceHom
         <div className="location-card">
           <div className="location-icon"><MapPin size={20} /></div>
           <div><strong>{home.neighborhood}</strong><p>{home.city}</p>{typeof home.lat === "number" && typeof home.lng === "number" && home.lat !== 0 && home.lng !== 0 && <small>{home.lat.toFixed(4)}, {home.lng.toFixed(4)}</small>}</div>
-          <a className="location-action" href={googleMapsUrl(home)} target="_blank" rel="noreferrer"><Navigation size={16} /> Get directions</a>
+          <a className="location-action" href={googleDirectionsUrl(home)} target="_blank" rel="noopener noreferrer"> <Navigation size={16} /> Get directions</a>
         </div>
       </section>
 
