@@ -11,7 +11,7 @@ import { listings } from "./catalog";
 export type PublicProperty = {
   id: string; slug: string; title: string; description: string;
   propertyType: string; listingType: string; price: number; deposit: number | null;
-  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; furnishing: string;
+  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; propertyAgeYears: number | null; floor: number | null; totalFloors: number | null; furnishing: string;
   availableFrom: string | null; city: string; locality: string;
   verificationStatus: string; publishedAt: string | null; updatedAt: string;
   brokerage: string | null; latitude: number | null; longitude: number | null;
@@ -25,7 +25,7 @@ function toPublic(p: Row): PublicProperty {
   return {
     id: p.id, slug: p.slug, title: p.title, description: p.description,
     propertyType: p.propertyType, listingType: p.listingType, price: p.price, deposit: p.deposit,
-    areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, furnishing: p.furnishing,
+    areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, propertyAgeYears: p.propertyAgeYears, floor: p.floor, totalFloors: p.totalFloors, furnishing: p.furnishing,
     availableFrom: p.availableFrom?.toISOString() ?? null, city: p.city, locality: p.locality,
     verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null, updatedAt: p.updatedAt.toISOString(),
     brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
