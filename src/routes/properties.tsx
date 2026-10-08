@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BookmarkPlus, LayoutGrid, Map as MapIcon, Satellite, SearchX } from "lucide-react";
+import { Bell, BookmarkPlus, LayoutGrid, Map as MapIcon, Satellite, SearchX } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ function ResultsPage() {
       </div>
     </div>
     {chips.length > 0 && <div className="chip-row" aria-label="Active filters">{chips.map(c => <EditableChip key={c.key + (c.value ?? "") + (filters[c.key] ?? "")} chip={c} filters={filters} onChange={next => { setPlace(next.location ?? ""); go(next); }}/>)}<button type="button" className="chip-clear" onClick={() => { setPlace(""); go(clearFilters(filters)); }}>Clear all</button></div>}
-    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Property listings</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }, listings); toast("Search saved successfully"); }}><BookmarkPlus size={15}/>Save search</Button>}</div></div>
+    <div className="results-line"><div><p className="kicker">HOMES TO EXPLORE</p><h2 aria-live="polite"><span key={results.length} className="count-change">{results.length}</span> {results.length === 1 ? "space" : "spaces"} found</h2></div><div className="results-line-end"><span>Property listings</span>{chips.length > 0 && <Button variant="outline" size="sm" onClick={() => { userActions.saveSearch(chips.map(c => c.label).join(" · "), { ...filters, view: undefined, q: undefined }, listings); toast("Search saved — you’ll be notified when a matching property is posted"); }}><Bell size={15}/>Save & notify</Button>}</div></div>
      {view === "list" ? (results.length ? <div key="list" className="home-grid results-grid results-entrance">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
        : <div key={view} className="map-layout results-entrance">
           <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
