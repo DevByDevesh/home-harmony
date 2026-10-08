@@ -1,12 +1,4 @@
-import { useMemo, useState } from "react";
-import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { Home, Listing, ListingDetails } from "@/lib/catalog";
-import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
-
-type IntelligenceHome = Home & Partial<ListingDetails>;
-
-function formatInr(value: number) {
+ifunction formatInr(value: number) {
   return "₹" + Math.round(value).toLocaleString("en-IN");
 }
 
