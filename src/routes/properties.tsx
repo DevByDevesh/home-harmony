@@ -32,6 +32,12 @@ export const Route = createFileRoute("/properties")({
         ...(listingType ? { listingType } : {}),
         ...(toPrice(search.min) !== undefined ? { minPrice: toPrice(search.min) } : {}),
         ...(toPrice(search.max) !== undefined ? { maxPrice: toPrice(search.max) } : {}),
+        ...(search.beds ? { minBedrooms: Number(search.beds) >= 4 ? 4 : Number(search.beds), maxBedrooms: Number(search.beds) >= 4 ? undefined : Number(search.beds) } : {}),
+        ...(search.minArea ? { minArea: Number(search.minArea) } : {}),
+        ...(search.furnishing ? { furnishing: search.furnishing === "Fully furnished" ? "FULLY_FURNISHED" : search.furnishing === "Semi furnished" ? "SEMI_FURNISHED" : "UNFURNISHED" } : {}),
+        ...(search.parking ? { parkingOnly: true } : {}), ...(search.baths ? { minBathrooms: Number(search.baths) } : {}),
+        ...(search.amenities ? { amenities: search.amenities.split(",").filter(Boolean) } : {}), ...(search.available ? { availableNow: true } : {}), ...(search.verified ? { verifiedOnly: true } : {}),
+        ...(search.propertyAgeMax ? { propertyAgeMax: Number(search.propertyAgeMax) } : {}), ...(search.floorMin ? { floorMin: Number(search.floorMin) } : {}), ...(search.floorMax ? { floorMax: Number(search.floorMax) } : {}), ...(search.totalFloorsMin ? { totalFloorsMin: Number(search.totalFloorsMin) } : {}),
       },
     })).map(toListing);
   },
