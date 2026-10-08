@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Building2, Cross, GraduationCap, MapPin, Navigation, Search, ShoppingBag, Utensils, WalletCards } from "lucide-react";
-import mapboxgl from "mapbox-gl";
+import type mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { Listing } from "@/lib/catalog";
 import { distanceKm, withinRadius } from "@/lib/location-intelligence";
@@ -82,6 +82,8 @@ async function geocodeDestination(query: string, signal: AbortSignal) {
 
 export function LocationIntelligenceMap({ home, listings }: { home: Listing; listings: Listing[] }) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  type MapboxModule = typeof import("mapbox-gl");
+  const mapboxRef = useRef<MapboxModule | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [categoryId, setCategoryId] = useState("school");
@@ -103,27 +105,35 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
   }, [destinationPoint, listings]);
 
   useEffect(() => {
+    let disposed = false;
     if (!mapContainer.current || !token || !Number.isFinite(home.lat) || !Number.isFinite(home.lng)) return;
-    mapboxgl.accessToken = token;
-    const map = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/standard",
-      center: [home.lng, home.lat],
-      zoom: 14,
+    void import("mapbox-gl").then(module => {
+      if (disposed || !mapContainer.current) return;
+      const mapboxgl = module.default;
+      mapboxRef.current = module;
+      const map = new mapboxgl.Map({
+        accessToken: token,
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/standard",
+        center: [home.lng, home.lat],
+        zoom: 14,
+      });
+      map.addControl(new mapboxgl.NavigationControl(), "top-right");
+      map.on("load", () => {
+        new mapboxgl.Marker({ color: "#542a52" })
+          .setLngLat([home.lng, home.lat])
+          .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(home.name))
+          .addTo(map);
+      });
+      mapRef.current = map;
     });
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.on("load", () => {
-      new mapboxgl.Marker({ color: "#542a52" })
-        .setLngLat([home.lng, home.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(home.name))
-        .addTo(map);
-    });
-    mapRef.current = map;
     return () => {
+      disposed = true;
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
-      map.remove();
+      mapRef.current?.remove();
       mapRef.current = null;
+      mapboxRef.current = null;
     };
   }, [home.lat, home.lng, home.name]);
 
@@ -145,11 +155,12 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    const mapboxgl = mapboxRef.current;
+    if (!map || !mapboxgl) return;
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
     places.forEach(place => {
-      const marker = new mapboxgl.Marker({ color: "#9b6a8f" })
+      const marker = new mapboxgl.default.Marker({ color: "#9b6a8f" })
         .setLngLat([place.lng, place.lat])
         .setPopup(new mapboxgl.Popup({ offset: 16 }).setHTML(`<strong>${place.name.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong><br/>${formatDistance(place.distanceKm ?? 0)} away`))
         .addTo(map);
