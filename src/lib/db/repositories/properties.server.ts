@@ -208,9 +208,9 @@ export async function approveListing(propertyId: string, actorId: string) {
   const db = await requireDb();
   const property = await db.property.findFirst({
     where: { id: propertyId, status: "UNDER_REVIEW", images: { some: {} } },
-    select: { id: true },
+    select: { id: true, _count: { select: { images: true } } },
   });
-  if (!property || !hasPublishablePhotos(1)) return null;
+  if (!property || !hasPublishablePhotos(property._count.images)) return null;
 
   const result = await db.$transaction([
     db.property.update({ where: { id: propertyId }, data: { status: "ACTIVE", publishedAt: new Date() } }),
