@@ -15,7 +15,6 @@ import { demoPhotos, draftToHome, ownerActions, photoLabels, useOwnerData, valid
 import { useServerFn } from "@tanstack/react-start";
 import { SavedPhotoUploader, StagedPhotoUploader, uploadAll } from "@/components/photo-uploader";
 import { createMyListingFn, getMyListingDraftFn, updateMyListingFn } from "@/lib/owner-listings.functions";
-import { findExactLocation, listCities, listCountries, listStates } from "@/lib/location-directory";
 
 const steps = ["Property type", "Location", "Price", "Details", "Amenities", "Photos", "Verification", "Preview", "Publish"] as const;
 const kinds = ["Apartment", "House", "Room", "PG", "Commercial"] as const;
@@ -46,45 +45,7 @@ function Wizard() {
   const loadDbDraft = useServerFn(getMyListingDraftFn);
   const updateListing = useServerFn(updateMyListingFn);
   const [dbLoadError, setDbLoadError] = useState<string | null>(null);
-  const [countries, setCountries] = useState<string[]>([]);
-  const [states, setStates] = useState<string[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
-  const [locationLoading, setLocationLoading] = useState<"countries" | "states" | "cities" | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-
   // Editing a database listing: load it from the server (ownership checked there); never touches the device draft.
-  useEffect(() => {
-    if (step !== 1 || countries.length) return;
-    let live = true;
-    setLocationLoading("countries");
-    setLocationError(null);
-    listCountries().then(items => { if (live) setCountries(items); }).catch(e => { if (live) setLocationError(e instanceof Error ? e.message : "Could not load countries."); }).finally(() => { if (live) setLocationLoading(null); });
-    return () => { live = false; };
-  }, [step, countries.length]);
-
-  useEffect(() => {
-    if (step !== 1 || !draft?.country) return;
-    const country = findExactLocation(countries, draft.country);
-    if (!country) { setStates([]); setCities([]); return; }
-    let live = true;
-    setLocationLoading("states");
-    setLocationError(null);
-    listStates(country).then(items => { if (live) setStates(items); }).catch(e => { if (live) setLocationError(e instanceof Error ? e.message : "Could not load states."); }).finally(() => { if (live) setLocationLoading(null); });
-    return () => { live = false; };
-  }, [step, draft?.country, countries]);
-
-  useEffect(() => {
-    if (step !== 1 || !draft?.country || !draft?.state) return;
-    const country = findExactLocation(countries, draft.country);
-    const state = findExactLocation(states, draft.state);
-    if (!country || !state) { setCities([]); return; }
-    let live = true;
-    setLocationLoading("cities");
-    setLocationError(null);
-    listCities(country, state).then(items => { if (live) setCities(items); }).catch(e => { if (live) setLocationError(e instanceof Error ? e.message : "Could not load cities."); }).finally(() => { if (live) setLocationLoading(null); });
-    return () => { live = false; };
-  }, [step, draft?.country, draft?.state, countries, states]);
-
   useEffect(() => { if (!dbEdit || draft || submitted) return; let live = true; loadDbDraft({ data: { id: dbEdit } }).then(d => { if (!live) return; if (d) setDraft({ ...d, kind: d.kind as ListingDraft["kind"], mode: d.mode as ListingDraft["mode"], checks: d.checks as ListingDraft["checks"] }); else setDbLoadError("This listing wasn’t found in your account."); }).catch((e: unknown) => live && setDbLoadError(e instanceof Error ? e.message : "Could not load this listing.")); return () => { live = false; }; }, [dbEdit, draft, submitted, loadDbDraft]);
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const [staged, setStaged] = useState<File[]>([]);
@@ -137,21 +98,10 @@ function Wizard() {
       {step === 0 && <><div className="pill-row" role="radiogroup" aria-label="Intent">{(["Rent", "Buy"] as const).map(m => <button key={m} type="button" role="radio" aria-checked={draft.mode === m} className="pill" onClick={() => set("mode", m)}>{m === "Rent" ? "For rent" : "For sale"}</button>)}</div>
         <div className="choice-grid" role="radiogroup" aria-label="Property type">{kinds.map(k => <button key={k} type="button" role="radio" aria-checked={draft.kind === k} className="choice" onClick={() => set("kind", k)}>{k}</button>)}</div></>}
       {step === 1 && <div className="form-grid">
-        <Field label="Country">
-          <input list="listing-country-options" value={draft.country} onChange={e => { set("country", e.target.value); set("state", ""); set("city", ""); setStates([]); setCities([]); }} placeholder="Start typing a country…" maxLength={80} autoComplete="country-name" aria-busy={locationLoading === "countries"}/>
-          <datalist id="listing-country-options">{countries.map(country => <option key={country} value={country}/>)}</datalist>
-        </Field>
-        <Field label="State / Province">
-          <input list="listing-state-options" value={draft.state} onChange={e => { set("state", e.target.value); set("city", ""); setCities([]); }} placeholder={draft.country ? "Start typing a state…" : "Choose a country first"} maxLength={80} autoComplete="address-level1" disabled={!findExactLocation(countries, draft.country)} aria-busy={locationLoading === "states"}/>
-          <datalist id="listing-state-options">{states.map(state => <option key={state} value={state}/>)}</datalist>
-        </Field>
-        <Field label="City">
-          <input list="listing-city-options" value={draft.city} onChange={e => set("city", e.target.value)} placeholder={draft.state ? "Start typing a city…" : "Choose a state first"} maxLength={80} autoComplete="address-level2" disabled={!findExactLocation(states, draft.state)} aria-busy={locationLoading === "cities"}/>
-          <datalist id="listing-city-options">{cities.map(city => <option key={city} value={city}/>)}</datalist>
-        </Field>
+        <Field label="Country"><input value={draft.country} onChange={e => set("country", e.target.value)} placeholder="India" maxLength={80}/></Field>
+        <Field label="State / Province"><input value={draft.state} onChange={e => set("state", e.target.value)} placeholder="e.g. Maharashtra" maxLength={80}/></Field>
+        <Field label="City"><input value={draft.city} onChange={e => set("city", e.target.value)} placeholder="e.g. Pune" maxLength={80}/></Field>
         <Field label="Locality"><input value={draft.locality} maxLength={60} placeholder="e.g. Wakad" onChange={e => set("locality", e.target.value)}/></Field>
-        {locationError && <p className="form-hint wide location-directory-error" role="status">{locationError}</p>}
-        {locationLoading && <p className="form-hint wide location-directory-loading" role="status">Loading {locationLoading}…</p>}
         <Field label="Street address (optional, never shown publicly)" wide><input value={draft.address} maxLength={160} onChange={e => set("address", e.target.value)}/></Field>
         <p className="form-hint wide">A map pin will be added when a map service is connected.</p></div>}
       {step === 2 && <div className="form-grid">

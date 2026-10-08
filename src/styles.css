@@ -2322,6 +2322,3 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .detail-image:has(.detail-gallery-controls) .detail-gallery > span:not(.detail-photo-count) {
   z-index: 3;
 }
-
-.location-directory-error { margin-top: -4px; }
-.location-directory-loading { margin-top: -4px; }
