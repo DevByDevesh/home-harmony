@@ -32,6 +32,10 @@ test("relevance sorting uses match score when requested", () => {
 });
 
 test("VERIFIED database status maps to a fully verified listing trust record", () => {
-  assert.equal(isListingVerified({ verification: verificationFromStatus("VERIFIED") }), true);
-  assert.equal(isListingVerified({ verification: verificationFromStatus("NOT_REQUESTED") }), false);
+  const verified = base({ slug: "verified", verification: verificationFromStatus("VERIFIED") });
+  const unverified = base({ slug: "unverified" });
+
+  assert.equal(isListingVerified({ verification: verified.verification }), true);
+  assert.equal(isListingVerified({ verification: unverified.verification }), false);
+  assert.deepEqual(applyFilters([verified, unverified], { verified: "true" } as Filters).map(x => x.slug), ["verified"]);
 });
