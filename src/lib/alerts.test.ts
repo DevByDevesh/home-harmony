@@ -29,5 +29,6 @@ test("does not alert when alerts are disabled, NEW_MATCH is not selected, or no 
   const base = { id: "s", label: "Search", filters: { city: "Nagpur" }, seen: ["old"] };
   assert.deepEqual(newMatchAlerts([{ ...base, alerts: { enabled: false, frequency: "INSTANT", types: ["NEW_MATCH"] } }], source), []);
   assert.deepEqual(newMatchAlerts([{ ...base, alerts: { enabled: true, frequency: "INSTANT", types: ["PRICE_DROP"] } }], source), []);
-  assert.deepEqual(newMatchAlerts([{ ...base, alerts: { enabled: true, frequency: "INSTANT", types: ["NEW_MATCH"] } }], source), []);
+  const { seen: _seen, ...withoutBaseline } = base;
+  assert.deepEqual(newMatchAlerts([{ ...withoutBaseline, alerts: { enabled: true, frequency: "INSTANT", types: ["NEW_MATCH"] } }], source), []);
 });
