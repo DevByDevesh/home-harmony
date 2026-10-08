@@ -1,4 +1,5 @@
-import { cities, listings } from "./catalog.ts";
+const cities = ["Pune", "Mumbai", "Bengaluru", "Delhi NCR", "Hyderabad", "Chennai", "Ahmedabad", "Nagpur"];
+const neighborhoods = ["Hinjewadi", "Baner", "Bandra West", "Indiranagar", "Jubilee Hills", "Greater Kailash", "Adyar", "Prahlad Nagar", "Dharampeth"];
 
 const KEY = "houseprovider.recent-searches.v1";
 
@@ -10,7 +11,7 @@ export function pushRecentSearch(items: string[], value: string, limit = 8): str
 
 export function buildSearchSuggestions(query: string, recent: string[] = [], locations: string[] = []): string[] {
   const q = query.trim().toLocaleLowerCase();
-  const pool = [...recent, ...locations, ...cities, ...listings.map(x => x.neighborhood)];
+  const pool = [...recent, ...locations, ...cities, ...neighborhoods];
   const unique = [...new Map(pool.map(x => [x.toLocaleLowerCase(), x])).values()];
   if (!q) return unique.slice(0, 8);
   return unique.filter(x => x.toLocaleLowerCase().includes(q)).slice(0, 8);
