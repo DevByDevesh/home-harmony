@@ -6,6 +6,7 @@ import { AuthNotice } from "@/components/auth-shell";
 import { getCurrentUser } from "@/lib/auth/auth.functions";
 import { safeRedirect } from "@/lib/auth/redirect";
 import { getRoleDashboardPath, roleLabel } from "@/lib/auth/roles";
+import { getFreeOfferState } from "@/lib/subscription-offer";
 import { useSignOut } from "@/lib/auth/use-current-user";
 import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
 import { useState } from "react";
@@ -41,7 +42,8 @@ function AccountPage() {
   const signOut = useSignOut();
   const [claiming, setClaiming] = useState(false);
   const [claimMessage, setClaimMessage] = useState<string | null>(null);
-  const [claimSuccess, setClaimSuccess] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(user.verifiedBadge);
+  const offerState = getFreeOfferState(user.verifiedBadge || claimSuccess);
   const claimFree = async () => {
     setClaiming(true); setClaimMessage(null);
     try {
@@ -55,7 +57,7 @@ function AccountPage() {
   return <main className="wrap account-page">
     {denied && <div className="account-denied"><ShieldAlert size={20}/><div><strong>You don't have access to {areaName[denied]}.</strong><p>Your account is a {roleLabel[user.role]} account. Access to owner, agent and admin tools is granted by the HouseProvider team.</p></div></div>}
     <p className="kicker">YOUR ACCOUNT</p>
-    <h1>{user.name || "Your profile"}</h1>
+    <div className="account-title"><h1>{user.name || "Your profile"}</h1>{offerState.badge && <span className="verified-badge" title="Verified HouseProvider member" aria-label="Verified HouseProvider member"><BadgeCheck size={22}/><span>Verified</span></span>}</div>
     <dl className="account-grid">
       <div><dt>Email</dt><dd>{user.email ?? "—"}</dd></div>
       <div><dt>Phone</dt><dd>{user.phone ?? "Not added"}</dd></div>
@@ -77,8 +79,10 @@ function AccountPage() {
         <div><Sparkles size={18}/><span><strong>₹0 promotional plan</strong><small>No payment is required during the six-month free period.</small></span></div>
       </div>
       <p className="subscription-note">One claim per account. The offer ends on the date shown after claiming.</p>
-      <div className="account-actions"><Button onClick={() => void claimFree()} disabled={claiming || claimSuccess}>{claiming ? "Claiming…" : claimSuccess ? "Claimed" : "Claim 6 Months Free"}</Button></div>
-      {claimMessage && <p className="form-hint" role={claimSuccess ? "status" : "alert"}>{claimMessage}</p>}
+      {offerState.showClaim
+        ? <div className="account-actions offer-actions"><Button onClick={() => void claimFree()} disabled={claiming}>{claiming ? "Claiming…" : "Claim 6 Months Free"}</Button></div>
+        : <AuthNotice tone="success"><span className="verified-offer-message"><BadgeCheck size={16}/> 6-month offer claimed · your profile is now verified.</span></AuthNotice>}
+      {claimMessage && !offerState.showClaim && !claimSuccess && <p className="form-hint" role="alert">{claimMessage}</p>}
     </section>
     <div className="account-actions"><Button asChild><Link to={dashboardPath}>{dashboardLabel}</Link></Button><Button variant="outline" onClick={signOut}>Sign out</Button></div>
   </main>;
