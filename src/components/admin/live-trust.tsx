@@ -47,10 +47,22 @@ export function LiveVerificationsPanel() {
           if ((a === "approve" || a === "reject") && !window.confirm(`${label} the ${typeLabel(v.type).toLowerCase()} check for ${v.subject}?`)) return;
           void run(adminSetVerificationStatusFn({ data: { id: v.id, action: a } }), `${label}: ${typeLabel(v.type)} · ${v.subject}`);
         }}>{a === "approve" ? "Approve check" : label}</Button>)}
-          {v.propertyId && v.propertyStatus === "UNDER_REVIEW" && <Button size="sm" onClick={() => {
-            if (!window.confirm(`Approve “${v.property}” and make it visible to seekers?`)) return;
-            void run(moderateListingFn({ data: { propertyId: v.propertyId, action: "APPROVE" } }), `Listing approved: ${v.property}`);
-          }}>Approve listing</Button>}
+          {v.propertyId && v.propertyStatus === "UNDER_REVIEW" && <>
+            <Button size="sm" onClick={() => {
+              if (!window.confirm(`Approve “${v.property}” and make it visible to seekers?`)) return;
+              void run(moderateListingFn({ data: { propertyId: v.propertyId, action: "APPROVE" } }), `Listing approved: ${v.property}`);
+            }}>Approve listing</Button>
+            <Button size="sm" variant="outline" onClick={() => {
+              const reason = window.prompt(`Reason for rejecting “${v.property}”:`, "")?.trim();
+              if (reason === undefined) return;
+              if (!reason) {
+                toast.error("A rejection reason is required.");
+                return;
+              }
+              if (!window.confirm(`Reject “${v.property}”? This will keep it off the marketplace.`)) return;
+              void run(moderateListingFn({ data: { propertyId: v.propertyId, action: "REJECT", note: reason } }), `Listing rejected: ${v.property}`);
+            }}>Reject listing</Button>
+          </>}
           {v.propertyId && v.propertyStatus === "ACTIVE" && <span className="admin-tag">Listing live</span>}
           {v.propertyId && v.propertySlug && <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: v.propertySlug }}>View</Link></Button>}
         </div></td>
