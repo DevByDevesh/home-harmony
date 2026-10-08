@@ -87,6 +87,9 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
   const mapboxRef = useRef<MapboxModule | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const radiusMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const destinationMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [categoryId, setCategoryId] = useState("school");
   const [places, setPlaces] = useState<Place[]>([]);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
@@ -125,6 +128,7 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
           .setLngLat([home.lng, home.lat])
           .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(home.name))
           .addTo(map);
+        if (!disposed) setMapReady(true);
       });
       mapRef.current = map;
     });
@@ -132,6 +136,11 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
       disposed = true;
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
+      radiusMarkersRef.current.forEach(marker => marker.remove());
+      radiusMarkersRef.current = [];
+      destinationMarkerRef.current?.remove();
+      destinationMarkerRef.current = null;
+      setMapReady(false);
       mapRef.current?.remove();
       mapRef.current = null;
       mapboxRef.current = null;
@@ -167,7 +176,32 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
         .addTo(map);
       markersRef.current.push(marker);
     });
-  }, [places]);
+  }, [places, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const mapboxgl = mapboxRef.current;
+    if (!map || !mapboxgl || !mapReady) return;
+    radiusMarkersRef.current.forEach(marker => marker.remove());
+    radiusMarkersRef.current = [];
+    if (!destinationPoint) {
+      destinationMarkerRef.current?.remove();
+      destinationMarkerRef.current = null;
+      return;
+    }
+    destinationMarkerRef.current?.remove();
+    destinationMarkerRef.current = new mapboxgl.default.Marker({ color: "#f97316" })
+      .setLngLat([destinationPoint.lng, destinationPoint.lat])
+      .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(`${destinationPoint.name} · 2 km radius`))
+      .addTo(map);
+    nearbyListings.forEach(item => {
+      const marker = new mapboxgl.default.Marker({ color: "#2563eb" })
+        .setLngLat([item.lng, item.lat])
+        .setPopup(new mapboxgl.Popup({ offset: 16 }).setHTML(`<strong>${item.name.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong><br/>${formatDistance(distanceKm(destinationPoint, item))} from destination`))
+        .addTo(map);
+      radiusMarkersRef.current.push(marker);
+    });
+  }, [destinationPoint, nearbyListings, mapReady]);
 
   const searchDestination = async () => {
     if (!destination.trim()) return;
