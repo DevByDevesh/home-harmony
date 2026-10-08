@@ -15,6 +15,7 @@ import { SmartSearch } from "@/components/smart-search";
 import { EditableChip } from "@/components/editable-chip";
 import { userActions, useUserData } from "@/lib/user-data";
 import { buildSearchSuggestions, readRecentSearches, rememberRecentSearch } from "@/lib/search-history";
+import { pointInPolygon, type LngLatPoint } from "@/lib/geo";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
@@ -51,10 +52,11 @@ function ResultsPage() {
   const { data } = useUserData();
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [drawnPolygon, setDrawnPolygon] = useState<LngLatPoint[] | null>(null);
   const [place, setPlace] = useState(filters.location ?? "");
   const [recentSearches, setRecentSearches] = useState<string[]>(() => readRecentSearches());
   const view = filters.view === "map" || filters.view === "satellite" ? filters.view : "list";
-  const results = applyFilters(listings, filters);
+  const results = applyFilters(listings, filters).filter(listing => !drawnPolygon || pointInPolygon([listing.lng, listing.lat], drawnPolygon));
   const chips = activeChips(filters);
   const prefs = data.preferences;
   const criteria = criteriaFrom(prefs, filters);
@@ -82,7 +84,7 @@ function ResultsPage() {
      {view === "list" ? (results.length ? <div key="list" className="home-grid results-grid results-entrance">{grid}</div> : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>)
        : <div key={view} className="map-layout results-entrance">
           <div className="map-list">{results.length ? grid : <NoResults onClear={() => { setPlace(""); go(clearFilters(filters)); }}/>}</div>
-          <div className="map-pane"><MapboxCanvas homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view}/></div>
+          <div className="map-pane"><MapboxCanvas homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view} onPolygonChange={setDrawnPolygon}/></div>
         </div>}
   </div></main>;
 }
