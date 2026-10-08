@@ -17,8 +17,8 @@ function rethrow(e: unknown): never {
 export const listMyListingsFn = createServerFn({ method: "GET" }).handler(async (): Promise<OwnerDbListing[]> => {
   try {
     const { requireRole } = await import("./auth/guards.server");
-    const { AREA_ROLES } = await import("./auth/roles");
-    const me = await requireRole(AREA_ROLES.owner, "owner.listings");
+    const { LISTING_ROLES } = await import("./auth/roles");
+    const me = await requireRole(LISTING_ROLES, "owner.listings");
     const { listOwnerProperties } = await import("./db/repositories/properties.server");
     const rows = await listOwnerProperties(me.id);
     return rows.map((p) => ({
@@ -44,7 +44,7 @@ export const setMyListingStatusFn = createServerFn({ method: "POST" })
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.status");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.status");
       const { setOwnerPropertyStatus } = await import("./db/repositories/properties.server");
       const changed = await setOwnerPropertyStatus(data.id, me.id, data.status);
       if (!changed) {
@@ -63,7 +63,7 @@ export const repostMyExpiredListingFn = createServerFn({ method: "POST" })
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.repost");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.repost");
       const { repostExpiredOwnerProperty } = await import("./db/repositories/properties.server");
       const reposted = await repostExpiredOwnerProperty(data.id, me.id);
       if (!reposted) {
@@ -82,7 +82,7 @@ export const setMyListingArchiveFn = createServerFn({ method: "POST" })
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.archive");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.archive");
       const { setOwnerPropertyArchived } = await import("./db/repositories/properties.server");
       const changed = await setOwnerPropertyArchived(data.id, me.id, data.archived);
       if (!changed) {
@@ -146,7 +146,7 @@ export const getMyListingQuotaFn = createServerFn({ method: "GET" }).handler(asy
   try {
     const { requireRole } = await import("./auth/guards.server");
     const { AREA_ROLES } = await import("./auth/roles");
-    const me = await requireRole(AREA_ROLES.owner, "owner.listing.quota");
+    const me = await requireRole(LISTING_ROLES, "owner.listing.quota");
     return await getOwnerListingQuota(me.id);
   } catch (e) { rethrow(e); }
 });
@@ -158,7 +158,7 @@ export const createMyListingFn = createServerFn({ method: "POST" })
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.create");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.create");
       const { createOwnerProperty } = await import("./db/repositories/properties.server");
       const prop = await createOwnerProperty(me.id, toPropertyInput(d));
       await writeAudit({ actorId: me.id, action: "listing.create", entityType: "Property", entityId: prop.id, metadata: { status: "UNDER_REVIEW", monthlyLimit: MONTHLY_LISTING_LIMIT } });
@@ -183,7 +183,7 @@ export const autoReviewMyListingFn = createServerFn({ method: "POST" })
     try {
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.auto-review");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.auto-review");
       const { requireDb } = await import("./db/client.server");
       const db = await requireDb();
       const owned = await db.property.findFirst({ where: { id: data.id, ownerId: me.id }, select: { id: true } });
@@ -199,7 +199,7 @@ export const getMyListingDraftFn = createServerFn({ method: "GET" })
     try {
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.edit");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.edit");
       const { getOwnerPropertyForEdit } = await import("./db/repositories/properties.server");
       const p = await getOwnerPropertyForEdit(data.id, me.id);
       if (!p) return null;
@@ -225,7 +225,7 @@ export const updateMyListingFn = createServerFn({ method: "POST" })
       const { requireRole } = await import("./auth/guards.server");
       const { AREA_ROLES } = await import("./auth/roles");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.listing.edit");
+      const me = await requireRole(LISTING_ROLES, "owner.listing.edit");
       const { updateOwnerProperty } = await import("./db/repositories/properties.server");
       const r = await updateOwnerProperty(data.id, me.id, toPropertyInput(data.draft));
       if (!r) {
