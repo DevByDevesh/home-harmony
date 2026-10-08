@@ -13,11 +13,72 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const LISTING_VALIDITY_MS = LISTING_VALIDITY_DAYS * DAY_MS;
 const LISTING_REPOST_WINDOW_MS = LISTING_REPOST_WINDOW_DAYS * DAY_MS;
 
-/** Marks active listings expired once their publication window reaches 30 days. */
+/** Marks active listings expired once their publication window reaches 30 days and notifies owners. */
 export async function expireListings() {
   const db = await requireDb();
-  const cutoff = new Date(Date.now() - LISTING_VALIDITY_MS);
-  return db.property.updateMany({ where: { status: "ACTIVE", publishedAt: { not: null, lte: cutoff } }, data: { status: "EXPIRED" } });
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - LISTING_VALIDITY_MS);
+  const warningCutoff = new Date(now.getTime() - (LISTING_VALIDITY_MS - 3 * DAY_MS));
+  const warningSince = new Date(now.getTime() - 4 * DAY_MS);
+
+  return db.$transaction(async (tx) => {
+    const expiring = await tx.property.findMany({
+      where: {
+        status: "ACTIVE",
+        publishedAt: { not: null, gt: cutoff, lte: warningCutoff },
+      },
+      select: { id: true, ownerId: true, slug: true, title: true, publishedAt: true },
+    });
+
+    const expired = await tx.property.findMany({
+      where: { status: "ACTIVE", publishedAt: { not: null, lte: cutoff } },
+      select: { id: true, ownerId: true, slug: true, title: true, publishedAt: true },
+    });
+
+    const ownerIds = [...new Set([...expiring, ...expired].map((p) => p.ownerId))];
+    const recent = ownerIds.length
+      ? await tx.notification.findMany({
+          where: { userId: { in: ownerIds }, type: { in: ["LISTING_EXPIRING", "LISTING_EXPIRED"] }, createdAt: { gte: warningSince } },
+          select: { userId: true, type: true, metadata: true },
+        })
+      : [];
+    const alreadyNotified = (userId: string, type: string, propertyId: string) =>
+      recent.some((n) => n.userId === userId && n.type === type && (n.metadata as { propertyId?: unknown } | null)?.propertyId === propertyId);
+
+    for (const property of expiring) {
+      if (!alreadyNotified(property.ownerId, "LISTING_EXPIRING", property.id)) {
+        await tx.notification.create({
+          data: {
+            userId: property.ownerId,
+            type: "LISTING_EXPIRING",
+            title: "Listing expiring soon",
+            message: `${property.title} will expire in about 3 days. Confirm availability or repost it after expiry.`,
+            metadata: { propertyId: property.id, slug: property.slug },
+          },
+        });
+      }
+    }
+
+    for (const property of expired) {
+      await tx.property.update({
+        where: { id: property.id },
+        data: { status: "EXPIRED" },
+      });
+      if (!alreadyNotified(property.ownerId, "LISTING_EXPIRED", property.id)) {
+        await tx.notification.create({
+          data: {
+            userId: property.ownerId,
+            type: "LISTING_EXPIRED",
+            title: "Listing expired",
+            message: `${property.title} has expired after 30 days and is no longer visible to seekers. You can repost it from your dashboard.`,
+            metadata: { propertyId: property.id, slug: property.slug },
+          },
+        });
+      }
+    }
+
+    return { count: expired.length, expiring: expiring.length };
+  });
 }
 
 /**
