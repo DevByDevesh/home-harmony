@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { applyFilters, sortListings, type Filters } from "./filters.ts";
+import { isListingVerified, verificationFromStatus } from "./listing-trust.ts";
 import type { Listing } from "./catalog.ts";
 
 const base = (over: Partial<Listing> = {}): Listing => ({
@@ -28,4 +29,9 @@ test("relevance sorting uses match score when requested", () => {
   ];
   const filters = { beds: "2", max: "40000", sort: "relevance" } as Filters;
   assert.equal(sortListings(items, "relevance", filters)[0]?.slug, "strong");
+});
+
+test("VERIFIED database status maps to a fully verified listing trust record", () => {
+  assert.equal(isListingVerified({ verification: verificationFromStatus("VERIFIED") }), true);
+  assert.equal(isListingVerified({ verification: verificationFromStatus("NOT_REQUESTED") }), false);
 });
