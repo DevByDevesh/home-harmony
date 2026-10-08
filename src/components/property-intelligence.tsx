@@ -1,7 +1,27 @@
 import { useMemo, useState } from "react";
-import { Building2, Calculator, CalendarCheck, ExternalLink, MapPin, Navigation, Ruler } from "lucide-react";
+import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Home, ListingDetails } from "@/lib/catalog";
+import type { Home, Listing, ListingDetails } from "@/lib/catalog";
+import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
+
+type IntelligenceHome = Home & Partial<ListingDetails>;
+
+function formatInr(value: number) {
+  return "₹" + Math.round(value).toLocaleString("en-IN");
+}
+
+function googleMapsUrl(home: IntelligenceHome) {
+  if (home.lat && home.lng) {
+    return "https://www.google.com/maps/search/?api=1&query=" + home.lat + "," + home.lng;
+  }
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(home.neighborhood + ", " + home.city);
+}
+
+mport { useMemo, useState } from "react";
+import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Home, Listing, ListingDetails } from "@/lib/catalog";
+import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
 
 type IntelligenceHome = Home & Partial<ListingDetails>;
 
@@ -86,7 +106,7 @@ export function MortgageCalculator({ home }: { home: IntelligenceHome }) {
   );
 }
 
-export function PropertyIntelligence({ home }: { home: IntelligenceHome }) {
+export function PropertyIntelligence({ home, listings }: { home: IntelligenceHome; listings: Listing[] }) {
   return (
     <div className="property-intelligence">
       <section id="location" className="property-feature-section location-section">
@@ -101,34 +121,4 @@ export function PropertyIntelligence({ home }: { home: IntelligenceHome }) {
         </div>
       </section>
 
-      <section className="property-feature-section" aria-labelledby="nearby-title">
-        <div className="property-section-heading">
-          <div><p className="kicker">NEARBY</p><h2 id="nearby-title">Explore what’s around.</h2></div>
-          <Ruler size={24} />
-        </div>
-        <p className="property-muted">Open a category in Google Maps to explore nearby places around this property. We don’t invent distances or ratings.</p>
-        <div className="nearby-grid">
-          {nearbyCategories.map(([label, query]) => (
-            <a key={label} href={"https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query + " near " + home.neighborhood + ", " + home.city)} target="_blank" rel="noreferrer">
-              <Building2 size={17} /><span><strong>{label}</strong><small>Explore nearby</small></span><ExternalLink size={14} />
-            </a>
-          ))}
-        </div>
-      </section>
-
-      {home.floorPlanImages?.length ? (
-        <section id="floor-plans" className="property-feature-section">
-          <div className="property-section-heading"><div><p className="kicker">FLOOR PLANS</p><h2>See how the space is arranged.</h2></div></div>
-          <div className="floor-plan-grid">{home.floorPlanImages.map((src, index) => <figure key={src + "-floor-" + index}><img src={src} alt={"Floor plan " + (index + 1) + " for " + home.name} loading="lazy" /><figcaption>Floor plan {index + 1}</figcaption></figure>)}</div>
-        </section>
-      ) : null}
-
-      {home.mode === "Buy" ? <MortgageCalculator home={home} /> : null}
-
-      <section id="visit" className="property-feature-section property-visit-strip">
-        <div><p className="kicker">NEXT STEP</p><h2>Want to see it in person?</h2><p>Pick a convenient slot and send a visit request to the property owner.</p></div>
-        <a className="visit-anchor" href="#visit-request"><CalendarCheck size={17} /> Schedule a visit</a>
-      </section>
-    </div>
-  );
-}
+      <LocationIntelligenceMap home={home as Listing} listings={listings} />
