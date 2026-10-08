@@ -14,6 +14,7 @@ import { computeMatch, criteriaFrom } from "@/lib/match";
 import { SmartSearch } from "@/components/smart-search";
 import { EditableChip } from "@/components/editable-chip";
 import { userActions, useUserData } from "@/lib/user-data";
+import { buildSearchSuggestions, readRecentSearches, rememberRecentSearch } from "@/lib/search-history";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
@@ -51,12 +52,14 @@ function ResultsPage() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [place, setPlace] = useState(filters.location ?? "");
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => readRecentSearches());
   const view = filters.view === "map" || filters.view === "satellite" ? filters.view : "list";
   const results = applyFilters(listings, filters);
   const chips = activeChips(filters);
   const prefs = data.preferences;
   const criteria = criteriaFrom(prefs, filters);
   const go = (next: Filters) => navigate({ search: next });
+  const suggestions = buildSearchSuggestions(place, recentSearches);
   const select = (slug: string) => { setSelected(slug); document.getElementById(`tile-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }); };
    const grid = results.map(h => <HomeTile key={h.slug} home={h} listing={h} match={computeMatch(h, criteria)} compact={view !== "list"} highlighted={hovered === h.slug || selected === h.slug} onHover={setHovered} {...(view !== "list" ? { onSelect: setSelected } : {})}/>);
 
@@ -64,9 +67,9 @@ function ResultsPage() {
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
     <SmartSearch filters={filters} onApply={f => { setPlace(f.location ?? ""); go(f); }} count={results.length}/>
     <div className="results-toolbar">
-      <form className="toolbar-search" onSubmit={e => { e.preventDefault(); go({ ...filters, location: place.trim() || undefined }); }}>
+      <form className="toolbar-search" onSubmit={e => { e.preventDefault(); const nextPlace = place.trim(); if (nextPlace) setRecentSearches(rememberRecentSearch(nextPlace)); go({ ...filters, location: nextPlace || undefined }); }}>
         <div className="mode-toggle" role="group" aria-label="Looking to">{["Rent", "Buy"].map(m => <button type="button" key={m} aria-pressed={filters.mode === m} onClick={() => go({ ...filters, mode: filters.mode === m ? undefined : m, min: undefined, max: undefined })}>{m}</button>)}</div>
-        <input value={place} onChange={e => setPlace(e.target.value)} placeholder="Where do you want to live?" aria-label="City or locality"/>
+        <input list="property-search-suggestions" value={place} onChange={e => setPlace(e.target.value)} placeholder="Where do you want to live?" aria-label="City or locality" autoComplete="off"/><datalist id="property-search-suggestions">{suggestions.map(s => <option key={s} value={s}/>)}</datalist>
       </form>
       <FilterSheet filters={filters} onApply={go} activeCount={chips.length}/>
       <select className="sort-select" aria-label="Sort" value={filters.sort ?? ""} onChange={e => go({ ...filters, sort: e.target.value || undefined })}><option value="">Recommended order</option><option value="relevance">Relevance</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="area">Largest area</option><option value="recent">Newest</option></select>
