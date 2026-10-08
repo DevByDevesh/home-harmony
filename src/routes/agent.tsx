@@ -1,0 +1,140 @@
+import { guardArea } from "@/lib/auth/route-guard";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
+import { BarChart3, Building2, CalendarClock, CalendarCheck, ChevronLeft, ChevronRight, CreditCard, MessageSquare, UserCheck, Users, UsersRound } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { MetricGrid, TrendCard } from "@/components/analytics-kit";
+import { EmptyState } from "@/components/empty-state";
+import { RoleSwitcher } from "@/components/role-switcher";
+import { getListing } from "@/lib/catalog";
+import { rate } from "@/lib/analytics";
+import { leadLabel, leadStatuses, type Lead, type LeadStatus } from "@/lib/agent-data";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { addLeadNoteFn, listMyLeadsFn, setFollowUpFn, setLeadStageFn } from "@/lib/agent-crm.functions";
+
+/** Signed-in agents get their database leads; everyone else keeps the device demo pipeline. */
+let liveQc: QueryClient | null = null;
+function useLeads() {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["agent-leads"], queryFn: () => listMyLeadsFn() });
+  const live = Array.isArray(q.data);
+  liveQc = live ? qc : null;
+  return { data: live ? { leads: q.data! } : { leads: [] as Lead[] }, ready: live || !q.isPending, live };
+}
+/** Changes are sent one at a time, in click order, so a later click never gets overwritten by an earlier one. */
+let queue: Promise<unknown> = Promise.resolve();
+function send(p: () => Promise<{ ok: boolean; message?: string }>) { queue = queue.then(() => sendNow(p())); }
+async function sendNow(p: Promise<{ ok: boolean; message?: string }>) {
+  try { const r = await p; if (!r.ok) toast.error(r.message ?? "Couldn’t save."); } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t save."); }
+  await liveQc?.invalidateQueries({ queryKey: ["agent-leads"] });
+}
+/** Updates the on-screen lead immediately so quick repeated clicks build on the latest state. */
+function local(id: string, fn: (l: Lead) => Lead) { liveQc?.setQueryData<Lead[] | null>(["agent-leads"], ls => ls?.map(l => l.id === id ? fn(l) : l) ?? ls); }
+const agentActions = {
+  setStatus(id: string, stage: LeadStatus) { if (liveQc) local(id, l => ({ ...l, status: stage })); if (liveQc) send(() => setLeadStageFn({ data: { id, stage } }));  },
+  addNote(id: string, text: string) { if (liveQc) send(() => addLeadNoteFn({ data: { id, text: text.trim().slice(0, 500) } }));  },
+  setFollowUp(id: string, date: string | null, status?: "OPEN" | "DONE") { if (liveQc) local(id, l => ({ ...l, nextFollowUp: status === "DONE" ? null : date })); if (liveQc) send(() => setFollowUpFn({ data: { id, date, ...(status ? { status } : {}) } }));  },
+};
+
+const tabs = [["leads", "Leads", Users], ["listings", "Listings", Building2], ["clients", "Clients", UserCheck], ["visits", "Visits", CalendarCheck], ["followups", "Follow-ups", CalendarClock], ["messages", "Messages", MessageSquare], ["analytics", "Analytics", BarChart3], ["team", "Team", UsersRound], ["subscription", "Subscription", CreditCard]] as const;
+
+export const Route = createFileRoute("/agent")({
+  beforeLoad: guardArea("agent"),
+  validateSearch: z.object({ tab: z.string().optional() }),
+  head: () => ({ meta: [
+    { title: "Agent CRM — HouseProvider.in" },
+    { name: "description", content: "A lead pipeline, follow-ups, visits and performance analytics for property agents on HouseProvider.in." },
+    { property: "og:title", content: "Agent CRM — HouseProvider.in" },
+    { property: "og:description", content: "Manage leads from first contact to conversion." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }), component: AgentCRM,
+});
+
+function AgentCRM() {
+  const { tab = "leads" } = Route.useSearch();
+  const active = tabs.find(t => t[0] === tab) ?? tabs[0];
+  const { ready, live } = useLeads();
+  const [openId, setOpenId] = useState<string | null>(null);
+  return <main className="dashboard-page"><div className="wrap">
+    <div className="results-intro"><p className="kicker">AGENT CRM</p><h1>Your <em>pipeline.</em></h1></div>
+    <RoleSwitcher/>
+    <div className="demo-banner" role="note"><strong>Your leads.</strong> Enquiries assigned to you are saved to your HouseProvider account.</div>
+    <div className="dashboard-layout">
+      <nav className="dash-nav" aria-label="Agent sections">{tabs.map(([id, label, Icon]) => <Link key={id} to="/agent" search={{ tab: id }} aria-current={active[0] === id ? "page" : undefined}><Icon size={16}/>{label}</Link>)}</nav>
+       <section className="dash-panel" aria-labelledby="agent-title"><h2 id="agent-title">{active[1]}</h2><div key={active[0]} className="panel-entrance">{ready ? <Panel id={active[0]} open={setOpenId}/> : <div className="tile-skeleton" aria-busy="true"><span/><span/><span/></div>}</div></section>
+    </div>
+    <LeadSheet id={openId} onClose={() => setOpenId(null)}/>
+  </div></main>;
+}
+
+const move = (l: Lead, dir: 1 | -1) => { const i = leadStatuses.indexOf(l.status) + dir; const next = leadStatuses[i]; if (next) { agentActions.setStatus(l.id, next); toast.success(`${l.name} → ${leadLabel[next]}`); } };
+function LeadCard({ lead, open }: { lead: Lead; open: (id: string) => void }) {
+  const home = getListing(lead.propertySlug); const i = leadStatuses.indexOf(lead.status);
+  const overdue = lead.nextFollowUp && lead.nextFollowUp < new Date().toISOString().slice(0, 10);
+  return <article className="lead-card">
+    <button type="button" className="lead-open" onClick={() => open(lead.id)}><strong>{lead.name}</strong><small>{home?.name ?? lead.propertyTitle ?? "Property unavailable"} · {lead.budget}</small>
+      {lead.nextFollowUp && <small className={overdue ? "overdue" : ""}>Follow up {overdue ? "overdue · " : ""}{new Date(lead.nextFollowUp).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</small>}</button>
+    <div className="lead-move"><button type="button" aria-label={`Move ${lead.name} back`} disabled={i === 0} onClick={() => move(lead, -1)}><ChevronLeft size={15}/></button><button type="button" aria-label={`Move ${lead.name} forward`} disabled={i === leadStatuses.length - 1} onClick={() => move(lead, 1)}><ChevronRight size={15}/></button></div>
+  </article>;
+}
+function Pipeline({ open }: { open: (id: string) => void }) {
+  const { data, live } = useLeads();
+  const [mobileStage, setMobileStage] = useState<LeadStatus>("NEW");
+  if (!data.leads.length) return <EmptyState icon={<Users size={30}/>} title="No leads yet">Leads from enquiries will appear here once accounts and messaging are connected.</EmptyState>;
+  return <>
+    <div className="stage-select" role="tablist" aria-label="Pipeline stage">{leadStatuses.map(s => <button key={s} role="tab" aria-selected={mobileStage === s} onClick={() => setMobileStage(s)}>{leadLabel[s]} <small>{data.leads.filter(l => l.status === s).length}</small></button>)}</div>
+    <div className="pipeline">{leadStatuses.map(s => { const items = data.leads.filter(l => l.status === s); return <section key={s} className={`stage stage-${s.toLowerCase()}${mobileStage === s ? " mobile-active" : ""}`} aria-label={`${leadLabel[s]} (${items.length})`}>
+      <header><span>{leadLabel[s]}</span><small>{items.length}</small></header>
+      {items.length ? items.map(l => <LeadCard key={l.id} lead={l} open={open}/>) : <p className="stage-empty">No leads</p>}</section>; })}</div>
+  </>;
+}
+function LeadList({ leads, open, empty }: { leads: Lead[]; open: (id: string) => void; empty: { title: string; text: string } }) {
+  return leads.length ? <ul className="dash-list">{leads.map(l => <li key={l.id}><div><strong>{l.name}</strong><small>{getListing(l.propertySlug)?.name ?? l.propertyTitle} · {l.location}</small><span className={`lead-pill lead-${l.status.toLowerCase()}`}>{leadLabel[l.status]}</span></div><div className="dash-row-actions"><Button size="sm" variant="outline" onClick={() => open(l.id)}>Open</Button></div></li>)}</ul> : <EmptyState icon={<Users size={30}/>} title={empty.title}>{empty.text}</EmptyState>;
+}
+
+function Panel({ id, open }: { id: string; open: (id: string) => void }) {
+  const { data, live } = useLeads();
+  const c = (s: LeadStatus) => data.leads.filter(l => l.status === s).length;
+  const today = new Date().toISOString().slice(0, 10);
+  switch (id) {
+    case "listings": return <EmptyState icon={<Building2 size={30}/>} title="No listings yet">Listings assigned to your agent account will appear here.</EmptyState>;
+    case "clients": return <LeadList leads={data.leads.filter(l => ["INTERESTED", "VISIT_SCHEDULED", "NEGOTIATION", "CONVERTED"].includes(l.status))} open={open} empty={{ title: "No clients yet", text: "Leads become clients once they show interest." }}/>;
+    case "visits": return <LeadList leads={data.leads.filter(l => l.status === "VISIT_SCHEDULED")} open={open} empty={{ title: "No visits scheduled", text: "Move a lead to “Visit scheduled” to see it here." }}/>;
+    case "followups": { const f = data.leads.filter(l => l.nextFollowUp).sort((a, b) => a.nextFollowUp!.localeCompare(b.nextFollowUp!)); return f.length ? <ul className="dash-list">{f.map(l => <li key={l.id}><div><strong>{l.name}</strong><small className={l.nextFollowUp! < today ? "overdue" : ""}>{l.nextFollowUp! < today ? "Overdue · " : l.nextFollowUp === today ? "Today · " : ""}{new Date(l.nextFollowUp!).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}</small></div><div className="dash-row-actions"><Button size="sm" variant="outline" onClick={() => open(l.id)}>Open</Button><Button size="sm" variant="ghost" onClick={() => { agentActions.setFollowUp(l.id, l.nextFollowUp, "DONE"); toast.success("Follow-up done"); }}>Done</Button></div></li>)}</ul> : <EmptyState icon={<CalendarClock size={30}/>} title="No follow-ups">Set a follow-up date on any lead.</EmptyState>; }
+    case "messages": return <EmptyState icon={<MessageSquare size={30}/>} title="No messages yet">In-app messaging is not connected yet.</EmptyState>;
+    case "team": return <EmptyState icon={<UsersRound size={30}/>} title="No team members">Team seats and shared pipelines arrive with organisation accounts.</EmptyState>;
+    case "subscription": return <EmptyState icon={<CreditCard size={30}/>} title="No subscription">Agent plans and billing are not connected yet.</EmptyState>;
+    case "analytics": return <><MetricGrid items={[{ label: "Leads", value: data.leads.length }, { label: "New", value: c("NEW") }, { label: "Interested", value: c("INTERESTED") }, { label: "Visits scheduled", value: c("VISIT_SCHEDULED") }, { label: "Conversions", value: c("CONVERTED"), hint: `${rate(c("CONVERTED"), data.leads.length)} of pipeline` }]}/>
+      <div className="chart-grid"><EmptyState icon={<BarChart3 size={30}/>} title="View analytics unavailable">Historical property-view data is not available yet.</EmptyState><TrendCard title="Leads by stage" data={leadStatuses.map(s => ({ label: leadLabel[s].split(" ")[0]!, value: c(s) }))} kind="bar"/><EmptyState icon={<BarChart3 size={30}/>} title="Visit trends unavailable">Historical visit trend data is not available yet.</EmptyState><EmptyState icon={<BarChart3 size={30}/>} title="Conversion trends unavailable">Historical conversion trend data is not available yet.</EmptyState></div>
+      <p className="form-hint">Metrics are calculated from enquiries assigned to your account.</p></>;
+    default: return <Pipeline open={open}/>;
+  }
+}
+
+function LeadSheet({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { data, live } = useLeads();
+  const lead = data.leads.find(l => l.id === id);
+  const [note, setNote] = useState("");
+  const home = lead ? getListing(lead.propertySlug) : undefined;
+  return <Sheet open={!!lead} onOpenChange={o => { if (!o) { onClose(); setNote(""); } }}>
+    <SheetContent className="lead-sheet">{lead && <>
+      <SheetHeader><SheetTitle>{lead.name}</SheetTitle><SheetDescription>{live ? "Enquiry assigned to you · contact details aren’t shown" : "Enquiry assigned to your account · contact details are not shown"}</SheetDescription></SheetHeader>
+      <dl className="lead-facts"><div><dt>Property interest</dt><dd>{home?.name ?? lead.propertyTitle ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>{lead.budget}</dd></div><div><dt>Preferred location</dt><dd>{lead.location}</dd></div><div><dt>Last contact</dt><dd>{lead.lastContact ? new Date(lead.lastContact).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "Not yet"}</dd></div></dl>
+      <label className="field"><span>Status</span><select value={lead.status} onChange={e => { agentActions.setStatus(lead.id, e.target.value as LeadStatus); toast.success(`Status: ${leadLabel[e.target.value as LeadStatus]}`); }}>{leadStatuses.map(s => <option key={s} value={s}>{leadLabel[s]}</option>)}</select></label>
+      <label className="field"><span>Next follow-up</span><input type="date" value={lead.nextFollowUp ?? ""} onChange={e => { agentActions.setFollowUp(lead.id, e.target.value || null); toast.success(e.target.value ? "Follow-up set" : "Follow-up cleared"); }}/></label>
+      {home && <Button asChild variant="outline" size="sm"><Link to="/property/$slug" params={{ slug: home.slug }}>View interested property</Link></Button>}
+      <form className="note-form" onSubmit={e => { e.preventDefault(); if (!note.trim()) { toast.error("Write a note first"); return; } agentActions.addNote(lead.id, note); setNote(""); toast.success("Note added"); }}>
+        <label className="field"><span>Add note</span><textarea rows={3} maxLength={500} value={note} onChange={e => setNote(e.target.value)}/></label><Button type="submit" size="sm">Save note</Button></form>
+      <h4 className="notes-title">Notes</h4>{lead.notes.length ? <ul className="notes">{lead.notes.map(n => <li key={n.id}><p>{n.text}</p><small>{new Date(n.at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</small></li>)}</ul> : <p className="form-hint">No notes yet.</p>}
+    </>}</SheetContent></Sheet>;
+}
+
+
+
+
+
+
+
