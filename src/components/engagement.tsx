@@ -13,9 +13,10 @@ import { userActions, useUserData } from "@/lib/user-data";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { propertyContactRedirect } from "@/lib/property-contact";
-import { createEnquiryFn, startConversationFn, listMyEnquiriesFn, listMyNotificationsFn, listMyVisitsFn, cancelMyVisitFn, listOwnerEnquiriesFn, listOwnerVisitsFn, ownerUpdateVisitFn, listConversationsFn, getConversationFn, sendMessageFn, markConversationReadFn, type OwnerVisit } from "@/lib/engagement.functions";
+import { createEnquiryFn, startConversationFn, listMyEnquiriesFn, listMyNotificationsFn, markNotificationReadFn, markAllNotificationsReadFn, listMyVisitsFn, cancelMyVisitFn, listOwnerEnquiriesFn, listOwnerVisitsFn, ownerUpdateVisitFn, listConversationsFn, getConversationFn, sendMessageFn, markConversationReadFn, type OwnerVisit } from "@/lib/engagement.functions";
 import { listMyOwnerContactRequestsFn, listOwnerContactRequestsFn, requestOwnerCallFn, requestOwnerPhoneFn, respondOwnerContactRequestFn, type OwnerContactRequestRow } from "@/lib/owner-contact-requests.functions";
 import { formatVisitDate, slotsFor, statusLabel, toISODate, visitTransitions, type VisitStatus } from "@/lib/visits";
+import { notificationTypeLabel } from "@/lib/notification-center";
 
 const when = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
@@ -223,13 +224,24 @@ export function MyEnquiries({ empty }: { empty: ReactNode }) {
   return <ul className="dash-list">{rows.map(e => <li key={e.id}><div><strong>{e.title}</strong><small>“{e.message}”</small><small>{when(e.createdAt)}</small></div><div className="dash-row-actions"><span className="status">{e.status.toLowerCase()}</span></div></li>)}</ul>;
 }
 
-/** Signed-in: account notifications (visit/enquiry events). Returns null when signed out. */
+/** Signed-in: full account notification center with persistent read state. */
 export function MyNotifications() {
   const fetch = useServerFn(listMyNotificationsFn);
-  const rows = useQuery({ queryKey: ["my-notifications"], queryFn: () => fetch() }).data;
+  const markRead = useServerFn(markNotificationReadFn);
+  const markAllRead = useServerFn(markAllNotificationsReadFn);
+  const qc = useQueryClient();
+  const rowsQuery = useQuery({
+    queryKey: ["my-notifications"],
+    queryFn: () => fetch(),
+    refetchInterval: 10000,
+  });
+  const rows = rowsQuery.data ?? [];
   const live = useLiveListings();
   const { data } = useUserData();
-  if (!rows) return null;
+
+  if (!rowsQuery.data) {
+    return <p className="chart-empty">Loading notifications…</p>;
+  }
 
   const fresh = live.data ? newMatchAlerts(data.searches.map(search => ({
     id: search.id,
@@ -238,8 +250,31 @@ export function MyNotifications() {
     alerts: search.alerts ?? { enabled: true, frequency: "INSTANT" as const, types: ["NEW_MATCH" as const] },
     ...(search.seen ? { seen: search.seen } : {}),
   })), live.data) : [];
+  const unread = rows.filter(n => !n.read).length;
 
-  return <>
+  const readOne = async (id: string) => {
+    await markRead({ data: { id } });
+    await qc.invalidateQueries({ queryKey: ["my-notifications"] });
+    await qc.invalidateQueries({ queryKey: ["notifications"] });
+  };
+
+  const markAll = async () => {
+    if (!unread) return;
+    await markAllRead();
+    await qc.invalidateQueries({ queryKey: ["my-notifications"] });
+    await qc.invalidateQueries({ queryKey: ["notifications"] });
+  };
+
+  return <div className="notification-center">
+    <div className="notification-center-head">
+      <div>
+        <p className="kicker">ACTIVITY</p>
+        <h3>{unread ? `${unread} unread notification${unread === 1 ? "" : "s"}` : "All caught up"}</h3>
+        <p className="form-hint">Messages, enquiries, visits, listing updates, matches and support updates stay here.</p>
+      </div>
+      <Button size="sm" variant="outline" disabled={!unread} onClick={() => void markAll()}>Mark all read</Button>
+    </div>
+
     {fresh.length > 0 && <section className="dash-notification-group" aria-labelledby="new-match-notifications">
       <div className="results-line">
         <div>
@@ -262,9 +297,20 @@ export function MyNotifications() {
       </ul>
     </section>}
 
-    {rows.length ? <ul className="dash-list activity">{rows.map(n => <li key={n.id}><div><strong>{n.title}</strong><small>{n.message}</small><small>{when(n.createdAt)}</small></div></li>)}</ul>
-      : fresh.length === 0 ? <p className="form-hint"><Bell size={14}/> No account notifications yet.</p> : null}
-  </>;
+    {rows.length ? <ul className="dash-list activity notification-list">
+      {rows.map(n => <li key={n.id} className={n.read ? "notification-read" : "notification-unread"}>
+        <div>
+          <strong>{n.title}</strong>
+          <small>{notificationTypeLabel(n.type)} · {when(n.createdAt)}</small>
+          <small>{n.message}</small>
+        </div>
+        <div className="dash-row-actions">
+          {!n.read && <Button size="sm" variant="outline" onClick={() => void readOne(n.id)}>Mark read</Button>}
+          {n.metadata?.slug && <Button asChild size="sm" variant="ghost"><Link to="/property/$slug" params={{ slug: n.metadata.slug }}>View</Link></Button>}
+        </div>
+      </li>)}
+    </ul> : fresh.length === 0 ? <EmptyState icon={<Bell size={30}/>} title="No notifications yet">Activity from your HouseProvider account will appear here.</EmptyState> : null}
+  </div>;
 }
 
 export function ChatPanel() {
