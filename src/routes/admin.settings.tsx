@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { AdminHeader } from "@/components/admin/admin-kit";
 import { defaultSettings, notificationChannels, notificationEvents, type PlatformSettings } from "@/lib/admin/config";
 import { adminHead } from "@/lib/admin/head";
+import { getMaintenanceModeFn, setMaintenanceModeFn } from "@/lib/admin-settings.functions";
 
 export const Route = createFileRoute("/admin/settings")({ head: adminHead("Settings"), component: AdminSettings });
 const sections: [keyof PlatformSettings, string][] = [["general", "General"], ["platform", "Platform"], ["listings", "Listings"], ["verification", "Verification"], ["moderation", "Moderation"], ["subscriptions", "Subscriptions"], ["payments", "Payments"], ["featured", "Featured listings"], ["services", "Services"], ["notifications", "Notifications"], ["security", "Security"]];
@@ -12,12 +13,39 @@ const human = (k: string) => k.replace(/([A-Z])/g, " $1").replace(/^./, c => c.t
 
 function AdminSettings() {
   const [sec, setSec] = useState<keyof PlatformSettings>("general");
+  const [maintenanceMode, setMaintenanceMode] = useState(defaultSettings.platform.maintenanceMode);
+  const [loadingMaintenance, setLoadingMaintenance] = useState(true);
+  const [savingMaintenance, setSavingMaintenance] = useState(false);
+
+  useEffect(() => {
+    void getMaintenanceModeFn().then(enabled => setMaintenanceMode(enabled)).finally(() => setLoadingMaintenance(false));
+  }, []);
+
+  const platformValue = { ...defaultSettings.platform, maintenanceMode };
+  const save = async (value: PlatformSettings[keyof PlatformSettings]) => {
+    if (sec !== "platform") return;
+    const enabled = Boolean((value as PlatformSettings["platform"]).maintenanceMode);
+    setSavingMaintenance(true);
+    try {
+      const result = await setMaintenanceModeFn({ data: { enabled } });
+      if (result.ok) setMaintenanceMode(result.enabled);
+    } finally {
+      setSavingMaintenance(false);
+    }
+  };
+
   return <>
-    <AdminHeader title="Settings" intro="Platform configuration is currently defined in code. Database-backed settings will be enabled after a safe staging migration is established."/>
-    <p className="admin-note">Settings are currently read-only. This prevents device-local changes from being mistaken for live platform configuration. Payment and notification providers are not connected.</p>
+    <AdminHeader title="Settings" intro="Platform configuration is currently defined in code. Database-backed settings are enabled for live maintenance mode."/>
+    <p className="admin-note">Maintenance mode is now live and database-backed. Other settings remain read-only until their providers are connected.</p>
     <div className="admin-settings">
       <div className="seg-tabs admin-settings-tabs" role="tablist" aria-label="Settings sections">{sections.map(([k, label]) => <button key={k} role="tab" aria-selected={sec === k} onClick={() => setSec(k)}>{label}</button>)}</div>
-      <SectionForm key={sec + JSON.stringify(defaultSettings[sec])} section={sec} value={defaultSettings[sec]} disabled onSave={() => undefined}/>
+      <SectionForm
+        key={sec + JSON.stringify(sec === "platform" ? platformValue : defaultSettings[sec])}
+        section={sec}
+        value={sec === "platform" ? platformValue : defaultSettings[sec]}
+        disabled={sec !== "platform" || loadingMaintenance || savingMaintenance}
+        onSave={save}
+      />
     </div>
   </>;
 }

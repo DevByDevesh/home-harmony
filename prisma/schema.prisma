@@ -1030,3 +1030,10 @@ model Message {
   @@index([conversationId, readAt])
   @@index([senderId])
 }
+
+
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
