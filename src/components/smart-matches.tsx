@@ -18,12 +18,12 @@ export function SmartMatches() {
     ? data.searches.map(search => ({ id: search.id, label: search.label, criteria: search.filters }))
     : [{ id: "preferences", label: "Your preferences", criteria: criteriaFrom(data.preferences) }];
 
-  const bySlug = new Map<string, RankedMatch & { requirement: string }>();
+  const bySlug = new Map<string, RankedMatch>();
   for (const requirement of requirements) {
     for (const result of rankMatches(live.data, requirement.criteria)) {
       const existing = bySlug.get(result.listing.slug);
       if (!existing || result.match.score > existing.match.score) {
-        bySlug.set(result.listing.slug, { ...result, requirement: requirement.label });
+        bySlug.set(result.listing.slug, result);
       }
     }
   }
