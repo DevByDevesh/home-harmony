@@ -267,6 +267,8 @@ model User {
   emailConfirmed Boolean       @default(false)
   emailVerified  DateTime?
   phoneVerified  DateTime?
+  /// Earned when the one-time six-month promotional offer is successfully claimed.
+  verifiedBadge  Boolean       @default(false)
   lastActiveAt   DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
