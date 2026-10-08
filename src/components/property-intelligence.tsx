@@ -1,4 +1,12 @@
-ifunction formatInr(value: number) {
+import { useMemo, useState } from "react";
+import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Home, Listing, ListingDetails } from "@/lib/catalog";
+import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
+
+type IntelligenceHome = Home & Partial<ListingDetails>;
+
+function formatInr(value: number) {
   return "₹" + Math.round(value).toLocaleString("en-IN");
 }
 
@@ -8,14 +16,6 @@ function googleMapsUrl(home: IntelligenceHome) {
   }
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(home.neighborhood + ", " + home.city);
 }
-
-mport { useMemo, useState } from "react";
-import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { Home, Listing, ListingDetails } from "@/lib/catalog";
-import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
-
-type IntelligenceHome = Home & Partial<ListingDetails>;
 
 export function PropertySectionNav({ home }: { home: IntelligenceHome }) {
   const items = [
@@ -95,3 +95,20 @@ export function PropertyIntelligence({ home, listings }: { home: IntelligenceHom
       </section>
 
       <LocationIntelligenceMap home={home as Listing} listings={listings} />
+
+      {home.floorPlanImages?.length ? (
+        <section id="floor-plans" className="property-feature-section">
+          <div className="property-section-heading"><div><p className="kicker">FLOOR PLANS</p><h2>See how the space is arranged.</h2></div></div>
+          <div className="floor-plan-grid">{home.floorPlanImages.map((src, index) => <figure key={src + "-floor-" + index}><img src={src} alt={"Floor plan " + (index + 1) + " for " + home.name} loading="lazy" /><figcaption>Floor plan {index + 1}</figcaption></figure>)}</div>
+        </section>
+      ) : null}
+
+      {home.mode === "Buy" ? <MortgageCalculator home={home} /> : null}
+
+      <section id="visit" className="property-feature-section property-visit-strip">
+        <div><p className="kicker">NEXT STEP</p><h2>Want to see it in person?</h2><p>Pick a convenient slot and send a visit request to the property owner.</p></div>
+        <a className="visit-anchor" href="#visit-request"><CalendarCheck size={17} /> Schedule a visit</a>
+      </section>
+    </div>
+  );
+}
