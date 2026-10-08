@@ -46,6 +46,12 @@ function Wizard() {
   const loadDbDraft = useServerFn(getMyListingDraftFn);
   const updateListing = useServerFn(updateMyListingFn);
   const [dbLoadError, setDbLoadError] = useState<string | null>(null);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [locationLoading, setLocationLoading] = useState<"countries" | "states" | "cities" | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
   // Editing a database listing: load it from the server (ownership checked there); never touches the device draft.
   useEffect(() => {
     if (step !== 1 || countries.length) return;
@@ -83,11 +89,6 @@ function Wizard() {
   const [uploads, setUploads] = useState<{ name: string; url: string }[]>([]);
   const [staged, setStaged] = useState<File[]>([]);
   const [stagedPreviewUrls, setStagedPreviewUrls] = useState<string[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
-  const [states, setStates] = useState<string[]>([]);
-  const [cities, setCities] = useState<string[]>([]);
-  const [locationLoading, setLocationLoading] = useState<"countries" | "states" | "cities" | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
 
   // Keep stable object URLs for the preview gallery. Creating URLs during render
