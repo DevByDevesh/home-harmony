@@ -9,6 +9,7 @@ const str = z.union([z.string(), z.number(), z.boolean()]).transform(String).opt
 export const filterSchema = z.object({
   location: str, mode: str, kind: str, city: str,
   beds: str, min: str, max: str, minArea: str,
+  propertyAgeMax: str, floorMin: str, floorMax: str, totalFloorsMin: str,
   furnishing: str, parking: str, baths: str, amenities: str,
   available: str, verified: str, match: str, sort: str, view: str,
   /** Original natural-language query (Smart Search). Informational; never filtered on directly. */
@@ -22,7 +23,7 @@ export const amenityList = (f: Filters) => (f.amenities ? f.amenities.split(",")
 
 export function applyFilters(items: Listing[], f: Filters): Listing[] {
   const place = (f.location ?? "").trim().toLocaleLowerCase();
-  const min = num(f.min), max = num(f.max), beds = num(f.beds), area = num(f.minArea), baths = num(f.baths), match = num(f.match);
+  const min = num(f.min), max = num(f.max), beds = num(f.beds), area = num(f.minArea), baths = num(f.baths), match = num(f.match), ageMax = num(f.propertyAgeMax), floorMin = num(f.floorMin), floorMax = num(f.floorMax), totalFloorsMin = num(f.totalFloorsMin);
   const amenities = amenityList(f);
   const result = items.filter(h =>
     (!place || `${h.city} ${h.neighborhood} ${h.name}`.toLocaleLowerCase().includes(place)) &&
@@ -30,25 +31,30 @@ export function applyFilters(items: Listing[], f: Filters): Listing[] {
     (beds === undefined || (beds >= 4 ? h.beds >= 4 : h.beds === beds)) &&
     (min === undefined || h.price >= min) && (max === undefined || h.price <= max) &&
     (area === undefined || h.area >= area) && (!f.furnishing || h.furnishing === f.furnishing) &&
+    (ageMax === undefined || (h.propertyAgeYears !== undefined && h.propertyAgeYears <= ageMax)) &&
+    (floorMin === undefined || (h.floor !== undefined && h.floor >= floorMin)) &&
+    (floorMax === undefined || (h.floor !== undefined && h.floor <= floorMax)) &&
+    (totalFloorsMin === undefined || (h.totalFloors !== undefined && h.totalFloors >= totalFloorsMin)) &&
     (!f.parking || h.parking > 0) && (baths === undefined || h.baths >= baths) &&
     amenities.every(a => h.features.includes(a)) && (!f.available || !h.availableFrom) &&
     (!f.verified || isVerified(h)) &&
     (match === undefined || (computeMatch(h, f)?.score ?? 0) >= match));
-  return sortListings(result, f.sort);
+  return sortListings(result, f.sort, f);
 }
-export function sortListings(items: Listing[], sort?: string) {
+export function sortListings(items: Listing[], sort?: string, filters?: Filters) {
   const copy = [...items];
   if (sort === "price-asc") copy.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") copy.sort((a, b) => b.price - a.price);
   if (sort === "area") copy.sort((a, b) => b.area - a.area);
   if (sort === "recent") copy.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  if (sort === "relevance") copy.sort((a, b) => (computeMatch(b, filters ?? {})?.score ?? 0) - (computeMatch(a, filters ?? {})?.score ?? 0));
   return copy;
 }
 
 const labels: Partial<Record<FilterKey, (v: string) => string>> = {
   location: v => v, mode: v => (v === "Rent" ? "Rent" : "Buy"), kind: v => v, city: v => v, beds: v => (v === "4" ? "4+ BHK" : `${v} BHK`),
   min: v => `From ₹${Number(v).toLocaleString("en-IN")}`, max: v => `Up to ₹${Number(v).toLocaleString("en-IN")}`,
-  minArea: v => `${v}+ sq.ft.`, furnishing: v => v, parking: () => "Parking", baths: v => `${v}+ baths`,
+  minArea: v => `${v}+ sq.ft.`, propertyAgeMax: v => `${v} yrs old or newer`, floorMin: v => `Floor ${v}+`, floorMax: v => `Up to floor ${v}`, totalFloorsMin: v => `${v}+ total floors`, furnishing: v => v, parking: () => "Parking", baths: v => `${v}+ baths`,
   available: () => "Available now", verified: () => "Verified only", match: v => `${v}%+ match`,
 };
 export type Chip = { key: FilterKey; label: string; value?: string };
