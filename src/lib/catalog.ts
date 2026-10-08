@@ -9,6 +9,8 @@ export type Home = {
   price: number; beds: number; baths: number; area: number; furnishing: string;
   image: string; description: string; features: string[];
   galleryImages?: string[]; floorPlanImages?: string[];
+  /** Searchable structural facts; optional for legacy/demo listings. */
+  propertyAgeYears?: number; floor?: number; totalFloors?: number;
 };
 
 // Entirely fictional editorial examples. No real availability, ownership or verification is implied.
@@ -48,6 +50,7 @@ export type Verification = { ownerIdentity: boolean; phone: boolean; location: b
 export type ListingDetails = {
   lat: number; lng: number; deposit: number; brokerage: "None" | "Half month" | "One month" | "1% of price";
   parking: number; availableFrom: string | null; updatedAt: string; status: ListingStatus; verification: Verification;
+  propertyAgeYears?: number; floor?: number; totalFloors?: number;
   ownerPhone?: string | null; ownerContactChannels?: string[];
 };
 export type Listing = Home & ListingDetails;
