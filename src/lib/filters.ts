@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { Listing } from "./catalog";
+import type { Listing } from "./catalog.ts";
 import { isVerified } from "./catalog";
-import { computeMatch } from "./match";
+import { computeMatch } from "./match.ts";
 
 /** URL-safe discovery filters. Everything is a string so links stay shareable. */
 /** URL values like ?beds=2 arrive as numbers; normalise to strings. */
