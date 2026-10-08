@@ -159,6 +159,11 @@ export const moderateListingFn = createServerFn({ method: "POST" })
       }),
     ]);
 
+    if (data.action === "APPROVE") {
+      const { notifySavedSearchesForProperty } = await import("./db/repositories/properties.server");
+      await notifySavedSearchesForProperty(data.propertyId);
+    }
+
     return { ok: true as const, status: next };
   });
 
