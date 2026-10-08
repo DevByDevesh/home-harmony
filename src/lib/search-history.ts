@@ -26,6 +26,6 @@ export function readRecentSearches(): string[] {
 
 export function rememberRecentSearch(value: string): string[] {
   const next = pushRecentSearch(readRecentSearches(), value);
-  try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* storage may be unavailable in private browsing */ }
   return next;
 }
