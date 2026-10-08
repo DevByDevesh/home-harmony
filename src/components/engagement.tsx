@@ -1,4 +1,4 @@
-import { Bell, CalendarCheck, MessageCircle, MessageSquare, Phone, Send, UserRound } from "lucide-react";
+import { Bell, CalendarCheck, MessageCircle, MessageSquare, Phone, Send, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +6,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { newMatchAlerts } from "@/lib/alerts";
+import { getListing } from "@/lib/catalog";
+import { useLiveListings } from "@/lib/use-live-listings";
+import { userActions, useUserData } from "@/lib/user-data";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { propertyContactRedirect } from "@/lib/property-contact";
@@ -223,9 +227,44 @@ export function MyEnquiries({ empty }: { empty: ReactNode }) {
 export function MyNotifications() {
   const fetch = useServerFn(listMyNotificationsFn);
   const rows = useQuery({ queryKey: ["my-notifications"], queryFn: () => fetch() }).data;
+  const live = useLiveListings();
+  const { data } = useUserData();
   if (!rows) return null;
-  if (!rows.length) return <p className="form-hint"><Bell size={14}/> No account notifications yet.</p>;
-  return <ul className="dash-list activity">{rows.map(n => <li key={n.id}><div><strong>{n.title}</strong><small>{n.message}</small><small>{when(n.createdAt)}</small></div></li>)}</ul>;
+
+  const fresh = live.data ? newMatchAlerts(data.searches.map(search => ({
+    id: search.id,
+    label: search.label,
+    filters: search.filters,
+    alerts: search.alerts ?? { enabled: true, frequency: "INSTANT" as const, types: ["NEW_MATCH" as const] },
+    seen: search.seen,
+  })), live.data) : [];
+
+  return <>
+    {fresh.length > 0 && <section className="dash-notification-group" aria-labelledby="new-match-notifications">
+      <div className="results-line">
+        <div>
+          <strong id="new-match-notifications"><Sparkles size={15}/> New matching homes</strong>
+          <small>{fresh.reduce((total, item) => total + item.slugs.length, 0)} new home matches across {fresh.length} saved {fresh.length === 1 ? "search" : "searches"}.</small>
+        </div>
+      </div>
+      <ul className="dash-list activity">
+        {fresh.map(alert => {
+          const homes = alert.slugs.map(slug => live.data?.find(item => item.slug === slug) ?? getListing(slug)).filter(Boolean).slice(0, 3);
+          const search = data.searches.find(item => item.id === alert.searchId);
+          return <li key={alert.searchId}>
+            <div>
+              <strong>{alert.label}</strong>
+              <small>{homes.map(home => home?.name).filter(Boolean).join(" · ")}{alert.slugs.length > homes.length ? " · +" + (alert.slugs.length - homes.length) + " more" : ""}</small>
+            </div>
+            {search && <Button asChild size="sm" variant="outline"><Link to="/properties" search={search.filters} onClick={() => userActions.markSearchSeen(search.id, live.data)}>View matches</Link></Button>}
+          </li>;
+        })}
+      </ul>
+    </section>}
+
+    {rows.length ? <ul className="dash-list activity">{rows.map(n => <li key={n.id}><div><strong>{n.title}</strong><small>{n.message}</small><small>{when(n.createdAt)}</small></div></li>)}</ul>
+      : fresh.length === 0 ? <p className="form-hint"><Bell size={14}/> No account notifications yet.</p> : null}
+  </>;
 }
 
 export function ChatPanel() {
