@@ -19,7 +19,7 @@ function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
 }
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({ meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }], links: [
-    { rel: "stylesheet", href: appCss }, { rel: "stylesheet", href: modernUiCss }, { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+    { rel: "stylesheet", href: appCss }, { rel: "stylesheet", href: modernUiCss }, { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }, { rel: "manifest", href: "/manifest.webmanifest" },
     { rel: "preconnect", href: "https://fonts.googleapis.com" }, { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
     { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" }
   ] }),
@@ -35,6 +35,7 @@ function MaintenancePage() {
 }
 
 function RootApp() {
+  useEffect(() => { if ("serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js").catch(() => undefined); }, []);
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: s => s.location.pathname });
   const [maintenance, setMaintenance] = useState(false);
