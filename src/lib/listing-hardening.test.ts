@@ -7,7 +7,7 @@ test("listing access includes regular users and owners but not admin-only accoun
   assert.deepEqual(LISTING_ROLES, ["USER", "OWNER"]);
   assert.ok(LISTING_ROLES.includes("USER"));
   assert.ok(LISTING_ROLES.includes("OWNER"));
-  assert.ok(!LISTING_ROLES.includes("ADMIN" as (typeof LISTING_ROLES)[number]));
+  assert.ok(!(LISTING_ROLES as readonly string[]).includes("ADMIN"));
 });
 
 test("sale price formatting stays in lakh until one crore", () => {
