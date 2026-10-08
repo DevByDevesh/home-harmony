@@ -159,7 +159,7 @@ function savedSearchMatchesProperty(property: {
 /** Creates an in-app notification when a newly approved listing matches an instant saved-search alert. */
 export async function notifySavedSearchesForProperty(propertyId: string) {
   const db = await requireDb();
-  const property = await db.property.findUnique({
+  const property = await db.property.findFirst({
     where: { id: propertyId, status: "ACTIVE" },
     include: { amenities: { include: { amenity: true } } },
   });
@@ -171,6 +171,7 @@ export async function notifySavedSearchesForProperty(propertyId: string) {
     const types = Array.isArray(search.alertTypes) ? search.alertTypes.filter((x): x is string => typeof x === "string") : [];
     if (search.alertFrequency !== "INSTANT" || !types.includes("NEW_MATCH")) continue;
     const criteria = (search.criteria ?? {}) as { filters?: SavedSearchFilters };
+    if (search.userId === property.ownerId) continue;
     if (!criteria.filters || !savedSearchMatchesProperty(property, criteria.filters)) continue;
     await db.notification.create({
       data: {
