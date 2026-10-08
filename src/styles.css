@@ -2426,3 +2426,22 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
     align-items: center;
   }
 }
+
+
+.notification-center { display: grid; gap: 18px; }
+.notification-center-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 18px; border: 1px solid var(--border); background: var(--card); }
+.notification-center-head h3 { margin: 5px 0 6px; font-size: 20px; }
+.notification-center-head .form-hint { margin: 0; }
+.notification-list li { align-items: center; gap: 18px; transition: background .18s, border-color .18s; }
+.notification-list li.notification-unread { border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+.notification-list li.notification-read { opacity: .78; }
+.notification-list li > div:first-child { min-width: 0; }
+.notification-list li > div:first-child strong { display: block; margin-bottom: 3px; }
+.notification-list li > div:first-child small { display: block; }
+.notification-list .dash-row-actions { flex: none; }
+@media (max-width: 680px) {
+  .notification-center-head { flex-direction: column; }
+  .notification-center-head button { width: 100%; }
+  .notification-list li { align-items: flex-start; }
+  .notification-list .dash-row-actions { width: 100%; }
+}
