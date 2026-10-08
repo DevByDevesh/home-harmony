@@ -62,6 +62,7 @@ function demoProperty(home: (typeof listings)[number]): PublicProperty {
     longitude: home.lng,
     images: [{ url: home.image, storageKey: `demo/${home.slug}`, altText: home.name, type: "PHOTO" }],
     amenities: home.features,
+    promotion: null,
   };
 }
 
