@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Bell, BookmarkPlus, LayoutGrid, Map as MapIcon, Satellite, SearchX } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ import { EditableChip } from "@/components/editable-chip";
 import { userActions, useUserData } from "@/lib/user-data";
 import { buildSearchSuggestions, readRecentSearches, rememberRecentSearch } from "@/lib/search-history";
 import { pointInPolygon, type LngLatPoint } from "@/lib/geo";
+import { rankMatches } from "@/lib/match";
+import { displayPrice, type Listing } from "@/lib/catalog";
 
 export const Route = createFileRoute("/properties")({
   validateSearch: filterSchema,
@@ -79,6 +81,20 @@ function ResultsPage() {
   return <main className={`results-page view-${view}`}><div className="wrap">
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
     <SmartSearch filters={filters} onApply={f => { setPlace(f.location ?? ""); go(f); }} count={results.length}/>
+    <AIPropertyAssistant listings={listings} filters={filters}/>
+
+
+: { listings: Listing[]; filters: Filters }) {
+  const criteria = criteriaFrom(undefined, filters);
+  const ranked = rankMatches(listings, criteria).slice(0, 3);
+  if (ranked.length === 0) return null;
+  return <section className="ai-property-assistant" aria-labelledby="ai-assistant-title">
+    <div className="ai-assistant-head"><div><p className="kicker">AI PROPERTY ASSISTANT</p><h2 id="ai-assistant-title">I found your strongest matches.</h2><p>Recommendations are based only on the criteria you entered. Nothing about commute, safety or verification is guessed.</p></div><span className="ai-assistant-badge">Smart recommendations</span></div>
+    <div className="ai-assistant-list">{ranked.map(({ listing, match }) => <Link key={listing.slug} to="/property/$slug" params={{ slug: listing.slug }} className="ai-assistant-item"><div><strong>{listing.name}</strong><span>{listing.neighborhood}, {listing.city} · {listing.beds} BHK · {displayPrice(listing)}</span></div><b>{match.score}% match</b></Link>)}</div>
+  </section>;
+}
+
+
     <div className="results-toolbar">
       <form className="toolbar-search" onSubmit={e => { e.preventDefault(); const nextPlace = place.trim(); if (nextPlace) setRecentSearches(rememberRecentSearch(nextPlace)); go({ ...filters, location: nextPlace || undefined }); }}>
         <div className="mode-toggle" role="group" aria-label="Looking to">{["Rent", "Buy"].map(m => <button type="button" key={m} aria-pressed={filters.mode === m} onClick={() => go({ ...filters, mode: filters.mode === m ? undefined : m, min: undefined, max: undefined })}>{m}</button>)}</div>
@@ -98,6 +114,26 @@ function ResultsPage() {
           <div className="map-pane"><MapboxCanvas homes={results} selected={selected} hovered={hovered} onHover={setHovered} onSelect={select} layer={view} onPolygonChange={setDrawnPolygon}/></div>
         </div>}
   </div></main>;
+}
+: { listings: Listing[]; filters: Filters }) {
+  const criteria = criteriaFrom(undefined, filters);
+  const ranked = rankMatches(listings, criteria).slice(0, 3);
+  if (ranked.length === 0) return null;
+  return <section className="ai-property-assistant" aria-labelledby="ai-assistant-title">
+    <div className="ai-assistant-head"><div><p className="kicker">AI PROPERTY ASSISTANT</p><h2 id="ai-assistant-title">I found your strongest matches.</h2><p>Recommendations are based only on the criteria you entered. Nothing about commute, safety or verification is guessed.</p></div><span className="ai-assistant-badge">Smart recommendations</span></div>
+    <div className="ai-assistant-list">{ranked.map(({ listing, match }) => <Link key={listing.slug} to="/property/$slug" params={{ slug: listing.slug }} className="ai-assistant-item"><div><strong>{listing.name}</strong><span>{listing.neighborhood}, {listing.city} · {listing.beds} BHK · {displayPrice(listing)}</span></div><b>{match.score}% match</b></Link>)}</div>
+  </section>;
+}
+
+
+function AIPropertyAssistant({ listings, filters }: { listings: Listing[]; filters: Filters }) {
+  const criteria = criteriaFrom(undefined, filters);
+  const ranked = rankMatches(listings, criteria).slice(0, 3);
+  if (ranked.length === 0) return null;
+  return <section className="ai-property-assistant" aria-labelledby="ai-assistant-title">
+    <div className="ai-assistant-head"><div><p className="kicker">AI PROPERTY ASSISTANT</p><h2 id="ai-assistant-title">I found your strongest matches.</h2><p>Recommendations are based only on the criteria you entered. Nothing about commute, safety or verification is guessed.</p></div><span className="ai-assistant-badge">Smart recommendations</span></div>
+    <div className="ai-assistant-list">{ranked.map(({ listing, match }) => <Link key={listing.slug} to="/property/$slug" params={{ slug: listing.slug }} className="ai-assistant-item"><div><strong>{listing.name}</strong><span>{listing.neighborhood}, {listing.city} · {listing.beds} BHK · {displayPrice(listing)}</span></div><b>{match.score}% match</b></Link>)}</div>
+  </section>;
 }
 function NoResults({ onClear }: { onClear: () => void }) {
   return <EmptyState icon={<SearchX size={34}/>} title="No properties found." action={<Button variant="outline" onClick={onClear}>Clear all filters</Button>}>Try expanding your budget or location, or removing a filter.</EmptyState>;
