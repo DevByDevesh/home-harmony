@@ -22,7 +22,7 @@ export function Navigation() {
   const notifications = useQuery({ queryKey: ["notifications"], queryFn: () => fetchNotifications(), enabled: !!user, staleTime: 10000 });
   const unreadNotifications = user ? (notifications.data ?? []).filter(n => !n.read).length : 0;
   const unreadMessages = user ? (conversations.data ?? []).filter(c => c.lastMessage && c.lastMessage.senderId !== user.id && !c.lastMessage.readAt).length : 0;
-  const canOwner = !!user && AREA_ROLES.owner.includes(user.role), canAgent = !!user && AREA_ROLES.agent.includes(user.role), canAdmin = !!user && AREA_ROLES.admin.includes(user.role);
+  const canAgent = !!user && AREA_ROLES.agent.includes(user.role), canAdmin = !!user && AREA_ROLES.admin.includes(user.role);
   const dashboardPath = user ? getRoleDashboardPath(user.role) : "/dashboard";
   const dashboardLabel = user?.role === "OWNER" ? "Owner dashboard" : user?.role === "ADMIN" ? "Admin dashboard" : "Dashboard";
   const onMap = path === "/properties" && (view === "map" || view === "satellite");
