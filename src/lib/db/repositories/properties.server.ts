@@ -89,7 +89,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.floorMin !== undefined ? { floor: { gte: q.floorMin } } : {}),
       ...(q.floorMax !== undefined ? { floor: { lte: q.floorMax } } : {}),
       ...(q.totalFloorsMin !== undefined ? { totalFloors: { gte: q.totalFloorsMin } } : {}),
-      ...(q.amenities?.length ? { amenities: { every: { amenity: { name: { in: q.amenities } } } } } : {}),
+      ...(q.amenities?.length ? { AND: q.amenities.map(name => ({ amenities: { some: { amenity: { name } } } })) } : {}),
     },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
