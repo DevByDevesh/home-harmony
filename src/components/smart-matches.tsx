@@ -43,6 +43,7 @@ export function SmartMatches() {
     {matches.length ? <div className="home-grid dash-grid">
       {matches.map(({ listing, match }) => {
         const home = live.data?.find(item => item.slug === listing.slug) ?? getListing(listing.slug);
+        if (!home) return null;
         return <HomeTile key={listing.slug} home={home} listing={listing} match={match}/>;
       })}
     </div> : <EmptyState icon={<Sparkles size={30}/>} title="No strong matches yet" action={<Button asChild><Link to="/properties">Build a requirement</Link></Button>}>
