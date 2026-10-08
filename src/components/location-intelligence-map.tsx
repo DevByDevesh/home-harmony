@@ -32,7 +32,7 @@ const categories: Category[] = [
   { id: "bank", label: "Banks & ATMs", query: "bank ATM", icon: WalletCards },
 ];
 
-const token = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN as string | undefined;
+const token = import.meta.env["VITE_MAPBOX_PUBLIC_TOKEN"] as string | undefined;
 
 function formatDistance(value: number) {
   if (value < 1) return `${Math.round(value * 1000)} m`;
@@ -57,7 +57,7 @@ async function searchPlaces(category: Category, home: Listing, signal: AbortSign
     .flatMap(feature => {
       const coordinates = feature.geometry?.coordinates;
       if (!coordinates || typeof coordinates[0] !== "number" || typeof coordinates[1] !== "number") return [];
-      const place = { id: feature.id ?? `${category.id}-${coordinates.join("-")}`, name: feature.properties?.name ?? category.label.slice(0, -1), lng: coordinates[0], lat: coordinates[1], address: feature.properties?.full_address };
+      const place = { id: feature.id ?? `${category.id}-${coordinates.join("-")}`, name: feature.properties?.name ?? category.label.slice(0, -1), lng: coordinates[0], lat: coordinates[1], ...(feature.properties?.full_address ? { address: feature.properties.full_address } : {}) };
       return [{ ...place, distanceKm: distanceKm(home, place) }];
     })
     .filter(place => (place.distanceKm ?? Infinity) <= 3)
@@ -78,7 +78,7 @@ async function geocodeDestination(query: string, signal: AbortSignal) {
   const feature = json.features?.[0];
   const coordinates = feature?.geometry?.coordinates;
   if (!coordinates || typeof coordinates[0] !== "number" || typeof coordinates[1] !== "number") return null;
-  return { lng: coordinates[0], lat: coordinates[1], name: feature.properties?.name ?? query.trim(), address: feature.properties?.full_address };
+  return { lng: coordinates[0], lat: coordinates[1], name: feature.properties?.name ?? query.trim(), ...(feature.properties?.full_address ? { address: feature.properties.full_address } : {}) };
 }
 
 export function LocationIntelligenceMap({ home, listings }: { home: Listing; listings: Listing[] }) {
@@ -95,7 +95,7 @@ export function LocationIntelligenceMap({ home, listings }: { home: Listing; lis
   const [destinationError, setDestinationError] = useState("");
   const [destinationPoint, setDestinationPoint] = useState<{ lat: number; lng: number; name: string; address?: string } | null>(null);
 
-  const category = categories.find(item => item.id === categoryId) ?? categories[0];
+  const category = categories.find(item => item.id === categoryId) ?? categories[0]!;
   const nearbyListings = useMemo(() => {
     if (!destinationPoint) return [];
     return withinRadius(
