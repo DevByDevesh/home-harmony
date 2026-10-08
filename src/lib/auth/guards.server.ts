@@ -25,7 +25,7 @@ export async function getSessionUser(): Promise<SafeUser | null> {
   if (!u) return null;
   // Suspended/deactivated/pending accounts lose access immediately, even with a live cookie.
   if (u.status !== "ACTIVE") return null;
-  return { id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role as AuthRole, status: u.status, emailVerified: u.emailConfirmed, createdAt: u.createdAt.toISOString(), updatedAt: u.updatedAt.toISOString() };
+  return { id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role as AuthRole, status: u.status, emailVerified: u.emailConfirmed, verifiedBadge: u.verifiedBadge, createdAt: u.createdAt.toISOString(), updatedAt: u.updatedAt.toISOString() };
 }
 
 export async function requireUser(): Promise<SafeUser> {
