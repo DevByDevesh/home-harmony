@@ -17,7 +17,9 @@
     "db:deploy": "prisma migrate deploy"
   },
   "overrides": {
-    "rolldown": "1.2.1"
+    "rolldown": "1.2.1",
+    "source-map-js": "1.2.2",
+    "deepmerge-ts": "8.0.2"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
