@@ -190,7 +190,7 @@ export async function listOwnerEnquiries(ownerId: string) {
 
 export async function listMyNotifications(userId: string) {
   const db = await requireDb();
-  return db.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: { id: true, type: true, title: true, message: true, readAt: true, createdAt: true } });
+  return db.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: { id: true, type: true, title: true, message: true, readAt: true, metadata: true, createdAt: true } });
 }
 
 // ---- Recently viewed (stored in SearchPreference.extra.recent; no schema change) ----
@@ -519,7 +519,8 @@ export async function listUserNotifications(userId: string) {
   return db.notification.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 100,
+    select: { id: true, type: true, title: true, message: true, readAt: true, metadata: true, createdAt: true },
   });
 }
 
@@ -527,6 +528,14 @@ export async function markNotificationRead(id: string, userId: string) {
   const db = await requireDb();
   return db.notification.updateMany({
     where: { id, userId, readAt: null },
+    data: { readAt: new Date() },
+  });
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  const db = await requireDb();
+  return db.notification.updateMany({
+    where: { userId, readAt: null },
     data: { readAt: new Date() },
   });
 }

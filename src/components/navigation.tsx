@@ -36,6 +36,7 @@ export function Navigation() {
           <DropdownMenuTrigger className="nav-icon nav-notifications" aria-label={`Notifications${unreadNotifications ? ` (${unreadNotifications} unread)` : ""}`}><Bell size={18}/>{unreadNotifications > 0 && <span className="nav-dot">{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}</DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="nav-notifications-menu">
             <DropdownMenuLabel>Notifications</DropdownMenuLabel><DropdownMenuSeparator/>
+            <DropdownMenuItem asChild><Link to="/dashboard" search={{ tab: "notifications" }}>View all notifications</Link></DropdownMenuItem>
             {(notifications.data ?? []).length ? (notifications.data ?? []).slice(0, 8).map(n => <DropdownMenuItem key={n.id} className={n.read ? "notification-read" : "notification-unread"} onSelect={() => { if (!n.read) { void readNotification({ data: { id: n.id } }).then(() => void notifications.refetch()); } }}>
               <span><strong>{n.title}</strong><small>{n.message}</small></span>
             </DropdownMenuItem>) : <DropdownMenuItem disabled>No notifications yet.</DropdownMenuItem>}
