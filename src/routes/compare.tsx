@@ -4,12 +4,13 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { availabilityLabel, displayPrice, getListing, inr, isVerified, type Listing } from "@/lib/catalog";
+import { availabilityLabel, displayPrice, inr, isVerified, type Listing } from "@/lib/catalog";
 import { COMPARE_LIMIT, neutralDifferences } from "@/lib/compare";
 import { computeMatch, criteriaFrom } from "@/lib/match";
 import { useLiveListings } from "@/lib/use-live-listings";
 import { userActions, useUserData } from "@/lib/user-data";
 import { commuteLabel } from "@/lib/commute";
+import { resolveSavedListingState, staleListingLabel } from "@/lib/saved-listing-state";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({ meta: [
@@ -24,7 +25,8 @@ type Row = [string, (l: Listing) => ReactNode];
 function ComparePage() {
   const { data, ready } = useUserData();
   const live = useLiveListings();
-  const items = data.compare.map(s => live.data?.find(l => l.slug === s) ?? getListing(s)).filter(x => !!x);
+  const resolved = resolveSavedListingState(data.compare, live.data);
+  const items = resolved.active ?? [];
   useEffect(() => { document.getElementById("compare-top")?.focus(); }, []);
   const p = data.preferences;
   const criteria = criteriaFrom(p);
@@ -38,7 +40,11 @@ function ComparePage() {
   ];
   return <main className="results-page"><div className="wrap">
     <div className="results-intro" id="compare-top" tabIndex={-1}><p className="kicker">SIDE BY SIDE</p><h1>Compare <em>calmly.</em></h1><p>Up to {COMPARE_LIMIT} properties. Facts only — no rankings. You decide what suits you.</p></div>
-    {!ready ? <div className="tile-skeleton wide" aria-busy="true"><span/><span/></div> : items.length === 0 ? <EmptyState icon={<GitCompareArrows size={34}/>} title="No properties to compare" action={<Button asChild><Link to="/properties">Explore homes</Link></Button>}>Use the compare button on any property to add it here.</EmptyState> : <>
+    {!ready || resolved.active === null ? <div className="tile-skeleton wide" aria-busy="true"><span/><span/></div> : resolved.stale.length > 0 ? <section className="compare-notes" aria-label="Unavailable compared properties">
+      <p className="kicker">UNAVAILABLE PROPERTIES</p>
+      <ul>{resolved.stale.map(item => <li key={item.slug}><strong>{item.listing?.name ?? item.slug}</strong> — {staleListingLabel(item)}. Remove it to compare active properties.</li>)}</ul>
+      {items.length > 0 && <Button type="button" variant="outline" size="sm" onClick={() => resolved.stale.forEach(item => userActions.toggleCompare(item.slug))}>Remove unavailable</Button>}
+    </section> : items.length === 0 ? <EmptyState icon={<GitCompareArrows size={34}/>} title="No properties to compare" action={<Button asChild><Link to="/properties">Explore homes</Link></Button>}>Use the compare button on any property to add it here.</EmptyState> : <>
       {items.length > 1 ? <section className="compare-notes" aria-label="Differences"><p className="kicker">NEUTRAL DIFFERENCES</p><ul>{neutralDifferences(items).map(n => <li key={n}>{n}</li>)}</ul></section> : <p className="compare-hint">Add at least one more property to see differences.</p>}
       <div className="compare-scroll"><table className="compare-table">
         <thead><tr><th scope="col"><span className="sr-only">Detail</span><button type="button" className="chip-clear" onClick={() => userActions.clearCompare()}>Clear all</button></th>{items.map(i => <th scope="col" key={i.slug}><div className="compare-head"><img src={i.image} alt="" width={200} height={150}/><button type="button" aria-label={`Remove ${i.name}`} onClick={() => userActions.toggleCompare(i.slug)}><X size={14}/></button></div><Link to="/property/$slug" params={{ slug: i.slug }}>{i.name}</Link><small>{i.neighborhood}, {i.city}</small></th>)}</tr></thead>
