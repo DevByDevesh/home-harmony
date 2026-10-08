@@ -2331,3 +2331,98 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 /* ---------- Story preferences button contrast ---------- */
 .homepage-v2 .story-preferences-button { background: #fff !important; color: #542a52 !important; border-color: rgba(255,255,255,.72) !important; font-weight: 800; }
 .homepage-v2 .story-preferences-button:hover { background: #ffb39a !important; color: #3e213b !important; border-color: #ffb39a !important; }
+
+/* ---------- Mobile navigation and layout polish ---------- */
+@media (max-width: 760px) {
+  .navigation-inner {
+    display: flex;
+    width: 100%;
+    height: 68px;
+    min-height: 68px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .navigation-home .navigation-inner {
+    min-height: 68px;
+  }
+  .navigation-inner .wordmark {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .navigation-inner .nav-actions {
+    margin-left: auto;
+    flex: 0 0 auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .navigation-inner .menu-toggle {
+    margin-left: 0;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+  .mobile-menu {
+    position: fixed;
+    top: 68px;
+    left: 0;
+    right: 0;
+    z-index: 24;
+    max-height: calc(100dvh - 68px);
+    overflow-y: auto;
+    padding: 14px 18px calc(84px + env(safe-area-inset-bottom));
+  }
+  .hero {
+    width: 100%;
+    overflow: hidden;
+  }
+  .hero-layout {
+    width: min(100% - 36px, 1420px);
+  }
+  .story-band,
+  .discover-section,
+  .featured-section,
+  .final-cta {
+    overflow: hidden;
+  }
+  .bottom-nav {
+    height: 62px;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: content-box;
+  }
+  .post-fab {
+    right: 16px;
+    bottom: calc(136px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 420px) {
+  .wordmark {
+    gap: 9px;
+    font-size: 17px;
+  }
+  .wordmark-symbol {
+    width: 34px;
+    height: 34px;
+  }
+  .navigation-inner .menu-toggle {
+    flex-basis: 40px;
+    width: 40px;
+  }
+  .hero-layout {
+    width: min(100% - 32px, 1420px);
+  }
+  .hero h1 {
+    font-size: 42px;
+    line-height: 1.04;
+  }
+  .hero-description {
+    max-width: 100%;
+    line-height: 1.65;
+  }
+  .hero-ctas {
+    align-items: center;
+  }
+}
