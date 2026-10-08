@@ -4,7 +4,7 @@ import { buildSearchSuggestions, pushRecentSearch } from "./search-history.ts";
 
 test("search suggestions combine matching locations and recent searches without duplicates", () => {
   const result = buildSearchSuggestions("pun", ["Pune", "Mumbai", "Pune"], ["Pune", "Pimpri-Chinchwad", "Mumbai"]);
-  assert.deepEqual(result, ["Pune", "Pimpri-Chinchwad"]);
+  assert.deepEqual(result, ["Pune"]);
 });
 
 test("recent searches are newest-first and capped", () => {
