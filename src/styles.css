@@ -2291,3 +2291,35 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
   .radius-list-item { grid-template-columns:1fr; }
   .radius-list-item .radius-map-link { min-height:36px; border-left:0; border-top:1px solid var(--border); justify-content:flex-start; padding-inline:12px; }
 }
+
+
+/* Property gallery image rendering guard — use a real image element and never allow legacy overlays/clipping to cover it. */
+.detail-image:has(.detail-gallery-controls) .detail-gallery { position: relative; overflow: hidden; background: var(--muted); }
+.detail-image:has(.detail-gallery-controls) .detail-main-photo,
+.detail-image:has(.detail-gallery-controls) .detail-main-photo::before,
+.detail-image:has(.detail-gallery-controls) .detail-main-photo::after {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.detail-image:has(.detail-gallery-controls) .detail-main-photo {
+  object-fit: cover !important;
+  object-position: center;
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
+.detail-image:has(.detail-gallery-controls) .detail-main-photo::before,
+.detail-image:has(.detail-gallery-controls) .detail-main-photo::after { content: none !important; }

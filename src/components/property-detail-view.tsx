@@ -22,7 +22,7 @@ export function PropertyDetailView({ home, listings, actions, aside, imageNote, 
       <div className="detail-price">{actions && <div className="detail-actions">{actions}</div>}<strong>{displayPrice(home)}</strong><span>{home.mode === "Rent" ? "per month" : "asking price"}</span></div></div>
     <div className="detail-image">
       <div className="detail-gallery">
-        <div className="detail-main-photo" role="img" aria-label={`Property view ${activePhoto + 1} of ${home.name}`} style={{ backgroundImage: `url("${currentPhoto.replace(/"/g, "\\\"")}")` }} />
+        <img className="detail-main-photo" src={currentPhoto} alt={`Property view ${activePhoto + 1} of ${home.name}`} width={1600} height={1000} loading="eager" decoding="async" />
         {galleryImages.length > 1 && <span className="detail-photo-count">{activePhoto + 1} / {galleryImages.length}</span>}
         <span>{imageNote}</span>
       </div>
