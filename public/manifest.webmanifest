@@ -1,0 +1,13 @@
+{
+  "name": "HouseProvider.in",
+  "short_name": "HouseProvider",
+  "description": "Find, compare and manage property listings on HouseProvider.in.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
