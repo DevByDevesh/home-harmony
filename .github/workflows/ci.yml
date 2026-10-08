@@ -25,6 +25,11 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Keep CI resilient to npm lockfile metadata issues while preserving
+      # the committed lockfile as the source of dependency versions.
+      - name: Validate npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
       - name: Install dependencies
         run: npm ci
 
