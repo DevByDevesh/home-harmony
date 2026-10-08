@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { displayPrice, type Listing } from "@/lib/catalog";
 import { findMapPlace } from "@/lib/map-geocoding.functions";
 
-type Props = { homes: Listing[]; selected: string | null; hovered: string | null; onSelect: (slug: string) => void; onHover: (slug: string | null) => void; layer: "map" | "satellite" };
+type Props = { homes: Listing[]; selected: string | null; hovered: string | null; onSelect: (slug: string) => void; onHover: (slug: string | null) => void; layer: "map" | "satellite"; onPolygonChange?: (polygon: [number, number][] | null) => void };
 const token = import.meta.env['VITE_LOVABLE_CONNECTOR_MAPBOX_PUBLIC_TOKEN'];
 const styleFor = (layer: Props["layer"]) => layer === "satellite" ? "mapbox://styles/mapbox/satellite-streets-v12" : "mapbox://styles/mapbox/streets-v12";
 const short = (h: Listing) => h.mode === "Rent" ? `₹${Math.round(h.price / 1000)}K` : `₹${(h.price / 10000000).toFixed(1)}Cr`;
 const hasCoordinates = (h: Listing) => Number.isFinite(h.lat) && Number.isFinite(h.lng) && Math.abs(h.lat) <= 90 && Math.abs(h.lng) <= 180 && !(h.lat === 0 && h.lng === 0);
 type PointProps = { slug: string };
 
-export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHover, layer }: Props) {
+export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHover, layer, onPolygonChange }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const markers = useRef<globalThis.Map<string, Marker>>(new globalThis.Map());
@@ -26,6 +26,8 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
   const [placeStatus, setPlaceStatus] = useState("");
   const [searching, setSearching] = useState(false);
   const [ready, setReady] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const [drawPoints, setDrawPoints] = useState<[number, number][]>([]);
   const mappedHomes = useMemo(() => homes.filter(hasCoordinates), [homes]);
   const bySlug = useMemo(() => new globalThis.Map(mappedHomes.map(home => [home.slug, home])), [mappedHomes]);
   const clusterIndex = useMemo(() => new Supercluster<PointProps>({ radius: 60, maxZoom: 14 }).load(mappedHomes.map(home => ({
@@ -128,6 +130,40 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
     });
   }, [selected, hovered, mappedHomes, ready]);
 
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance || !ready) return;
+    const sourceId = "search-area-source";
+    const lineId = "search-area-line";
+    const fillId = "search-area-fill";
+    const update = () => {
+      const coordinates = drawPoints.length >= 3 ? [...drawPoints, drawPoints[0]!] : drawPoints;
+      const geometry = coordinates.length >= 3
+        ? { type: "Feature" as const, properties: {}, geometry: { type: "Polygon" as const, coordinates: [coordinates] } }
+        : { type: "Feature" as const, properties: {}, geometry: { type: "LineString" as const, coordinates } };
+      const source = instance.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
+      if (source) source.setData(geometry);
+      else {
+        instance.addSource(sourceId, { type: "geojson", data: geometry });
+        instance.addLayer({ id: fillId, type: "fill", source: sourceId, paint: { "fill-opacity": 0.12 } });
+        instance.addLayer({ id: lineId, type: "line", source: sourceId, paint: { "line-width": 2 } });
+      }
+    };
+    update();
+  }, [drawPoints, ready]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance || !ready || !drawing) return;
+    instance.doubleClickZoom.disable();
+    const onClick = (event: mapboxgl.MapMouseEvent) => {
+      setDrawPoints(points => [...points, [event.lngLat.lng, event.lngLat.lat]]);
+    };
+    instance.on("click", onClick);
+    return () => { instance.off("click", onClick); instance.doubleClickZoom.enable(); };
+  }, [drawing, ready]);
+
   useEffect(() => {
     const home = mappedHomes.find(item => item.slug === selected);
     if (home && map.current && ready) map.current.easeTo({ center: [home.lng, home.lat], zoom: Math.max(map.current.getZoom(), 16), duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450 });
@@ -135,6 +171,7 @@ export default function MapboxCanvas({ homes, selected, hovered, onSelect, onHov
 
   return <div className="property-map" role="region" aria-label="Map of listed homes">
     <div ref={container} className="property-map-canvas" aria-label="Mapbox map"/>
+    <div className="property-map-draw" role="group" aria-label="Draw search area"><Button type="button" variant="outline" onClick={() => { setDrawing(true); setDrawPoints([]); onPolygonChange?.(null); }} disabled={drawing}>Draw area</Button>{drawing && <><Button type="button" onClick={() => { if (drawPoints.length >= 3) onPolygonChange?.(drawPoints); setDrawing(false); }}>Apply area</Button><Button type="button" variant="ghost" onClick={() => { setDrawing(false); setDrawPoints([]); onPolygonChange?.(null); }}>Cancel</Button></>}</div>
     <form className="property-map-search" onSubmit={searchPlace} role="search" aria-label="Find a place on the map"><input value={place} onChange={event => setPlace(event.target.value)} placeholder="City or locality" aria-label="City or locality on map" maxLength={100}/><Button size="icon" type="submit" variant="outline" disabled={searching} title="Find on map" aria-label="Find on map"><Search size={16}/></Button></form>
     {placeStatus && <div className="property-map-status" role="status">{placeStatus}</div>}
     {error && <div className="map-empty" role="alert">{error}</div>}

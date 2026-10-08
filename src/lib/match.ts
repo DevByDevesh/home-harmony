@@ -1,4 +1,4 @@
-import type { Listing } from "./catalog";
+import type { Listing } from "./catalog.ts";
 
 /**
  * Match engine — deterministic and explainable.

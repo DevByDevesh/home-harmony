@@ -16,14 +16,14 @@ export const photoLabels: Record<DemoPhoto, string> = { living: "Living room", c
 
 export type ListingDraft = {
   kind: Home["kind"] | ""; mode: Home["mode"]; country: string; state: string; city: string; locality: string; address: string; title: string;
-  price: string; deposit: string; availableFrom: string; beds: string; baths: string; area: string;
+  price: string; deposit: string; availableFrom: string; beds: string; baths: string; area: string; propertyAgeYears: string; floor: string; totalFloors: string;
   furnishing: string; parking: string; amenities: string[]; description: string; photos: DemoPhoto[]; checks: VerificationKey[];
   /** Owner's own extra points for the listing assistant (optional on drafts saved before Phase 4). */
   notes?: string;
   /** Assistant-drafted extras the owner accepted. Never published automatically. */
   aiExtras?: { highlights: string[]; amenitySummary: string; seoTitle: string; seoDescription: string; social: string };
 };
-export const emptyDraft = (): ListingDraft => ({ kind: "", mode: "Rent", country: "India", state: "", city: "", locality: "", address: "", title: "", price: "", deposit: "", availableFrom: "", beds: "", baths: "", area: "", furnishing: "", parking: "0", amenities: [], description: "", photos: [], checks: [] });
+export const emptyDraft = (): ListingDraft => ({ kind: "", mode: "Rent", country: "India", state: "", city: "", locality: "", address: "", title: "", price: "", deposit: "", availableFrom: "", beds: "", baths: "", area: "", propertyAgeYears: "", floor: "", totalFloors: "", furnishing: "", parking: "0", amenities: [], description: "", photos: [], checks: [] });
 
 const num = (label: string, min = 0) => z.string().trim().min(1, `${label} is required`).refine(v => Number.isFinite(Number(v)) && Number(v) >= min, `${label} must be a number${min ? ` of at least ${min}` : ""}`);
 /** Per-step validation for the 9-step wizard. Steps without a schema have no required fields. */

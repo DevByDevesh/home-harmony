@@ -11,7 +11,7 @@ import { listings } from "./catalog";
 export type PublicProperty = {
   id: string; slug: string; title: string; description: string;
   propertyType: string; listingType: string; price: number; deposit: number | null;
-  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; furnishing: string;
+  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; propertyAgeYears?: number | null; floor?: number | null; totalFloors?: number | null; furnishing: string;
   availableFrom: string | null; city: string; locality: string;
   verificationStatus: string; publishedAt: string | null; updatedAt: string;
   brokerage: string | null; latitude: number | null; longitude: number | null;
@@ -25,7 +25,7 @@ function toPublic(p: Row): PublicProperty {
   return {
     id: p.id, slug: p.slug, title: p.title, description: p.description,
     propertyType: p.propertyType, listingType: p.listingType, price: p.price, deposit: p.deposit,
-    areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, furnishing: p.furnishing,
+    areaSqft: p.areaSqft, bedrooms: p.bedrooms, bathrooms: p.bathrooms, parking: p.parking, propertyAgeYears: p.propertyAgeYears, floor: p.floor, totalFloors: p.totalFloors, furnishing: p.furnishing,
     availableFrom: p.availableFrom?.toISOString() ?? null, city: p.city, locality: p.locality,
     verificationStatus: p.verificationStatus, publishedAt: p.publishedAt?.toISOString() ?? null, updatedAt: p.updatedAt.toISOString(),
     brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
@@ -77,7 +77,7 @@ function demoListings(input: { city?: string | undefined; listingType?: "RENT" |
 
 export const listPropertiesFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
-    z.object({ city: z.string().max(80).optional(), listingType: z.enum(["RENT", "BUY"]).optional(), minPrice: z.number().finite().positive().optional(), maxPrice: z.number().finite().positive().optional(), take: z.number().int().min(1).max(100).optional() })
+    z.object({ city: z.string().max(80).optional(), listingType: z.enum(["RENT", "BUY"]).optional(), minPrice: z.number().finite().positive().optional(), maxPrice: z.number().finite().positive().optional(), minBedrooms: z.number().int().min(0).max(50).optional(), maxBedrooms: z.number().int().min(0).max(50).optional(), minArea: z.number().int().min(1).max(1000000).optional(), furnishing: z.enum(["FULLY_FURNISHED", "SEMI_FURNISHED", "UNFURNISHED"]).optional(), parkingOnly: z.boolean().optional(), minBathrooms: z.number().int().min(0).max(50).optional(), amenities: z.array(z.string().min(1).max(60)).max(40).optional(), availableNow: z.boolean().optional(), verifiedOnly: z.boolean().optional(), propertyAgeMax: z.number().int().min(0).max(200).optional(), floorMin: z.number().int().min(0).max(200).optional(), floorMax: z.number().int().min(0).max(200).optional(), totalFloorsMin: z.number().int().min(1).max(200).optional(), take: z.number().int().min(1).max(100).optional() })
       .strict().parse(d ?? {}),
   )
   .handler(async ({ data }) => {
@@ -90,6 +90,11 @@ export const listPropertiesFn = createServerFn({ method: "GET" })
       ...(data.listingType ? { listingType: data.listingType } : {}),
       ...(data.minPrice !== undefined ? { minPrice: data.minPrice } : {}),
       ...(data.maxPrice !== undefined ? { maxPrice: data.maxPrice } : {}),
+      ...(data.minBedrooms !== undefined ? { minBedrooms: data.minBedrooms } : {}), ...(data.maxBedrooms !== undefined ? { maxBedrooms: data.maxBedrooms } : {}),
+      ...(data.minArea !== undefined ? { minArea: data.minArea } : {}), ...(data.furnishing ? { furnishing: data.furnishing } : {}),
+      ...(data.parkingOnly ? { parkingOnly: true } : {}), ...(data.minBathrooms !== undefined ? { minBathrooms: data.minBathrooms } : {}),
+      ...(data.amenities?.length ? { amenities: data.amenities } : {}), ...(data.availableNow ? { availableNow: true } : {}), ...(data.verifiedOnly ? { verifiedOnly: true } : {}),
+      ...(data.propertyAgeMax !== undefined ? { propertyAgeMax: data.propertyAgeMax } : {}), ...(data.floorMin !== undefined ? { floorMin: data.floorMin } : {}), ...(data.floorMax !== undefined ? { floorMax: data.floorMax } : {}), ...(data.totalFloorsMin !== undefined ? { totalFloorsMin: data.totalFloorsMin } : {}),
       ...(data.take ? { take: data.take } : {}),
     });
     return rows.map(toPublic);

@@ -5,7 +5,7 @@
 import { Prisma, PropertyStatus, type PropertyType, type VerificationType } from "@prisma/client";
 import { requireDb } from "../client.server";
 
-export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; take?: number };
+export type PropertySearch = { city?: string; listingType?: "RENT" | "BUY"; propertyType?: PropertyType; minPrice?: number; maxPrice?: number; minBedrooms?: number; maxBedrooms?: number; minArea?: number; furnishing?: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; parkingOnly?: boolean; minBathrooms?: number; amenities?: string[]; availableNow?: boolean; verifiedOnly?: boolean; propertyAgeMax?: number; floorMin?: number; floorMax?: number; totalFloorsMin?: number; take?: number };
 export const LISTING_VALIDITY_DAYS = 30;
 export const LISTING_REPOST_WINDOW_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,9 +76,20 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.city ? { city: q.city } : {}),
       ...(q.listingType ? { listingType: q.listingType } : {}),
       ...(q.propertyType ? { propertyType: q.propertyType } : {}),
-      ...((q.minPrice !== undefined || q.maxPrice !== undefined)
-        ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } }
-        : {}),
+      ...((q.minPrice !== undefined || q.maxPrice !== undefined) ? { price: { ...(q.minPrice !== undefined ? { gte: q.minPrice } : {}), ...(q.maxPrice !== undefined ? { lte: q.maxPrice } : {}) } } : {}),
+      ...(q.minBedrooms !== undefined ? { bedrooms: { gte: q.minBedrooms } } : {}),
+      ...(q.maxBedrooms !== undefined ? { bedrooms: { lte: q.maxBedrooms } } : {}),
+      ...(q.minArea !== undefined ? { areaSqft: { gte: q.minArea } } : {}),
+      ...(q.furnishing ? { furnishing: q.furnishing } : {}),
+      ...(q.parkingOnly ? { parking: { gt: 0 } } : {}),
+      ...(q.minBathrooms !== undefined ? { bathrooms: { gte: q.minBathrooms } } : {}),
+      ...(q.availableNow ? { availableFrom: null } : {}),
+      ...(q.verifiedOnly ? { verificationStatus: "VERIFIED" } : {}),
+      ...(q.propertyAgeMax !== undefined ? { propertyAgeYears: { lte: q.propertyAgeMax } } : {}),
+      ...(q.floorMin !== undefined ? { floor: { gte: q.floorMin } } : {}),
+      ...(q.floorMax !== undefined ? { floor: { lte: q.floorMax } } : {}),
+      ...(q.totalFloorsMin !== undefined ? { totalFloors: { gte: q.totalFloorsMin } } : {}),
+      ...(q.amenities?.length ? { AND: q.amenities.map(name => ({ amenities: { some: { amenity: { name } } } })) } : {}),
     },
     include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
@@ -102,12 +113,100 @@ export async function getPublicProperty(idOrSlug: string) {
 }
 
 /** Approval changes listing status only; verification status is never touched here. */
+type SavedSearchFilters = Record<string, unknown>;
+
+function strFilter(filters: SavedSearchFilters, key: string) {
+  const value = filters[key];
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+function numFilter(filters: SavedSearchFilters, key: string) {
+  const value = Number(strFilter(filters, key));
+  return Number.isFinite(value) ? value : undefined;
+}
+function savedSearchMatchesProperty(property: {
+  title: string; city: string; locality: string; listingType: string; propertyType: string;
+  price: number; bedrooms: number; bathrooms: number; areaSqft: number; furnishing: string; parking: number;
+  availableFrom: Date | null; verificationStatus: string; propertyAgeYears: number | null; floor: number | null;
+  totalFloors: number | null; amenities: { amenity: { name: string } }[];
+}, filters: SavedSearchFilters) {
+  const location = strFilter(filters, "location")?.toLocaleLowerCase();
+  const mode = strFilter(filters, "mode");
+  const kind = strFilter(filters, "kind");
+  const city = strFilter(filters, "city");
+  const beds = numFilter(filters, "beds");
+  const min = numFilter(filters, "min");
+  const max = numFilter(filters, "max");
+  const minArea = numFilter(filters, "minArea");
+  const ageMax = numFilter(filters, "propertyAgeMax");
+  const floorMin = numFilter(filters, "floorMin");
+  const floorMax = numFilter(filters, "floorMax");
+  const totalFloorsMin = numFilter(filters, "totalFloorsMin");
+  const baths = numFilter(filters, "baths");
+  const amenities = strFilter(filters, "amenities")?.split(",").filter(Boolean) ?? [];
+
+  if (location && !`${property.city} ${property.locality} ${property.title}`.toLocaleLowerCase().includes(location)) return false;
+  if (mode && property.listingType !== (mode === "Buy" ? "BUY" : "RENT")) return false;
+  if (kind && property.propertyType !== kind.toUpperCase()) return false;
+  if (city && property.city !== city) return false;
+  if (beds !== undefined && (beds >= 4 ? property.bedrooms < 4 : property.bedrooms !== beds)) return false;
+  if (min !== undefined && property.price < min) return false;
+  if (max !== undefined && property.price > max) return false;
+  if (minArea !== undefined && property.areaSqft < minArea) return false;
+  const furnishing = strFilter(filters, "furnishing");
+  if (furnishing && property.furnishing !== furnishing.toUpperCase().replaceAll(" ", "_")) return false;
+  if (strFilter(filters, "parking") && property.parking <= 0) return false;
+  if (baths !== undefined && property.bathrooms < baths) return false;
+  if (ageMax !== undefined && (property.propertyAgeYears === null || property.propertyAgeYears > ageMax)) return false;
+  if (floorMin !== undefined && (property.floor === null || property.floor < floorMin)) return false;
+  if (floorMax !== undefined && (property.floor === null || property.floor > floorMax)) return false;
+  if (totalFloorsMin !== undefined && (property.totalFloors === null || property.totalFloors < totalFloorsMin)) return false;
+  if (strFilter(filters, "available") && property.availableFrom !== null) return false;
+  if (strFilter(filters, "verified") && property.verificationStatus !== "VERIFIED") return false;
+  const availableAmenities = new Set(property.amenities.map((a) => a.amenity.name));
+  if (amenities.some((a) => !availableAmenities.has(a))) return false;
+  return true;
+}
+
+/** Creates an in-app notification when a newly approved listing matches an instant saved-search alert. */
+export async function notifySavedSearchesForProperty(propertyId: string) {
+  const db = await requireDb();
+  const property = await db.property.findFirst({
+    where: { id: propertyId, status: "ACTIVE" },
+    include: { amenities: { include: { amenity: true } } },
+  });
+  if (!property) return 0;
+
+  const searches = await db.savedSearch.findMany({ where: { alertEnabled: true } });
+  let notified = 0;
+  for (const search of searches) {
+    const types = Array.isArray(search.alertTypes) ? search.alertTypes.filter((x): x is string => typeof x === "string") : [];
+    if (search.alertFrequency !== "INSTANT" || !types.includes("NEW_MATCH")) continue;
+    const criteria = (search.criteria ?? {}) as { filters?: SavedSearchFilters };
+    if (search.userId === property.ownerId) continue;
+    if (!criteria.filters || !savedSearchMatchesProperty(property, criteria.filters)) continue;
+    await db.notification.create({
+      data: {
+        userId: search.userId,
+        type: "SAVED_SEARCH_MATCH",
+        title: "A new property matches your search",
+        message: `${property.title} in ${property.locality}, ${property.city} matches “${search.name}”.`,
+        metadata: { searchId: search.id, propertyId: property.id, slug: property.slug },
+      },
+    });
+    await db.savedSearch.update({ where: { id: search.id }, data: { lastNotifiedAt: new Date() } });
+    notified += 1;
+  }
+  return notified;
+}
+
 export async function approveListing(propertyId: string, actorId: string) {
   const db = await requireDb();
-  return db.$transaction([
+  const result = await db.$transaction([
     db.property.update({ where: { id: propertyId }, data: { status: "ACTIVE", publishedAt: new Date() } }),
     db.auditLog.create({ data: { actorId, action: "Listing approved", entityType: "Property", entityId: propertyId } }),
   ]);
+  await notifySavedSearchesForProperty(propertyId);
+  return result;
 }
 
 /** Owner-scoped read: only listings owned by `ownerId`, any status. */
@@ -174,6 +273,7 @@ export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "A
 export type NewOwnerProperty = {
   title: string; description: string; propertyType: PropertyType; listingType: "RENT" | "BUY";
   price: number; deposit: number | null; areaSqft: number; bedrooms: number; bathrooms: number; parking: number;
+  propertyAgeYears?: number | null; floor?: number | null; totalFloors?: number | null;
   furnishing: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; availableFrom: Date | null;
   country: string; state: string; city: string; locality: string; addressLine1: string | null; amenities: string[]; photoKeys: string[];
   /** Verification checks requested (always PENDING; never decided here). */
