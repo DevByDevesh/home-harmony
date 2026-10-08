@@ -67,7 +67,6 @@ async function geocodeDestination(query: string, signal: AbortSignal) {
   if (!token || !query.trim()) return null;
   const params = new URLSearchParams({
     q: query.trim(),
-    proximity: "79.0882,21.1458",
     limit: "1",
     country: "IN",
     access_token: token,
