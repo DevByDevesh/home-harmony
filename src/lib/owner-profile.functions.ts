@@ -44,7 +44,7 @@ export const updateMyOwnerContactFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const { requireRole } = await import("./auth/guards.server");
-      const { AREA_ROLES } = await import("./auth/roles");
+      const { LISTING_ROLES } = await import("./auth/roles");
       const { requireDb } = await import("./db/client.server");
       const { writeAudit } = await import("./auth/audit.server");
       const me = await requireRole(LISTING_ROLES, "owner.profile.update");
