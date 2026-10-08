@@ -11,7 +11,7 @@ import { listings } from "./catalog";
 export type PublicProperty = {
   id: string; slug: string; title: string; description: string;
   propertyType: string; listingType: string; price: number; deposit: number | null;
-  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; propertyAgeYears: number | null; floor: number | null; totalFloors: number | null; furnishing: string;
+  areaSqft: number; bedrooms: number; bathrooms: number; parking: number; propertyAgeYears?: number | null; floor?: number | null; totalFloors?: number | null; furnishing: string;
   availableFrom: string | null; city: string; locality: string;
   verificationStatus: string; publishedAt: string | null; updatedAt: string;
   brokerage: string | null; latitude: number | null; longitude: number | null;
