@@ -18,7 +18,7 @@ export const Route = createFileRoute("/admin")({
 const groups = [
   [["/admin", "Overview", Gauge]],
   [["/admin/users", "Users", Users], ["/admin/owners", "Owners", UserCog], ["/admin/agents", "Agents", Briefcase]],
-  [["/admin/properties", "Properties", Building2], ["/admin/verification", "Verification", BadgeCheck], ["/admin/reports", "Reports", Flag]],
+  [["/admin/properties", "Properties", Building2], ["/admin/featured", "Featured & Boost", BarChart3], ["/admin/verification", "Verification", BadgeCheck], ["/admin/reports", "Reports", Flag]],
   [["/admin/enquiries", "Enquiries", MessagesSquare], ["/admin/visits", "Visits", CalendarCheck]],
   [["/admin/payments", "Payments", CreditCard], ["/admin/subscriptions", "Subscriptions", Layers]],
   [["/admin/services", "Services", Wrench]],

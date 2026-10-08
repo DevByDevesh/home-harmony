@@ -154,7 +154,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.totalFloorsMin !== undefined ? { totalFloors: { gte: q.totalFloorsMin } } : {}),
       ...(q.amenities?.length ? { AND: q.amenities.map(name => ({ amenities: { some: { amenity: { name } } } })) } : {}),
     },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, featured: { where: { active: true, startsAt: { lte: new Date() }, endsAt: { gt: new Date() } }, select: { id: true, promotionType: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: Math.min(q.take ?? 24, 100),
   });
@@ -164,7 +164,7 @@ export async function getPropertyBySlug(slug: string) {
   const db = await requireDb();
   return db.property.findFirst({
     where: { slug, status: "ACTIVE", images: { some: {} } },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, featured: { where: { active: true, startsAt: { lte: new Date() }, endsAt: { gt: new Date() } }, select: { id: true, promotionType: true } } },
   });
 }
 
@@ -174,7 +174,7 @@ export async function getPublicProperty(idOrSlug: string) {
   await expireListings();
   return db.property.findFirst({
     where: { status: "ACTIVE", images: { some: {} }, OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, featured: { where: { active: true, startsAt: { lte: new Date() }, endsAt: { gt: new Date() } }, select: { id: true, promotionType: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
   });
 }
 
