@@ -17,6 +17,7 @@ export type PublicProperty = {
   brokerage: string | null; latitude: number | null; longitude: number | null;
   images: { url: string | null; storageKey: string; altText: string; type: string }[];
   amenities: string[];
+  promotion: "FEATURED" | "BOOST" | null;
 };
 
 type Row = Awaited<ReturnType<typeof import("./db/repositories/properties.server").listPublicProperties>>[number];
@@ -31,6 +32,7 @@ function toPublic(p: Row): PublicProperty {
     brokerage: p.brokerage, latitude: p.latitude == null ? null : Number(p.latitude), longitude: p.longitude == null ? null : Number(p.longitude),
     images: p.images.map((i) => ({ url: i.url, storageKey: i.storageKey, altText: i.altText, type: i.type })),
     amenities: p.amenities.map((a) => a.amenity.name),
+    promotion: p.featured?.[0]?.promotionType ?? null,
   };
 }
 
