@@ -33,6 +33,7 @@ export const listMyListingsFn = createServerFn({ method: "GET" }).handler(async 
       status: p.status,
       ownerPhone: null,
       ownerContactChannels: [],
+      promotion: null,
     }));
   } catch (e) { rethrow(e); }
 });
