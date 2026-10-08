@@ -81,6 +81,7 @@ function ResultsPage() {
   return <main className={`results-page view-${view}`}><div className="wrap">
     <div className="results-intro"><p className="kicker">THE COLLECTION</p><h1>Find your <em>place.</em></h1></div>
     <SmartSearch filters={filters} onApply={f => { setPlace(f.location ?? ""); go(f); }} count={results.length}/>
+    {/* Recommendations use only explicit search criteria. */}
     <AIPropertyAssistant listings={listings} filters={filters}/>
 
 
