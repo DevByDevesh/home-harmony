@@ -25,25 +25,6 @@ import { LocationIntelligenceMap } from "@/components/location-intelligence-map"
 
 type IntelligenceHome = Home & Partial<ListingDetails>;
 
-function formatInr(value: number) {
-  return "₹" + Math.round(value).toLocaleString("en-IN");
-}
-
-function googleMapsUrl(home: IntelligenceHome) {
-  if (home.lat && home.lng) {
-    return "https://www.google.com/maps/search/?api=1&query=" + home.lat + "," + home.lng;
-  }
-  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(home.neighborhood + ", " + home.city);
-}
-
-const nearbyCategories = [
-  ["Schools", "school"],
-  ["Hospitals", "hospital"],
-  ["Shopping", "shopping mall"],
-  ["Transit", "metro station"],
-  ["Restaurants", "restaurants"],
-] as const;
-
 export function PropertySectionNav({ home }: { home: IntelligenceHome }) {
   const items = [
     ["overview", "Overview"],
