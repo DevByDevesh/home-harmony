@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { distanceKm, withinRadius } from "./location-intelligence";
+import { distanceKm, withinRadius } from "./location-intelligence.ts";
 
 test("distanceKm returns zero for the same coordinate", () => {
   assert.equal(distanceKm({ lat: 21.1458, lng: 79.0882 }, { lat: 21.1458, lng: 79.0882 }), 0);

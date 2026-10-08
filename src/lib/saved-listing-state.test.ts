@@ -27,5 +27,5 @@ test("moves missing or inactive saved listings into stale state", () => {
 test("does not mark stale items before live data has loaded", () => {
   const result = resolveSavedListingState(["home"], undefined);
   assert.equal(result.active, null);
-  assert.equal(result.stale, []);
+  assert.deepEqual(result.stale, []);
 });

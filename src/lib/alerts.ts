@@ -1,5 +1,5 @@
-import { applyFilters, type Filters } from "./filters";
-import type { Listing } from "./catalog";
+import { applyFilters, type Filters } from "./filters.ts";
+import type { Listing } from "./catalog.ts";
 
 /**
  * Saved-search alert architecture. Settings travel with the search (device, and the
