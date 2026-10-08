@@ -112,7 +112,6 @@ function Wizard() {
         <Field label="BHK"><input inputMode="numeric" value={draft.beds} onChange={e => set("beds", e.target.value.replace(/\D/g, "").slice(0, 2))}/></Field>
         <Field label="Bathrooms"><input inputMode="numeric" value={draft.baths} onChange={e => set("baths", e.target.value.replace(/\D/g, "").slice(0, 2))}/></Field>
         <Field label="Area (sq.ft.)"><input inputMode="numeric" value={draft.area} onChange={e => set("area", e.target.value.replace(/\D/g, "").slice(0, 6))}/></Field>
-        <Field label="Property age (years)"><input inputMode="numeric" value={draft.propertyAgeYears} onChange={e => set("propertyAgeYears", e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="e.g. 5"/></Field>
         <Field label="Floor"><input inputMode="numeric" value={draft.floor} onChange={e => set("floor", e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="e.g. 4"/></Field>
         <Field label="Total floors"><input inputMode="numeric" value={draft.totalFloors} onChange={e => set("totalFloors", e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="e.g. 12"/></Field>
         <Field label="Parking spaces"><select value={draft.parking} onChange={e => set("parking", e.target.value)}>{["0", "1", "2", "3"].map(p => <option key={p}>{p}</option>)}</select></Field>
