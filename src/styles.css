@@ -2180,3 +2180,39 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .contact-request-card strong,.contact-approved-card strong{display:block;}
 .contact-approved-card{display:grid;gap:7px;}
 .contact-approved-card a{display:inline-flex;align-items:center;gap:7px;font-weight:700;color:var(--primary);}
+
+/* Account offer + verified member polish */
+.account-title { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 8px; }
+.account-title h1 { margin:0; }
+.verified-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:5px 9px;
+  border:1px solid color-mix(in srgb,#2563eb 22%,transparent);
+  border-radius:999px;
+  color:#2563eb;
+  background:color-mix(in srgb,#2563eb 7%,transparent);
+  font-size:11px;
+  font-weight:800;
+}
+.verified-badge svg { flex:none; }
+.verified-offer-message { display:inline-flex; align-items:center; gap:7px; }
+.verified-offer-message svg { flex:none; color:#2563eb; }
+.account-actions {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:16px;
+}
+.offer-actions { margin-top:0; }
+.nav-profile-name { display:inline-flex; align-items:center; gap:5px; }
+.verified-badge-icon { color:#2563eb; flex:none; }
+
+@media (max-width:520px) {
+  .account-actions { width:100%; }
+  .account-actions > * { max-width:100%; }
+  .account-actions .button,
+  .account-actions a { width:100%; justify-content:center; }
+}
