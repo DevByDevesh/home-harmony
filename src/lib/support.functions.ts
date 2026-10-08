@@ -65,10 +65,39 @@ export const updateSupportTicketFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const actor = await guard("support.manage");
-      const ticket = await (await db()).supportTicket.update({
+      const database = await db();
+      const current = await database.supportTicket.findUnique({
         where: { id: data.id },
-        data: { ...(data.status ? { status: data.status, resolvedAt: ["RESOLVED", "CLOSED"].includes(data.status) ? new Date() : null } : {}), ...(data.priority ? { priority: data.priority } : {}), assigneeId: actor.id },
+        select: { id: true, userId: true, subject: true, status: true, priority: true },
       });
+      if (!current) throw new Error("Support ticket not found.");
+
+      const ticket = await database.$transaction(async (tx) => {
+        const updated = await tx.supportTicket.update({
+          where: { id: data.id },
+          data: { ...(data.status ? { status: data.status, resolvedAt: ["RESOLVED", "CLOSED"].includes(data.status) ? new Date() : null } : {}), ...(data.priority ? { priority: data.priority } : {}), assigneeId: actor.id },
+        });
+
+        const changedStatus = data.status && data.status !== current.status;
+        const changedPriority = data.priority && data.priority !== current.priority;
+        if (changedStatus || changedPriority) {
+          const statusText = changedStatus ? `Status: ${data.status!.replaceAll("_", " ")}` : "";
+          const priorityText = changedPriority ? `Priority: ${data.priority}` : "";
+          const details = [statusText, priorityText].filter(Boolean).join(" · ");
+          await tx.notification.create({
+            data: {
+              userId: current.userId,
+              type: "SUPPORT_TICKET_UPDATED",
+              title: "Support ticket updated",
+              message: `${current.subject} · ${details}`,
+              metadata: { ticketId: current.id },
+            },
+          });
+        }
+
+        return updated;
+      });
+
       return mapTicket(ticket);
     } catch (e) { rethrow(e); }
   });
