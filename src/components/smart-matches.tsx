@@ -41,7 +41,7 @@ export function SmartMatches() {
     </div>
 
     {matches.length ? <div className="home-grid dash-grid">
-      {matches.map(({ listing, match, requirement }) => {
+      {matches.map(({ listing, match }) => {
         const home = live.data?.find(item => item.slug === listing.slug) ?? getListing(listing.slug);
         return <HomeTile key={listing.slug} home={home} listing={listing} match={match}/>;
       })}
