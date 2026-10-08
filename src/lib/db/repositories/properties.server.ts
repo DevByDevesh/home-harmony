@@ -154,7 +154,7 @@ export async function listPublicProperties(q: PropertySearch = {}) {
       ...(q.totalFloorsMin !== undefined ? { totalFloors: { gte: q.totalFloorsMin } } : {}),
       ...(q.amenities?.length ? { AND: q.amenities.map(name => ({ amenities: { some: { amenity: { name } } } })) } : {}),
     },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, featured: { where: { active: true, startsAt: { lte: new Date() }, endsAt: { gt: new Date() } }, select: { id: true, promotionType: true } } },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: Math.min(q.take ?? 24, 100),
   });
