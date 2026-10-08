@@ -1,13 +1,14 @@
 import { guardArea } from "@/lib/auth/route-guard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { Bell, Bookmark, CalendarCheck, Clock, Eye, GitCompareArrows, Heart, LayoutDashboard, MessageSquare, Send, Settings2, User } from "lucide-react";
+import { Bell, Bookmark, CalendarCheck, Clock, Eye, GitCompareArrows, Heart, LayoutDashboard, MessageSquare, Send, Settings2, Sparkles, User } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState, TileSkeletons } from "@/components/empty-state";
 import { HomeTile } from "@/components/home-tile";
 import { SavedSearchCard } from "@/components/saved-search-card";
+import { SmartMatches } from "@/components/smart-matches";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { ChatPanel, MyDbVisits, MyEnquiries, MyNotifications } from "@/components/engagement";
 import { cities, getListing } from "@/lib/catalog";
@@ -15,7 +16,7 @@ import { useLiveListings } from "@/lib/use-live-listings";
 import { userActions, useUserData, type Preferences } from "@/lib/user-data";
 
 const tabs = [
-  ["overview", "Overview", LayoutDashboard], ["saved", "Saved properties", Heart], ["searches", "Saved searches", Bookmark],
+  ["overview", "Overview", LayoutDashboard], ["matches", "Smart matches", Sparkles], ["saved", "Saved properties", Heart], ["searches", "Saved searches", Bookmark],
   ["recent", "Recently viewed", Clock], ["compared", "Compared", GitCompareArrows], ["enquiries", "Enquiries", Send],
   ["visits", "Scheduled visits", CalendarCheck], ["messages", "Messages", MessageSquare], ["notifications", "Notifications", Bell],
   ["profile", "Profile", User], ["preferences", "Preferences", Settings2],
@@ -59,6 +60,7 @@ function Panel({ id }: { id: string }) {
   const live = useLiveListings();
   const findHome = (slug: string) => live.data?.find(l => l.slug === slug) ?? getListing(slug);
   switch (id) {
+    case "matches": return <SmartMatches/>;
     case "saved": return <Grid slugs={data.saved} empty={<EmptyState icon={<Heart size={30}/>} title="No saved properties yet" action={explore}>Save properties you like and compare them later.</EmptyState>}/>;
     case "recent": return <Grid slugs={data.recent} empty={<EmptyState icon={<Eye size={30}/>} title="Nothing viewed yet" action={explore}>Homes you open will appear here.</EmptyState>}/>;
     case "compared": return <>{data.compare.length > 0 && <Button asChild variant="outline" className="dash-cta"><Link to="/compare">Open comparison</Link></Button>}<Grid slugs={data.compare} empty={<EmptyState icon={<GitCompareArrows size={30}/>} title="No properties to compare" action={explore}>Add up to four homes to compare them side by side.</EmptyState>}/></>;
