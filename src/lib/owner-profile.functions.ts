@@ -21,9 +21,9 @@ const contactSchema = z.object({
 export const getMyOwnerContactFn = createServerFn({ method: "GET" }).handler(async (): Promise<OwnerContactProfile> => {
   try {
     const { requireRole } = await import("./auth/guards.server");
-    const { AREA_ROLES } = await import("./auth/roles");
+    const { LISTING_ROLES } = await import("./auth/roles");
     const { requireDb } = await import("./db/client.server");
-    const me = await requireRole(AREA_ROLES.owner, "owner.profile.read");
+    const me = await requireRole(LISTING_ROLES, "owner.profile.read");
     const db = await requireDb();
     const profile = await db.ownerProfile.findUnique({
       where: { userId: me.id },
@@ -47,7 +47,7 @@ export const updateMyOwnerContactFn = createServerFn({ method: "POST" })
       const { AREA_ROLES } = await import("./auth/roles");
       const { requireDb } = await import("./db/client.server");
       const { writeAudit } = await import("./auth/audit.server");
-      const me = await requireRole(AREA_ROLES.owner, "owner.profile.update");
+      const me = await requireRole(LISTING_ROLES, "owner.profile.update");
       const contact = normalizeOwnerContact(data);
       const db = await requireDb();
       const existing = await db.ownerProfile.findUnique({ where: { userId: me.id }, select: { id: true } });
