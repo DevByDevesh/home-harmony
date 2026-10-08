@@ -53,6 +53,7 @@ function ComparePage() {
         <tbody>{rows.map(([label, fn]) => <tr key={label}><th scope="row">{label}</th>{items.map(i => <td key={i.slug}>{fn(i)}</td>)}</tr>)}</tbody>
       </table></div>
       <p className="disclaimer">All values are Property data and for reference.</p>
+      </>}
     </>}
   </div></main>;
 }
