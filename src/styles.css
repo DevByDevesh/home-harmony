@@ -2213,6 +2213,6 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 @media (max-width:520px) {
   .account-actions { width:100%; }
   .account-actions > * { max-width:100%; }
-  .account-actions .button,
-  .account-actions a { width:100%; justify-content:center; }
+  .account-actions > button,
+  .account-actions > a { width:100%; justify-content:center; }
 }
