@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowDown, ArrowRight, ArrowUpRight, LoaderCircle } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import hero from "@/assets/new-hero.jpg";
 import { Button } from "@/components/ui/button";
 import { DiscoverySearch } from "@/components/discovery-search";
 import { HomeTile } from "@/components/home-tile";
 import { Reveal } from "@/components/cinematic-motion";
-import { HomepageShowcase } from "@/components/homepage-showcase";
+const HomepageShowcase = lazy(() => import("@/components/homepage-showcase").then(m => ({ default: m.HomepageShowcase })));
 import { SmartSearch } from "@/components/smart-search";
 import { useLiveListings } from "@/lib/use-live-listings";
 
@@ -22,7 +23,17 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const navigate = useNavigate();
-  const { data: liveListings = [], isLoading, isError } = useLiveListings();
+  const [loadLive, setLoadLive] = useState(false);
+  useEffect(() => {
+    const start = () => setLoadLive(true);
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(start, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(start, 900);
+    return () => window.clearTimeout(id);
+  }, []);
+  const { data: liveListings = [], isLoading, isError } = useLiveListings({ enabled: loadLive });
   const featured = liveListings.slice(0, 3);
   const cities = Array.from(new Set(liveListings.map(item => item.city))).slice(0, 4);
 
@@ -61,7 +72,7 @@ function HomePage() {
       </div>
     </section>
 
-    <HomepageShowcase listings={liveListings}/>
+    <Suspense fallback={null}><HomepageShowcase listings={liveListings}/></Suspense>
 
     <section className="final-cta"><div className="wrap final-inner"><div><p className="kicker">YOUR NEXT CHAPTER</p><h2>Good things start<br/><em>with a place.</em></h2></div><Button asChild className="final-button"><Link to="/properties">Explore live homes <ArrowUpRight size={18}/></Link></Button></div></section>
   </main>;
