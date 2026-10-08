@@ -32,6 +32,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   const permissions = useMutation({ mutationFn: (d: { userId: string; permissions: AdminPermission[] }) => setAdminPermissions({ data: d }), onSuccess: () => { toast.success("Admin permissions updated"); void qc.invalidateQueries({ queryKey: ["admin", "permissions", permissionUserId] }); }, onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Permission update failed") });
   const status = useMutation({ mutationFn: (d: { userId: string; status: AccountStatus }) => setAccountStatus({ data: d }), ...done("Account status updated") });
   const isOwner = user?.role === "OWNER";
+  const canManageAccount = !roles?.includes("OWNER") || isOwner;
   const openPermissions = (userId: string) => { setPermissionUserId(userId); setSelectedPermissions(null); };
   const confirmRoleAction = (message: string, userId: string, nextRole: AuthRole) => {
     if (!window.confirm(message)) return;
@@ -48,7 +49,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
           const self = a.id === user?.id;
           return <tr key={a.id}>
             <td>{a.name || "—"}{self && " (you)"}</td><td>{a.email}</td>
-            <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user} onChange={e => {
+            <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user || !canManageAccount} onChange={e => {
                 const nextRole = e.target.value as AuthRole;
                 if (nextRole === "ADMIN" && a.role === "USER") {
                   if (!window.confirm(`Confirm Admin appointment for ${a.name || a.email || "this user"}? The system will verify personal details and identity before applying the role.`)) return;
@@ -60,8 +61,8 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
               {ROLES.filter(r => r === a.role || (user && canAssignRole(user.role, r, a.role as AuthRole))).map(r => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </select></td>
             <td>
-              {a.status === "ACTIVE" && !self ? <button type="button" className="text-link" onClick={() => setConfirmBan({ id: a.id, name: a.name || a.email || "Account" })}>Ban user</button> : null}
-              <select aria-label={`Status for ${a.email}`} value={a.status} disabled={self} onChange={e => status.mutate({ userId: a.id, status: e.target.value as AccountStatus })}>
+              {canManageAccount && a.status === "ACTIVE" && !self ? <button type="button" className="text-link" onClick={() => setConfirmBan({ id: a.id, name: a.name || a.email || "Account" })}>Ban user</button> : null}
+              <select aria-label={`Status for ${a.email}`} value={a.status} disabled={self || !canManageAccount} onChange={e => status.mutate({ userId: a.id, status: e.target.value as AccountStatus })}>
               {ACCOUNT_STATUSES.map(s => <option key={s} value={s}>{s.toLowerCase()}</option>)}
             </select></td>
             <td>
