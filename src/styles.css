@@ -2286,34 +2286,17 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 }
 
 
-/* Property gallery image isolation — keep the actual photo in its own layer so legacy/global styles cannot paint over it. */
+/* Property gallery image isolation — the gallery contains only the real photo. */
 .detail-image:has(.detail-gallery-controls) .detail-gallery {
   position: relative;
   overflow: hidden;
-  background: var(--muted);
   isolation: isolate;
-}
-.detail-image:has(.detail-gallery-controls) .detail-gallery-photo {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border: 0 !important;
-  border-radius: 0 !important;
   background: var(--muted);
-  box-shadow: none !important;
-}
-.detail-image:has(.detail-gallery-controls) .detail-gallery-photo::before,
-.detail-image:has(.detail-gallery-controls) .detail-gallery-photo::after {
-  content: none !important;
-  display: none !important;
 }
 .detail-image:has(.detail-gallery-controls) .detail-gallery-photo-image {
   position: absolute !important;
   inset: 0 !important;
-  z-index: 1;
+  z-index: 1 !important;
   display: block !important;
   width: 100% !important;
   height: 100% !important;
@@ -2336,7 +2319,6 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
   mask: none !important;
   animation: none !important;
 }
-.detail-image:has(.detail-gallery-controls) .detail-photo-count,
 .detail-image:has(.detail-gallery-controls) .detail-gallery > span:not(.detail-photo-count) {
   z-index: 3;
 }
