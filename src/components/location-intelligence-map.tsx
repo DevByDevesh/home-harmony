@@ -60,7 +60,8 @@ async function searchPlaces(category: Category, home: Listing, signal: AbortSign
       const place = { id: feature.id ?? `${category.id}-${coordinates.join("-")}`, name: feature.properties?.name ?? category.label.slice(0, -1), lng: coordinates[0], lat: coordinates[1], address: feature.properties?.full_address };
       return [{ ...place, distanceKm: distanceKm(home, place) }];
     })
-    .filter(place => (place.distanceKm ?? Infinity) <= 3)\n    .sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+    .filter(place => (place.distanceKm ?? Infinity) <= 3)
+    .sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
 }
 
 async function geocodeDestination(query: string, signal: AbortSignal) {
