@@ -174,6 +174,7 @@ export async function setOwnerPropertyStatus(id: string, ownerId: string, to: "A
 export type NewOwnerProperty = {
   title: string; description: string; propertyType: PropertyType; listingType: "RENT" | "BUY";
   price: number; deposit: number | null; areaSqft: number; bedrooms: number; bathrooms: number; parking: number;
+  propertyAgeYears?: number | null; floor?: number | null; totalFloors?: number | null;
   furnishing: "FULLY_FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"; availableFrom: Date | null;
   country: string; state: string; city: string; locality: string; addressLine1: string | null; amenities: string[]; photoKeys: string[];
   /** Verification checks requested (always PENDING; never decided here). */
