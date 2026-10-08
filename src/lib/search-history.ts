@@ -1,4 +1,4 @@
-import { cities, listings } from "./catalog";
+import { cities, listings } from "./catalog.ts";
 
 const KEY = "houseprovider.recent-searches.v1";
 
