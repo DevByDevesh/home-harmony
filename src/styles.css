@@ -2222,3 +2222,47 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 .property-map-draw button { height:34px; padding:0 11px; font-size:12px; }
 .filter-range-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 @media (max-width:520px) { .property-map-draw { left:10px; right:10px; } .property-map-draw button { flex:1; } }
+
+
+/* Phase 15 — location intelligence */
+.location-intelligence { display:grid; gap:24px; }
+.location-map-layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr); gap:16px; }
+.location-map-panel { min-height:520px; border:1px solid var(--border); background:var(--muted); overflow:hidden; }
+.location-map { width:100%; height:520px; }
+.location-explorer { display:grid; grid-template-rows:auto 1fr; min-height:520px; border:1px solid var(--border); background:var(--card); }
+.location-category-tabs { display:flex; gap:4px; padding:10px; overflow:auto; border-bottom:1px solid var(--border); scrollbar-width:none; }
+.location-category-tabs button { flex:none; display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:0 11px; border:1px solid transparent; border-radius:999px; background:transparent; color:var(--muted-foreground); font:700 11px var(--font-sans); cursor:pointer; }
+.location-category-tabs button[aria-selected="true"] { background:var(--primary); color:var(--primary-foreground); }
+.location-results { display:grid; align-content:start; overflow:auto; max-height:470px; }
+.location-results > p { padding:20px; }
+.location-results a { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); color:var(--foreground); text-decoration:none; }
+.location-results a:hover { background:var(--muted); }
+.location-results span,.radius-list span,.radius-origin span { min-width:0; display:grid; gap:4px; }
+.location-results strong,.radius-list strong,.radius-origin strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.location-results small,.radius-list small,.radius-origin small { color:var(--muted-foreground); font-size:10px; line-height:1.45; }
+.radius-search-card { display:grid; gap:18px; padding:22px; border:1px solid var(--border); background:var(--card); }
+.radius-search-card h3 { margin:6px 0 5px; font-size:25px; }
+.radius-search-controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+.radius-search-controls input { min-width:0; height:46px; border:1px solid var(--border); background:var(--background); color:var(--foreground); padding:0 13px; font:600 13px var(--font-sans); outline:none; }
+.radius-search-controls input:focus { border-color:var(--ring); box-shadow:0 0 0 3px color-mix(in srgb,var(--ring) 10%,transparent); }
+.radius-origin { display:flex; align-items:center; gap:10px; padding:12px 0; color:var(--primary); border-top:1px solid var(--border); }
+.radius-origin span { color:var(--foreground); }
+.radius-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-top:1px solid var(--border); }
+.radius-list a { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 12px; border-bottom:1px solid var(--border); color:var(--foreground); text-decoration:none; }
+.radius-list a:nth-child(odd) { border-right:1px solid var(--border); }
+.radius-list a:hover { background:var(--muted); }
+.radius-error { margin:0; color:var(--destructive); font-size:11px; font-weight:700; }
+
+@media (max-width: 900px) {
+  .location-map-layout { grid-template-columns:1fr; }
+  .location-map-panel,.location-map { min-height:390px; height:390px; }
+  .location-explorer { min-height:0; }
+  .location-results { max-height:340px; }
+}
+@media (max-width: 560px) {
+  .location-map-panel,.location-map { min-height:310px; height:310px; }
+  .radius-search-controls { grid-template-columns:1fr; }
+  .radius-search-controls button { width:100%; justify-content:center; }
+  .radius-list { grid-template-columns:1fr; }
+  .radius-list a:nth-child(odd) { border-right:0; }
+}
