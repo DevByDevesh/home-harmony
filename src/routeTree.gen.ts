@@ -21,14 +21,16 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as PropertiesRouteImport } from './routes/properties'
-import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
+import { Route as AdminFeaturedRouteImport } from './routes/admin.featured'
 import { Route as AdminOwnersRouteImport } from './routes/admin.owners'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminPropertiesRouteImport } from './routes/admin.properties'
@@ -36,9 +38,11 @@ import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminServicesRouteImport } from './routes/admin.services'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminVerificationRouteImport } from './routes/admin.verification'
 import { Route as AdminVisitsRouteImport } from './routes/admin.visits'
+import { Route as OwnerCompanyRouteImport } from './routes/owner_.company'
 import { Route as OwnerNewRouteImport } from './routes/owner_.new'
 import { Route as PropertySlugRouteImport } from './routes/property.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -105,19 +109,24 @@ const PropertiesRoute = PropertiesRouteImport.update({
   path: '/properties',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SavedRoute = SavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -143,6 +152,11 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
 const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
   id: '/enquiries',
   path: '/enquiries',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFeaturedRoute = AdminFeaturedRouteImport.update({
+  id: '/featured',
+  path: '/featured',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminOwnersRoute = AdminOwnersRouteImport.update({
@@ -180,6 +194,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -194,6 +213,11 @@ const AdminVisitsRoute = AdminVisitsRouteImport.update({
   id: '/visits',
   path: '/visits',
   getParentRoute: () => AdminRoute,
+} as any)
+const OwnerCompanyRoute = OwnerCompanyRouteImport.update({
+  id: '/owner_/company',
+  path: '/owner/company',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const OwnerNewRoute = OwnerNewRouteImport.update({
   id: '/owner_/new',
@@ -216,6 +240,11 @@ const ApiPublicBootstrapSuperAdminRoute =
     path: '/api/public/bootstrap-super-admin',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicExpireListingsRoute = ApiPublicExpireListingsRouteImport.update({
+  id: '/api/public/expire-listings',
+  path: '/api/public/expire-listings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -230,13 +259,15 @@ export interface FileRoutesByFullPath {
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
-  '/saved': typeof SavedRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/featured': typeof AdminFeaturedRoute
   '/admin/owners': typeof AdminOwnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/properties': typeof AdminPropertiesRoute
@@ -244,9 +275,11 @@ export interface FileRoutesByFullPath {
   '/admin/services': typeof AdminServicesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/visits': typeof AdminVisitsRoute
+  '/owner/company': typeof OwnerCompanyRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -266,13 +299,15 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
-  '/saved': typeof SavedRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/featured': typeof AdminFeaturedRoute
   '/admin/owners': typeof AdminOwnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/properties': typeof AdminPropertiesRoute
@@ -280,14 +315,17 @@ export interface FileRoutesByTo {
   '/admin/services': typeof AdminServicesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/visits': typeof AdminVisitsRoute
+  '/owner/company': typeof OwnerCompanyRoute
   '/owner/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
+  '/api/public/expire-listings': typeof ApiPublicExpireListingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -303,12 +341,15 @@ export interface FileRoutesById {
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
   '/properties': typeof PropertiesRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/featured': typeof AdminFeaturedRoute
   '/admin/owners': typeof AdminOwnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/properties': typeof AdminPropertiesRoute
@@ -316,14 +357,17 @@ export interface FileRoutesById {
   '/admin/services': typeof AdminServicesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin/support': typeof AdminSupportRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/admin/visits': typeof AdminVisitsRoute
+  '/owner_/company': typeof OwnerCompanyRoute
   '/owner_/new': typeof OwnerNewRoute
   '/property/$slug': typeof PropertySlugRoute
   '/admin/': typeof AdminIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/bootstrap-super-admin': typeof ApiPublicBootstrapSuperAdminRoute
+  '/api/public/expire-listings': typeof ApiPublicExpireListingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -340,13 +384,15 @@ export interface FileRouteTypes {
     | '/messages'
     | '/owner'
     | '/properties'
-    | '/saved'
     | '/reset-password'
+    | '/saved'
     | '/signup'
+    | '/support'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/enquiries'
+    | '/admin/featured'
     | '/admin/owners'
     | '/admin/payments'
     | '/admin/properties'
@@ -354,9 +400,11 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/verification'
     | '/admin/visits'
+    | '/owner/company'
     | '/owner/new'
     | '/property/$slug'
     | '/admin/'
@@ -376,12 +424,15 @@ export interface FileRouteTypes {
     | '/messages'
     | '/owner'
     | '/properties'
+    | '/reset-password'
     | '/saved'
     | '/signup'
+    | '/support'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/enquiries'
+    | '/admin/featured'
     | '/admin/owners'
     | '/admin/payments'
     | '/admin/properties'
@@ -389,14 +440,17 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/verification'
     | '/admin/visits'
+    | '/owner/company'
     | '/owner/new'
     | '/property/$slug'
     | '/admin'
     | '/api/auth/$'
     | '/api/public/bootstrap-super-admin'
+    | '/api/public/expire-listings'
   id:
     | '__root__'
     | '/'
@@ -411,12 +465,15 @@ export interface FileRouteTypes {
     | '/messages'
     | '/owner'
     | '/properties'
+    | '/reset-password'
     | '/saved'
     | '/signup'
+    | '/support'
     | '/admin/agents'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/enquiries'
+    | '/admin/featured'
     | '/admin/owners'
     | '/admin/payments'
     | '/admin/properties'
@@ -424,14 +481,17 @@ export interface FileRouteTypes {
     | '/admin/services'
     | '/admin/settings'
     | '/admin/subscriptions'
+    | '/admin/support'
     | '/admin/users'
     | '/admin/verification'
     | '/admin/visits'
+    | '/owner_/company'
     | '/owner_/new'
     | '/property/$slug'
     | '/admin/'
     | '/api/auth/$'
     | '/api/public/bootstrap-super-admin'
+    | '/api/public/expire-listings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -444,12 +504,14 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ListPropertyRoute: typeof ListPropertyRoute
   LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRoute
   OwnerRoute: typeof OwnerRoute
   PropertiesRoute: typeof PropertiesRoute
-  SavedRoute: typeof SavedRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SavedRoute: typeof SavedRoute
   SignupRoute: typeof SignupRoute
-  MessagesRoute: typeof MessagesRoute
+  SupportRoute: typeof SupportRoute
+  OwnerCompanyRoute: typeof OwnerCompanyRoute
   OwnerNewRoute: typeof OwnerNewRoute
   PropertySlugRoute: typeof PropertySlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -543,13 +605,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/saved': {
-      id: '/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof SavedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -557,11 +612,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -597,6 +666,13 @@ declare module '@tanstack/react-router' {
       path: '/enquiries'
       fullPath: '/admin/enquiries'
       preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/featured': {
+      id: '/admin/featured'
+      path: '/featured'
+      fullPath: '/admin/featured'
+      preLoaderRoute: typeof AdminFeaturedRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/owners': {
@@ -648,6 +724,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -668,6 +751,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/visits'
       preLoaderRoute: typeof AdminVisitsRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/owner_/company': {
+      id: '/owner_/company'
+      path: '/owner/company'
+      fullPath: '/owner/company'
+      preLoaderRoute: typeof OwnerCompanyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/owner_/new': {
       id: '/owner_/new'
@@ -712,6 +802,7 @@ interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminEnquiriesRoute: typeof AdminEnquiriesRoute
+  AdminFeaturedRoute: typeof AdminFeaturedRoute
   AdminOwnersRoute: typeof AdminOwnersRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminPropertiesRoute: typeof AdminPropertiesRoute
@@ -719,6 +810,7 @@ interface AdminRouteChildren {
   AdminServicesRoute: typeof AdminServicesRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   AdminVisitsRoute: typeof AdminVisitsRoute
@@ -730,6 +822,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminEnquiriesRoute: AdminEnquiriesRoute,
+  AdminFeaturedRoute: AdminFeaturedRoute,
   AdminOwnersRoute: AdminOwnersRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminPropertiesRoute: AdminPropertiesRoute,
@@ -737,6 +830,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminServicesRoute: AdminServicesRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminSupportRoute: AdminSupportRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   AdminVisitsRoute: AdminVisitsRoute,
@@ -755,15 +849,19 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   ListPropertyRoute: ListPropertyRoute,
   LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRoute,
   OwnerRoute: OwnerRoute,
   PropertiesRoute: PropertiesRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SavedRoute: SavedRoute,
   SignupRoute: SignupRoute,
-  MessagesRoute: MessagesRoute,
+  SupportRoute: SupportRoute,
+  OwnerCompanyRoute: OwnerCompanyRoute,
   OwnerNewRoute: OwnerNewRoute,
   PropertySlugRoute: PropertySlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPublicBootstrapSuperAdminRoute: ApiPublicBootstrapSuperAdminRoute,
+  ApiPublicExpireListingsRoute: ApiPublicExpireListingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
