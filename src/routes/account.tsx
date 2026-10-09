@@ -10,6 +10,7 @@ import { getFreeOfferState } from "@/lib/subscription-offer";
 import { useSignOut } from "@/lib/auth/use-current-user";
 import { claimFreeSixMonthsFn } from "@/lib/subscription.functions";
 import { useState } from "react";
+import { ProfilePhotoEditor } from "@/components/profile-photo-editor";
 
 const areaName = { owner: "the owner dashboard", ownerCompany: "the company owner dashboard", agent: "the agent CRM", admin: "the admin area", dashboard: "the dashboard" } as const;
 
@@ -58,6 +59,7 @@ function AccountPage() {
     {denied && <div className="account-denied"><ShieldAlert size={20}/><div><strong>You don't have access to {areaName[denied]}.</strong><p>Your account is a {roleLabel[user.role]} account. Access to owner, agent and admin tools is granted by the HouseProvider team.</p></div></div>}
     <p className="kicker">YOUR ACCOUNT</p>
     <div className="account-title"><h1>{user.name || "Your profile"}</h1>{offerState.badge && <span className="verified-badge" title="Verified HouseProvider member" aria-label="Verified HouseProvider member"><BadgeCheck size={22}/><span>Verified</span></span>}</div>
+    <ProfilePhotoEditor initialImage={user.image} name={user.name}/>
     <dl className="account-grid">
       <div><dt>Email</dt><dd>{user.email ?? "—"}</dd></div>
       <div><dt>Phone</dt><dd>{user.phone ?? "Not added"}</dd></div>
