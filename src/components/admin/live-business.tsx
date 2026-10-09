@@ -36,7 +36,7 @@ function useRun(...keys: string[]) {
 // ---------------- Payments ----------------
 export function LivePaymentsPanel({ canRefund }: { canRefund: boolean }) {
   const q = useQuery({ queryKey: ["admin", "payments"], queryFn: () => listPaymentsFn() }); const run = useRun("payments");
-  return <Panel id="live-pay" title="Payments in the database" hint="Real payment records. The provider is Demo, so nothing here charges or refunds money. A refund request only creates a placeholder record.">
+  return <Panel id="live-pay" title="Payments in the database" hint="">
     <Table q={q} rows={q.data} head={["Payment", "User", "Product", "Amount", "Status", "Provider", "Invoice", "Refund", "Date", "Actions"]} empty="No payments recorded yet. None are created until a payment provider is connected.">
       {q.data?.map(p => { const open = p.refunds.find(r => r.status === "REQUESTED"); const last = p.refunds[0];
         return <tr key={p.id}><td><code>{p.id.slice(0, 10)}</code></td><td>{p.user}</td><td>{p.product}</td><td>{inr(p.amount)} {p.currency}</td><td>{lc(p.status)}</td><td>{lc(p.provider)}</td><td>{p.invoice ?? "—"}</td><td>{last ? lc(last.status) : "—"}</td><td>{date(p.createdAt)}</td>
@@ -57,7 +57,7 @@ export function LivePlansPanel({ canEdit }: { canEdit: boolean }) {
   const q = useQuery({ queryKey: ["admin", "plans"], queryFn: () => listPlansFn() }); const run = useRun("plans");
   const [edit, setEdit] = useState<LivePlan | null>(null);
   const save = async (p: LivePlan) => { const { subscribers: _s, slug: _sl, audience: _a, ...rest } = p; if (await run(savePlanFn({ data: rest }), `${p.name} saved`)) setEdit(null); };
-  return <Panel id="live-plans" title="Plans in the database" hint="Placeholder prices, stored as configuration. Changing a plan updates no payment provider.">
+  return <Panel id="live-plans" title="Plans in the database" hint="">
     <Table q={q} rows={q.data} head={["Plan", "Audience", "Monthly", "Annual", "Listings", "Featured", "Leads", "Seats", "Analytics", "Subscribers", "Enabled", ""]}>
       {q.data?.map(p => <tr key={p.id}><td><strong>{p.name}</strong></td><td>{lc(p.audience)}</td><td>{inr(p.monthlyPrice)}</td><td>{inr(p.annualPrice)}</td><td>{p.listingLimit ?? "Unlimited"}</td><td>{p.featuredAllowance}</td><td>{p.leadLimit ?? "Unlimited"}</td><td>{p.teamSeats}</td><td>{p.analyticsAccess ? "Yes" : "No"}</td><td>{p.subscribers}</td>
         <td><Switch checked={p.active} disabled={!canEdit} aria-label={`${p.name} enabled`} onCheckedChange={v => void save({ ...p, active: v })}/></td>
@@ -85,7 +85,7 @@ export function LiveSubscriptionsPanel() {
   const run = useRun("subscriptions", "plans");
   const [email, setEmail] = useState(""); const [planId, setPlanId] = useState(""); const [cycle, setCycle] = useState<"MONTHLY" | "ANNUAL">("MONTHLY");
   const act = (id: string, action: "pause" | "resume" | "cancel", label: string) => void run(setSubscriptionFn({ data: { id, action } }), label);
-  return <Panel id="live-subs" title="Subscribers in the database" hint="Real subscription records for users, owners and agents. Starting a plan here begins a Demo trial — nobody is charged.">
+  return <Panel id="live-subs" title="Subscribers in the database" hint="">
     <form className="admin-filters" aria-label="Start a demo trial" onSubmit={async e => { e.preventDefault(); if (await run(assignPlanFn({ data: { email, planId, cycle } }), "Demo trial started")) setEmail(""); }}>
       <label className="admin-field"><span>Account email</span><input type="email" required value={email} onChange={e => setEmail(e.target.value)}/></label>
       <label className="admin-select"><span>Plan</span><select required value={planId} onChange={e => setPlanId(e.target.value)}><option value="">Choose…</option>{plans.data?.filter(p => p.active).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
@@ -110,7 +110,7 @@ export function LiveServicesPanel() {
   const d = q.data; const today = new Date().toISOString().slice(0, 10);
   const provActs: Record<string, ["approve" | "reject" | "suspend" | "restore", string][]> = { PENDING: [["approve", "Approve"], ["reject", "Reject"]], ACTIVE: [["suspend", "Suspend"]], SUSPENDED: [["restore", "Restore"]], REJECTED: [["restore", "Restore"]] };
   const reqNext: Record<string, ("IN_PROGRESS" | "COMPLETED" | "CANCELLED")[]> = { NEW: ["CANCELLED"], ASSIGNED: ["IN_PROGRESS", "CANCELLED"], IN_PROGRESS: ["COMPLETED", "CANCELLED"] };
-  return <Panel id="live-svc" title="Services in the database" hint="Real categories, providers and requests. Assigning a provider creates a booking; no provider is contacted automatically.">
+  return <Panel id="live-svc" title="Services in the database" hint="">
     <h3>Requests & bookings</h3>
     <Table q={q} rows={d?.requests} head={["Requested by", "Category", "City", "Status", "Provider", "Booking", "Assign", "Actions"]} empty="No service requests yet.">
       {d?.requests.map(r => { const opts = d.providers.filter(p => p.status === "ACTIVE" && p.categoryId === r.categoryId); const closed = r.status === "COMPLETED" || r.status === "CANCELLED";

@@ -42,7 +42,6 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
   return <section className="admin-accounts dash-panel" aria-labelledby="real-accounts">
     <p className="kicker">LIVE ACCOUNTS</p>
     <h2 id="real-accounts">{title}</h2>
-    <p className="form-hint">These are real sign-ups stored in the database. Role and status changes take effect immediately and are recorded in the audit log. Accounts are never deleted.</p>
     {q.isPending ? <p>Loading accounts…</p> : q.isError ? <p role="alert">{(q.error as Error).message}</p> : !rows?.length ? <p>No accounts yet.</p> :
       <div className="table-scroll"><table className="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Admin management</th><th>Joined</th></tr></thead><tbody>
         {rows.map(a => {

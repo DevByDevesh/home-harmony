@@ -38,8 +38,8 @@ export function ProfilePhotoEditor({ initialImage, name }: { initialImage: strin
   };
 
   return <section className="dash-panel profile-photo-panel" aria-labelledby="profile-photo-title">
-    <p className="kicker">PROFILE</p>
-    <h2 id="profile-photo-title">Profile picture</h2>
+    {/* <p className="kicker">PROFILE</p>
+    <h2 id="profile-photo-title">Profile picture</h2> */}
     <div className="profile-photo-editor">
       <div className="profile-photo-preview" aria-label={image ? "Current profile picture" : "No profile picture"}>
         {image ? <img src={image} alt={`${name || "Your"} profile`} /> : <UserRound size={36} aria-hidden="true" />}

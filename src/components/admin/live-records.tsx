@@ -38,7 +38,7 @@ export function LivePropertiesPanel() {
 const enqStatuses = ["NEW", "CONTACTED", "IN_PROGRESS", "RESOLVED", "CLOSED"] as const;
 export function LiveEnquiriesPanel() {
   const q = useQuery({ queryKey: ["admin", "enquiries"], queryFn: () => adminListEnquiriesFn() }); const run = useRun("enquiries");
-  return <Shell id="live-enq" title="Enquiries in the database" hint="Real enquiries. Message text isn’t shown here. Status changes are recorded in the audit log." q={q} head={["Seeker", "Property", "Owner / agent", "Date", "Status", "Last activity"]}>
+  return <Shell id="live-enq" title="Enquiries in the database" hint="" q={q} head={["Seeker", "Property", "Owner / agent", "Date", "Status", "Last activity"]}>
     {q.data?.map(e => <tr key={e.id}><td>{e.seeker}</td><td>{e.property}</td><td>{e.handler}</td><td>{date(e.createdAt)}</td>
       <td><select aria-label={`Status for enquiry on ${e.property}`} value={e.status} onChange={ev => void run(adminSetEnquiryStatusFn({ data: { id: e.id, status: ev.target.value as (typeof enqStatuses)[number] } }), "Enquiry status updated")}>{enqStatuses.map(s => <option key={s} value={s}>{s.replace("_", " ").toLowerCase()}</option>)}</select></td><td>{date(e.lastActivityAt)}</td></tr>)}
   </Shell>;
@@ -46,7 +46,7 @@ export function LiveEnquiriesPanel() {
 
 export function LiveVisitsPanel() {
   const q = useQuery({ queryKey: ["admin", "visits"], queryFn: () => adminListVisitsFn() }); const run = useRun("visits");
-  return <Shell id="live-visits" title="Visits in the database" hint="Real visit requests, using the same rules as owners. Changes are recorded in the audit log." q={q} head={["Property", "Visitor", "Owner / agent", "Date", "Time", "Status", "Actions"]}>
+  return <Shell id="live-visits" title="Visits in the database" hint="" q={q} head={["Property", "Visitor", "Owner / agent", "Date", "Time", "Status", "Actions"]}>
     {q.data?.map(v => <tr key={v.id}><td>{v.property}</td><td>{v.visitor}</td><td>{v.handler}</td><td>{date(v.date)}</td><td>{v.slot}</td><td>{statusLabel[v.status]}</td>
       <td><div className="dash-row-actions">{visitTransitions[v.status].filter((s): s is "CONFIRMED" | "COMPLETED" | "CANCELLED" => s !== "RESCHEDULED" && s !== "REQUESTED").map(s => <Button key={s} size="sm" variant="outline" onClick={() => { if (s === "CANCELLED" && !window.confirm("Cancel this visit?")) return; void run(adminSetVisitStatusFn({ data: { id: v.id, status: s } }), `Visit ${statusLabel[s].toLowerCase()}`); }}>{s === "CONFIRMED" ? "Confirm" : s === "COMPLETED" ? "Mark completed" : "Cancel"}</Button>)}</div></td></tr>)}
   </Shell>;
