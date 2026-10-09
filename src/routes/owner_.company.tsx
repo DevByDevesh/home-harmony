@@ -7,7 +7,7 @@ import { AdminAuditTimeline, AdminChartCard, AdminHeader, AdminLoadingState, Adm
 import { liveCountsFn, adminTrendsFn, ownerAnalyticsFn } from "@/lib/admin-business.functions";
 import { adminListAuditFn } from "@/lib/admin-trust.functions";
 
-export const Route = createFileRoute("/owner/company")({
+export const Route = createFileRoute("/owner_/company")({
   beforeLoad: guardArea("ownerCompany"),
   head: () => ({ meta: [
     { title: "Company Owner Dashboard — HouseProvider.in" },
