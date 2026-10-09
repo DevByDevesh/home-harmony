@@ -67,8 +67,3 @@ export type SafeUser = {
 
 export const AUTH_ERRORS = { SUSPENDED: "ACCOUNT_SUSPENDED", DEACTIVATED: "ACCOUNT_DEACTIVATED", PENDING: "ACCOUNT_PENDING" } as const;
 
-export function isVerifiedAdminCandidate(input: {
-  targetRole: AuthRole; targetStatus: AccountStatus; hasPersonalDetails: boolean; identityVerified: boolean; confirmed: boolean;
-}): boolean {
-  return input.targetRole === "USER" && input.targetStatus === "ACTIVE" && input.hasPersonalDetails && input.identityVerified && input.confirmed;
-}
