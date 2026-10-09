@@ -147,24 +147,49 @@ export function EnquiryButton({ slug, name, compact = false, autoOpen = false }:
     }
   };
 
+  const ensureConversation = async () => {
+    if (conversationId) return conversationId;
+    const starter = await send({ data: { slug, message: `Hi, I’m interested in “${name}” and would like to discuss contacting you.` } });
+    if (!starter.ok) {
+      toast.error(starter.message);
+      return null;
+    }
+    setConversationId(starter.conversationId);
+    setMsg("");
+    await qc.invalidateQueries({ queryKey: ["conversations"] });
+    await qc.invalidateQueries({ queryKey: ["my-enquiries"] });
+    await qc.invalidateQueries({ queryKey: ["my-notifications"] });
+    return starter.conversationId;
+  };
+
   const askPhone = async () => {
-    if (!conversationId || busy) return;
+    if (busy) return;
     setBusy(true);
     try {
-      const r = await requestPhone({ data: { conversationId } });
+      const id = await ensureConversation();
+      if (!id) return;
+      const r = await requestPhone({ data: { conversationId: id } });
       if (!r.ok) toast.error(r.message);
-      else { toast.success(r.alreadyAccepted ? "Phone number already approved" : "Phone request sent to the owner"); await requests.refetch(); }
+      else {
+        toast.success(r.alreadyAccepted ? "Phone number already approved" : "Phone request sent to the owner");
+        await requests.refetch();
+      }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t request the phone number."); }
     finally { setBusy(false); }
   };
 
   const askCall = async () => {
-    if (!conversationId || busy || !callDate || !callTime) return;
+    if (busy || !callDate || !callTime) return;
     setBusy(true);
     try {
-      const r = await requestCall({ data: { conversationId, preferredDate: callDate, preferredTime: callTime } });
+      const id = await ensureConversation();
+      if (!id) return;
+      const r = await requestCall({ data: { conversationId: id, preferredDate: callDate, preferredTime: callTime } });
       if (!r.ok) toast.error(r.message);
-      else { toast.success("Call request sent to the owner"); await requests.refetch(); }
+      else {
+        toast.success("Call request sent to the owner");
+        await requests.refetch();
+      }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Couldn’t request a call."); }
     finally { setBusy(false); }
   };
@@ -178,14 +203,13 @@ export function EnquiryButton({ slug, name, compact = false, autoOpen = false }:
         <Button disabled={busy || msg.trim().length < 5} onClick={sendMessage}><Send size={16}/> Send message</Button>
         <div className="contact-request-card">
           <strong>Private contact request</strong>
-          <p className="form-hint">The owner’s number is never public. You must start the private chat before requesting it.</p>
+          <p className="form-hint">The owner’s number is never public. If needed, HouseProvider will start a private conversation when you submit a contact request. The owner must approve it.</p>
           <div className="dash-row-actions">
-            <Button variant="outline" disabled={busy || !conversationId || !!approved} onClick={askPhone}><Phone size={16}/>{approved ? "Phone approved" : "Request phone number"}</Button>
+            <Button variant="outline" disabled={busy || !!approved} onClick={askPhone}><Phone size={16}/>{busy ? "Sending…" : approved ? "Phone approved" : "Request phone number"}</Button>
           </div>
           <label className="visit-note">Preferred call date<input type="date" min={new Date().toISOString().slice(0, 10)} value={callDate} onChange={e => setCallDate(e.target.value)}/></label>
           <label className="visit-note">Preferred call time<input type="time" value={callTime} onChange={e => setCallTime(e.target.value)}/></label>
-          <Button variant="outline" disabled={busy || !conversationId || !callDate || !callTime} onClick={askCall}><Phone size={16}/> Request a call</Button>
-          {!conversationId && <p className="form-hint">Send at least one private message to enable contact requests.</p>}
+          <Button variant="outline" disabled={busy || !callDate || !callTime} onClick={askCall}><Phone size={16}/>{busy ? "Sending…" : "Request a call"}</Button>
         </div>
         {approved?.ownerPhone && <div className="contact-approved-card"><strong>Owner approved your request</strong><a href={`tel:${approved.ownerPhone}`}><Phone size={15}/> ${approved.ownerPhone}</a></div>}
       </DialogContent>
