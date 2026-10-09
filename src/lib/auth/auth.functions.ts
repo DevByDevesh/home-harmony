@@ -4,7 +4,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { ROLES, ACCOUNT_STATUSES, isVerifiedAdminCandidate, type SafeUser } from "./roles";
+import { ROLES, ACCOUNT_STATUSES, type SafeUser } from "./roles";
 
 async function guards() { return import("./guards.server"); }
 
@@ -84,20 +84,16 @@ export const changeUserRole = createServerFn({ method: "POST" })
       const db = await requireDb();
       const subject = await db.user.findUnique({
         where: { id: data.userId },
-        select: { id: true, role: true, status: true, emailVerified: true, phoneVerified: true, profile: { select: { fullName: true } }, verifications: { where: { type: "OWNER_IDENTITY", status: "VERIFIED" }, select: { id: true }, take: 1 } },
+        select: { id: true, role: true, status: true },
       });
       if (!subject) throw new AuthError(403, "Account not found.");
       if (subject.id === actor.id || !canAssignRole(actor.role, data.role, subject.role)) {
         await writeAudit({ actorId: actor.id, action: "role.change", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { from: subject.role, to: data.role, self: subject.id === actor.id } });
         throw new AuthError(403, subject.id === actor.id ? "You can't change your own role." : "Only the platform Owner can grant or remove Admin roles.");
       }
-      if (data.role === "ADMIN" && subject.role === "USER") {
-        const personalDetailsVerified = Boolean(subject.profile?.fullName?.trim()) && Boolean(subject.emailVerified || subject.phoneVerified);
-        const identityVerified = subject.verifications.length > 0;
-        if (!isVerifiedAdminCandidate({ targetRole: subject.role, targetStatus: subject.status, hasPersonalDetails: personalDetailsVerified, identityVerified, confirmed: data.adminConfirmation })) {
-          await writeAudit({ actorId: actor.id, action: "role.assign_admin", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { reason: "ADMIN_APPOINTMENT_VERIFICATION_REQUIRED", personalDetailsVerified, identityVerified, confirmed: data.adminConfirmation } });
-          throw new AuthError(403, !personalDetailsVerified ? "Personal details and a verified contact method are required before Admin appointment." : !identityVerified ? "Identity verification must be completed before Admin appointment." : "Owner confirmation is required before Admin appointment.");
-        }
+      if (data.role === "ADMIN" && subject.role === "USER" && subject.status !== "ACTIVE") {
+        await writeAudit({ actorId: actor.id, action: "role.assign_admin", entityType: "User", entityId: subject.id, result: "DENIED", metadata: { reason: "ADMIN_ACCOUNT_NOT_ACTIVE", status: subject.status } });
+        throw new AuthError(403, "Only active accounts can be appointed Admin.");
       }
       await db.user.update({ where: { id: subject.id }, data: { role: data.role } });
       const privileged = data.role === "ADMIN";
