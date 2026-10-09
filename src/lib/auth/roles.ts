@@ -61,7 +61,7 @@ export const roleLabel: Record<AuthRole, string> = {
 };
 
 export type SafeUser = {
-  id: string; name: string; email: string | null; phone: string | null;
+  id: string; name: string; email: string | null; phone: string | null; image: string | null;
   role: AuthRole; status: AccountStatus; emailVerified: boolean; verifiedBadge: boolean; createdAt: string; updatedAt: string;
 };
 
