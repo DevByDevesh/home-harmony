@@ -52,7 +52,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
             <td><select aria-label={`Role for ${a.email}`} value={a.role} disabled={self || !user || !canManageAccount} onChange={e => {
                 const nextRole = e.target.value as AuthRole;
                 if (nextRole === "ADMIN" && a.role === "USER") {
-                  if (!window.confirm(`Confirm Admin appointment for ${a.name || a.email || "this user"}? The system will verify personal details and identity before applying the role.`)) return;
+                  if (!window.confirm(`Appoint ${a.name || a.email || "this user"} as Admin? Only active accounts can be appointed. This action will be recorded in the audit log.`)) return;
                   role.mutate({ userId: a.id, role: nextRole, adminConfirmation: true });
                   return;
                 }
@@ -66,7 +66,7 @@ export function RealAccountsPanel({ roles, title = "Registered accounts" }: { ro
               {ACCOUNT_STATUSES.map(s => <option key={s} value={s}>{s.toLowerCase()}</option>)}
             </select></td>
             <td>
-              {isOwner && a.role === "USER" ? <button type="button" className="text-link" onClick={() => confirmRoleAction(`Add ${a.name || a.email || "this user"} as Admin? The system will verify eligibility before applying the role.`, a.id, "ADMIN")}>Add Admin</button> : null}
+              {isOwner && a.role === "USER" ? <button type="button" className="text-link" onClick={() => confirmRoleAction(`Appoint ${a.name || a.email || "this user"} as Admin? Only active accounts can be appointed. This action will be recorded in the audit log.`, a.id, "ADMIN")}>Add Admin</button> : null}
               {isOwner && a.role === "ADMIN" ? <>
                 <button type="button" className="text-link" onClick={() => confirmRoleAction(`Remove Admin privileges from ${a.name || a.email || "this user"}?`, a.id, "USER")}>Remove Admin</button>{" "}
                 <button type="button" className="text-link" onClick={() => status.mutate({ userId: a.id, status: "SUSPENDED" })}>Suspend</button>{" "}
