@@ -49,7 +49,7 @@ export function ListingAssistant({ draft, onApply }: { draft: ListingDraft; onAp
   };
 
   return <section className="assistant" aria-labelledby="assistant-title">
-    <div className="assistant-head"><div><h3 id="assistant-title"><PenLine size={17} aria-hidden/> Listing assistant</h3><p>Drafts wording from the details you’ve entered. It never adds facts — review and edit everything before saving.</p></div><span className="smart-tag">{provider.isDemo ? "Preview · local templates, no AI model" : "AI"}</span></div>
+    <div className="assistant-head"><div><h3 id="assistant-title"><PenLine size={17} aria-hidden/> Listing assistant</h3><p>Drafts wording from the details you’ve entered. It never adds facts — review and edit everything before saving.</p></div>{!provider.isDemo && <span className="smart-tag">AI</span>}</div>
     <label className="field wide"><span>Extra points to include (your own words, optional)</span><textarea rows={2} maxLength={300} value={draft.notes ?? ""} placeholder="e.g. Near IT Park, east-facing, gated society" onChange={e => onApply({ notes: e.target.value })}/></label>
     {missing.length > 0 && <p className="assistant-missing"><strong>Not provided yet:</strong> {missing.join(", ")}. The draft will leave these out rather than guess.</p>}
     <div className="assistant-actions">
