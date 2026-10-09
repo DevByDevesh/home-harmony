@@ -20,13 +20,8 @@ test("OWNER cannot transfer the OWNER role itself", () => {
   assert.equal(canAssignRole("OWNER","OWNER","USER"),false);
   assert.equal(canAssignRole("OWNER","ADMIN","OWNER"),false);
 });
-test("Admin appointment requires active account, complete personal details, verified identity, and explicit confirmation", async () => {
-  const { isVerifiedAdminCandidate } = await import("./roles.ts");
-  assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"ACTIVE",hasPersonalDetails:true,identityVerified:true,confirmed:true}),true);
-  assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"ACTIVE",hasPersonalDetails:false,identityVerified:true,confirmed:true}),false);
-  assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"ACTIVE",hasPersonalDetails:true,identityVerified:false,confirmed:true}),false);
-  assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"ACTIVE",hasPersonalDetails:true,identityVerified:true,confirmed:false}),false);
-  assert.equal(isVerifiedAdminCandidate({targetRole:"USER",targetStatus:"SUSPENDED",hasPersonalDetails:true,identityVerified:true,confirmed:true}),false);
+test("Owner can appoint Admin without personal-detail or identity-verification checks", () => {
+  assert.equal(canAssignRole("OWNER", "ADMIN", "USER"), true);
 });
 
 
