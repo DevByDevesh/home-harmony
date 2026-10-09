@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, MapPin } from "lucide-react";
 import { useState, type FormEvent, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { HomeQuery } from "@/lib/catalog";
 
 export function DiscoverySearch({ initial = {} }: { initial?: HomeQuery }) {
@@ -44,7 +45,7 @@ export function DiscoverySearch({ initial = {} }: { initial?: HomeQuery }) {
     <div className="search-top"><span>START YOUR SEARCH</span><div className="mode-toggle" role="group" aria-label="Looking to"><Button type="button" variant="ghost" aria-pressed={mode === "Rent"} onClick={() => { setMode("Rent"); setMin(""); setMax(""); }}>Rent</Button><Button type="button" variant="ghost" aria-pressed={mode === "Buy"} onClick={() => { setMode("Buy"); setMin(""); setMax(""); }}>Buy</Button></div></div>
     <div className="search-row">
       <label className="search-cell search-place"><span>LOCATION</span><div><MapPin size={18} aria-hidden="true"/><input value={location} onChange={event => setLocation(event.target.value)} placeholder="City or neighbourhood" aria-label="City or neighbourhood" /></div></label>
-      <label className="search-cell"><span>PROPERTY TYPE</span><select value={kind} onChange={event => setKind(event.target.value)} aria-label="Property type"><option value="">Any type</option><option>Apartment</option><option>House</option><option>Room</option><option>PG</option><option>Commercial</option></select></label>
+      <div className="search-cell search-type"><span>PROPERTY TYPE</span><Select value={kind || "any"} onValueChange={value => setKind(value === "any" ? "" : value)}><SelectTrigger className="discovery-type-trigger" aria-label="Property type"><SelectValue /></SelectTrigger><SelectContent className="discovery-type-menu"><SelectItem className="discovery-type-option" value="any">Any type</SelectItem><SelectItem className="discovery-type-option" value="Apartment">Apartment</SelectItem><SelectItem className="discovery-type-option" value="House">House</SelectItem><SelectItem className="discovery-type-option" value="Room">Room</SelectItem><SelectItem className="discovery-type-option" value="PG">PG</SelectItem><SelectItem className="discovery-type-option" value="Commercial">Commercial</SelectItem></SelectContent></Select></div>
       <fieldset className="search-cell discovery-budget"><legend><span>BUDGET</span></legend>
         <div className="discovery-budget-values"><strong>{formatBudget(minValue)}</strong><span>to</span><strong>{formatBudget(maxValue)}</strong></div>
         <div className="discovery-budget-slider" style={{ "--budget-start": `${minPercent}%`, "--budget-end": `${maxPercent}%` } as CSSProperties}>
@@ -54,7 +55,7 @@ export function DiscoverySearch({ initial = {} }: { initial?: HomeQuery }) {
         </div>
         <div className="discovery-budget-limits"><span>{formatBudget(budget.min)}</span><span>{formatBudget(budget.max)}</span></div>
       </fieldset>
-      <Button type="submit" className="search-go" aria-label="Search homes"><ArrowRight size={21}/><span>Search homes</span></Button>
+      <Button type="submit" className="search-go md:ml-4" aria-label="Search homes"><ArrowRight size={21}/><span>Search homes</span></Button>
     </div>
   </form>;
 }
