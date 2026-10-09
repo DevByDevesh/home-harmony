@@ -21,7 +21,7 @@ export function AdminStatusBadge({ status }: { status: string }) {
   return <span className={`astatus astatus-${tone[status] ?? "neutral"}`}>{status.replaceAll("_", " ").toLowerCase()}</span>;
 }
 export function AdminHeader({ title, intro, actions }: { title: string; intro: string; actions?: ReactNode }) {
-  return <header className="admin-header"><div><p className="kicker">ADMIN · DEMO</p><h1>{title}</h1><p>{intro}</p></div>{actions && <div className="admin-header-actions">{actions}</div>}</header>;
+  return <header className="admin-header"><div><p className="kicker">ADMIN · OPERATIONS</p><h1>{title}</h1><p>{intro}</p></div>{actions && <div className="admin-header-actions">{actions}</div>}</header>;
 }
 export const AdminMetricCard = MetricGrid;
 export const AdminChartCard = TrendCard;
