@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { ArrowUpRight, BadgeCheck, Bell, Heart, Home, Map, Menu, MessageSquare, Search, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useUserData } from "@/lib/user-data";
 import { useCurrentUser, useSignOut } from "@/lib/auth/use-current-user";
@@ -16,10 +17,30 @@ export function Navigation() {
   const { data } = useUserData();
   const { user } = useCurrentUser(); const signOut = useSignOut();
   const fetchConversations = useServerFn(listConversationsFn);
-  const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => fetchConversations(), enabled: !!user, staleTime: 15000 });
+  const conversations = useQuery({ queryKey: ["conversations"], queryFn: () => fetchConversations(), enabled: !!user, staleTime: 0, refetchInterval: user ? 5000 : false });
   const fetchNotifications = useServerFn(listNotificationsFn);
   const readNotification = useServerFn(markNotificationReadFn);
   const notifications = useQuery({ queryKey: ["notifications"], queryFn: () => fetchNotifications(), enabled: !!user, staleTime: 10000 });
+  const lastInboundRef = useRef<Record<string, string> | null>(null);
+  useEffect(() => {
+    if (!user || !conversations.data) { lastInboundRef.current = null; return; }
+    const current: Record<string, string> = {};
+    for (const conversation of conversations.data) {
+      const message = conversation.lastMessage;
+      if (!message) continue;
+      const key = `${conversation.id}:${message.createdAt}`;
+      current[conversation.id] = key;
+      if (lastInboundRef.current && lastInboundRef.current[conversation.id] !== key && message.senderId !== user.id && !message.readAt) {
+        const preview = message.body.length > 100 ? `${message.body.slice(0, 100)}…` : message.body;
+        toast("New message received", {
+          description: preview,
+          duration: 7000,
+          action: { label: "Open chat", onClick: () => { window.location.href = "/messages"; } },
+        });
+      }
+    }
+    lastInboundRef.current = current;
+  }, [user?.id, conversations.data]);
   const unreadNotifications = user ? (notifications.data ?? []).filter(n => !n.read).length : 0;
   const unreadMessages = user ? (conversations.data ?? []).filter(c => c.lastMessage && c.lastMessage.senderId !== user.id && !c.lastMessage.readAt).length : 0;
   const canAgent = !!user && AREA_ROLES.agent.includes(user.role), canAdmin = !!user && AREA_ROLES.admin.includes(user.role);
@@ -69,6 +90,7 @@ export function Navigation() {
       <Link to="/saved" aria-current={path === "/saved" ? "page" : undefined}><Heart size={20}/><span>Saved</span></Link>
       <Link to={user ? "/account" : "/login"} aria-current={path === "/account" || path === "/login" ? "page" : undefined}><User size={20}/><span>{user ? "Profile" : "Sign in"}</span></Link>
     </nav>
+    {path === "/" && <Link to={user ? "/messages" : "/login"} className="home-messages-fab" aria-label={user ? `Open messages${unreadMessages ? `, ${unreadMessages} unread` : ""}` : "Sign in to message"}><MessageSquare size={21}/><span>Messages</span>{unreadMessages > 0 && <span className="home-messages-count">{unreadMessages > 9 ? "9+" : unreadMessages}</span>}</Link>}
     <Link to="/list-property" className="post-fab">Post property</Link>
   </>;
 }
