@@ -1,10 +1,13 @@
 import { Camera, Loader2, UserRound } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { currentUserQuery } from "@/lib/auth/use-current-user";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { uploadMyAvatarFn } from "@/lib/user-avatar.functions";
 
 export function ProfilePhotoEditor({ initialImage, name }: { initialImage: string | null; name: string }) {
+  const queryClient = useQueryClient();
   const [image, setImage] = useState(initialImage);
   const [busy, setBusy] = useState(false);
   const onFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +32,7 @@ export function ProfilePhotoEditor({ initialImage, name }: { initialImage: strin
         return;
       }
       setImage(result.image);
+      queryClient.setQueryData(currentUserQuery.queryKey, (current: typeof import("@/lib/auth/roles").SafeUser | null | undefined) => current ? { ...current, image: result.image } : current);
       toast.success("Profile photo updated.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn’t upload the profile photo.");
