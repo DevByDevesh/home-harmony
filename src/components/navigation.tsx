@@ -44,9 +44,9 @@ export function Navigation() {
         </DropdownMenu>}
         <Link to="/saved" className="nav-icon" aria-label={`Saved properties (${data.saved.length})`}><Heart size={18}/>{data.saved.length > 0 && <span className="nav-dot">{data.saved.length}</span>}</Link>
         {user
-          ? <DropdownMenu><DropdownMenuTrigger className="nav-icon nav-account" aria-label={`Account menu for ${user.name || user.email}`}><User size={18}/></DropdownMenuTrigger>
+          ? <DropdownMenu><DropdownMenuTrigger className="nav-icon nav-account" aria-label={`Account menu for ${user.name || user.email}`}>{user.image ? <img className="nav-account-avatar" src={user.image} alt="" /> : <User size={18}/>}</DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="nav-account-menu">
-                <DropdownMenuLabel><span className="nav-profile-name">{user.name || user.email}{user.verifiedBadge && <BadgeCheck className="verified-badge-icon" size={15} aria-label="Verified HouseProvider member" />}</span><small>{roleLabel[user.role]}</small></DropdownMenuLabel><DropdownMenuSeparator/>
+                <DropdownMenuLabel><span className="nav-profile-identity">{user.image ? <img className="nav-profile-avatar" src={user.image} alt="" /> : <span className="nav-profile-avatar nav-profile-avatar-fallback"><User size={18}/></span>}<span className="nav-profile-copy"><span className="nav-profile-name">{user.name || user.email}{user.verifiedBadge && <BadgeCheck className="verified-badge-icon" size={15} aria-label="Verified HouseProvider member" />}</span><small>{roleLabel[user.role]}</small></span></span></DropdownMenuLabel><DropdownMenuSeparator/>
                 <DropdownMenuItem asChild><Link to="/account">Profile</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to={dashboardPath}>{dashboardLabel}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/messages"><MessageSquare size={15}/> Messages{unreadMessages > 0 ? ` (${unreadMessages})` : ""}</Link></DropdownMenuItem>
