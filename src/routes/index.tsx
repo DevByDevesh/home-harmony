@@ -6,18 +6,29 @@ import { Button } from "@/components/ui/button";
 import { DiscoverySearch } from "@/components/discovery-search";
 import { HomeTile } from "@/components/home-tile";
 import { Reveal } from "@/components/cinematic-motion";
-const HomepageShowcase = lazy(() => import("@/components/homepage-showcase").then(m => ({ default: m.HomepageShowcase })));
+const HomepageShowcase = lazy(() =>
+  import("@/components/homepage-showcase").then((m) => ({ default: m.HomepageShowcase })),
+);
 import { SmartSearch } from "@/components/smart-search";
 import { useLiveListings } from "@/lib/use-live-listings";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [
-    { title: "HouseProvider.in — Find a place that feels like home" },
-    { name: "description", content: "Discover homes across India. Search by location, property type and budget." },
-    { property: "og:title", content: "HouseProvider.in — Find a place that feels like home" },
-    { property: "og:description", content: "Discover homes across India. Search by location, property type and budget." },
-    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "HouseProvider.in — Find a place that feels like home" },
+      {
+        name: "description",
+        content: "Discover homes across India. Search by location, property type and budget.",
+      },
+      { property: "og:title", content: "HouseProvider.in — Find a place that feels like home" },
+      {
+        property: "og:description",
+        content: "Discover homes across India. Search by location, property type and budget.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: HomePage,
 });
 
@@ -38,50 +49,185 @@ function HomePage() {
     return () => window.clearTimeout(id);
   }, []);
   const { data: liveListings = [], isLoading, isError } = useLiveListings({ enabled: loadLive });
-  const promoted = liveListings.filter(item => item.promotion === "FEATURED");
-  const boosted = liveListings.filter(item => item.promotion === "BOOST");
-  const featured = [...promoted, ...liveListings.filter(item => item.promotion !== "FEATURED")].slice(0, 3);
-  const cities = Array.from(new Set(liveListings.map(item => item.city))).slice(0, 4);
+  const promoted = liveListings.filter((item) => item.promotion === "FEATURED");
+  const boosted = liveListings.filter((item) => item.promotion === "BOOST");
+  const featured = [
+    ...promoted,
+    ...liveListings.filter((item) => item.promotion !== "FEATURED"),
+  ].slice(0, 3);
+  const cities = Array.from(new Set(liveListings.map((item) => item.city))).slice(0, 4);
 
-  return <main className="homepage-v2">
-    <section className="hero">
-      <img src={hero} alt="Sunlit contemporary living room with a plum sofa and garden outlook" className="hero-photo" width={1600} height={1600} fetchPriority="high"/>
-      <div className="hero-overlay"/>
-      <div className="wrap hero-layout">
-        <div className="hero-copy">
-          <p className="hero-label"><span/> A NEW WAY TO FIND YOUR PLACE</p>
-          <h1>Find a place<br/>that feels like <em>home.</em></h1>
-          <p className="hero-description">Discover homes, neighborhoods and spaces intelligently — based on how you actually want to live.</p>
-          <div className="hero-ctas">
-            <Button asChild className="hero-primary"><Link to="/properties">Find My Home <ArrowUpRight size={18}/></Link></Button>
-            <Link to="/list-property" className="hero-secondary">List Your Property <ArrowRight size={17}/></Link>
+  return (
+    <main className="homepage-v2">
+      <section className="hero">
+        <img
+          src={hero}
+          alt="Sunlit contemporary living room with a plum sofa and garden outlook"
+          className="hero-photo"
+          width={1600}
+          height={1600}
+          fetchPriority="high"
+        />
+        <div className="hero-overlay" />
+        <div className="wrap hero-layout">
+          <div className="hero-copy">
+            <p className="hero-label">
+              <span /> A NEW WAY TO FIND YOUR PLACE
+            </p>
+            <h1>
+              Find a place
+              <br />
+              that feels like <em>home.</em>
+            </h1>
+            <p className="hero-description">
+              Discover homes, neighborhoods and spaces intelligently — based on how you actually
+              want to live.
+            </p>
+            <div className="hero-ctas">
+              <Button asChild className="hero-primary">
+                <Link to="/properties">
+                  Find My Home <ArrowUpRight size={18} />
+                </Link>
+              </Button>
+              <Link to="/list-property" className="hero-secondary">
+                List Your Property <ArrowRight size={17} />
+              </Link>
+            </div>
+          </div>
+          <div className="hero-foot">
+            <span>SPACES FOR THE WAY YOU LIVE</span>
+            <a href="#discover" aria-label="Scroll to search">
+              <ArrowDown size={19} />
+            </a>
+            <span>01 — DISCOVER</span>
           </div>
         </div>
-        <div className="hero-foot"><span>SPACES FOR THE WAY YOU LIVE</span><a href="#discover" aria-label="Scroll to search"><ArrowDown size={19}/></a><span>01 — DISCOVER</span></div>
-      </div>
-    </section>
+      </section>
 
-    <section className="discover-section" id="discover">
-      <div className="wrap">
-        <Reveal><div className="section-heading"><div><p className="kicker">LIVE INVENTORY / 01</p><h2>Start with where<br/>you want to <em>live.</em></h2></div></div></Reveal>
-        <Reveal delay={0.08}><DiscoverySearch/></Reveal>
-        {cities.length > 0 && <div className="quick-cities"><span>EXPLORE AVAILABLE CITIES</span>{cities.map(city => <Link to="/properties" search={{ location: city }} key={city}>{city} <ArrowUpRight size={13}/></Link>)}</div>}
-        <Reveal className="home-smart"><SmartSearch filters={{}} count={liveListings.length} onApply={filters => { void navigate({ to: "/properties", search: filters }); }}/></Reveal>
-      </div>
-    </section>
+      <section className="discover-section" id="discover">
+        <div className="wrap">
+          <Reveal>
+            <div className="section-heading">
+              <div>
+                <p className="kicker">LIVE INVENTORY / 01</p>
+                <h2>
+                  Start with where
+                  <br />
+                  you want to <em>live.</em>
+                </h2>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <DiscoverySearch />
+          </Reveal>
+          {cities.length > 0 && (
+            <div className="quick-cities">
+              <span>EXPLORE AVAILABLE CITIES</span>
+              {cities.map((city) => (
+                <Link to="/properties" search={{ location: city }} key={city}>
+                  {city} <ArrowUpRight size={13} />
+                </Link>
+              ))}
+            </div>
+          )}
+          <Reveal className="home-smart">
+            <SmartSearch
+              filters={{}}
+              count={liveListings.length}
+              onApply={(filters) => {
+                void navigate({ to: "/properties", search: filters });
+              }}
+            />
+          </Reveal>
+        </div>
+      </section>
 
-    <section className="featured-section homepage-live-section">
-      <div className="wrap">
-        <Reveal><div className="feature-heading"><div><p className="kicker">LIVE COLLECTION / 02</p><h2>Homes worth a <em>closer look.</em></h2></div><Button asChild variant="outline" className="outline-cta"><Link to="/properties">Explore all homes <ArrowUpRight size={16}/></Link></Button></div></Reveal>
-        {isLoading ? <div className="homepage-state"><LoaderCircle size={24} className="spin"/><span>Loading live homes…</span></div> : isError ? <div className="homepage-state homepage-state-error"><strong>Homes are temporarily unavailable.</strong><span>Please try again in a moment.</span><Link to="/properties">Open property search <ArrowUpRight size={15}/></Link></div> : featured.length === 0 ? <div className="homepage-state homepage-state-empty"><strong>No live homes yet.</strong><span>Be the first to list a property on HouseProvider.</span><Link to="/list-property">List your property <ArrowUpRight size={15}/></Link></div> : <div className="home-grid">{featured.map((home, i) => <Reveal key={home.slug} delay={i * 0.07}><HomeTile home={home} listing={home}/></Reveal>)}</div>}
-        {/* {!isLoading && !isError && featured.length > 0 && <p className="collection-note">Featured listings are promoted placements and are clearly labelled. Availability and verification status come from listing records.</p>} */}
-        {!isLoading && !isError && promoted.length > 0 && <p className="collection-note">🔥 Featured Properties · {promoted.length} promoted placement{promoted.length === 1 ? "" : "s"}.</p>}
-        {!isLoading && !isError && boosted.length > 0 && <p className="collection-note">⭐ Promoted Listings · {boosted.length} boosted listing{boosted.length === 1 ? "" : "s"}.</p>}
-      </div>
-    </section>
+      <section className="featured-section homepage-live-section">
+        <div className="wrap">
+          <Reveal>
+            <div className="feature-heading">
+              <div>
+                <p className="kicker">LIVE COLLECTION / 02</p>
+                <h2>
+                  Homes worth a <em>closer look.</em>
+                </h2>
+              </div>
+              <Button asChild variant="outline" className="outline-cta">
+                <Link to="/properties">
+                  Explore all homes <ArrowUpRight size={16} />
+                </Link>
+              </Button>
+            </div>
+          </Reveal>
+          {isLoading ? (
+            <div className="homepage-state">
+              <LoaderCircle size={24} className="spin" />
+              <span>Loading live homes…</span>
+            </div>
+          ) : isError ? (
+            <div className="homepage-state homepage-state-error">
+              <strong>Homes are temporarily unavailable.</strong>
+              <span>Please try again in a moment.</span>
+              <Link to="/properties">
+                Open property search <ArrowUpRight size={15} />
+              </Link>
+            </div>
+          ) : featured.length === 0 ? (
+            <div className="homepage-state homepage-state-empty">
+              <strong>No live homes yet.</strong>
+              <span>Be the first to list a property on HouseProvider.</span>
+              <Link to="/list-property">
+                List your property <ArrowUpRight size={15} />
+              </Link>
+            </div>
+          ) : (
+            <div className="home-grid">
+              {featured.map((home, i) => (
+                <Reveal key={home.slug} delay={i * 0.07}>
+                  <HomeTile home={home} listing={home} />
+                </Reveal>
+              ))}
+            </div>
+          )}
+          {/* {!isLoading && !isError && featured.length > 0 && <p className="collection-note">Featured listings are promoted placements and are clearly labelled. Availability and verification status come from listing records.</p>} */}
+          {!isLoading && !isError && promoted.length > 0 && (
+            <p className="collection-note">
+              🔥 Featured Properties · {promoted.length} promoted placement
+              {promoted.length === 1 ? "" : "s"}.
+            </p>
+          )}
+          {!isLoading && !isError && boosted.length > 0 && (
+            <p className="collection-note">
+              ⭐ Promoted Listings · {boosted.length} boosted listing
+              {boosted.length === 1 ? "" : "s"}.
+            </p>
+          )}
+        </div>
+      </section>
 
-    <Suspense fallback={null}><HomepageShowcase listings={liveListings}/></Suspense>
+      <Suspense fallback={null}>
+        <HomepageShowcase listings={liveListings} />
+      </Suspense>
 
-    <section className="final-cta"><div className="wrap final-inner"><div className="final-copy"><p className="kicker">YOUR NEXT CHAPTER</p><h2>Good things start<br/><em>with a place.</em></h2><p>Find a home that fits the way you want to live.</p></div><Button asChild className="final-button"><Link to="/properties">Explore live homes <ArrowUpRight size={18}/></Link></Button></div></section>
-  </main>;
+      <section className="final-cta">
+        <div className="wrap final-inner">
+          <div className="final-copy">
+            <p className="kicker">YOUR NEXT CHAPTER</p>
+            <h2>
+              Good things start
+              <br />
+              <em>with a place.</em>
+            </h2>
+            <p>Find a home that fits the way you want to live.</p>
+          </div>
+          <Button asChild className="final-button">
+            <Link to="/properties">
+              Explore live homes <ArrowUpRight size={18} />
+            </Link>
+          </Button>
+        </div>
+      </section>
+    </main>
+  );
 }
