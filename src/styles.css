@@ -3719,3 +3719,18 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 
 /* Account avatars in the navigation and account dropdown */
 .nav-account{overflow:hidden;padding:0}.nav-account-avatar{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}.nav-profile-identity{display:flex;align-items:center;gap:10px;min-width:190px}.nav-profile-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;display:grid;place-items:center;overflow:hidden;background:var(--muted);color:var(--muted-foreground)}.nav-profile-avatar-fallback{display:flex;align-items:center;justify-content:center}.nav-profile-copy{display:block;min-width:0}.nav-profile-copy .nav-profile-name{display:inline-flex;align-items:center;gap:5px;max-width:220px;overflow-wrap:anywhere}
+
+/* Keep messaging easy to reach on mobile, without opening the account menu. */
+@media (max-width: 760px) {
+  .navigation-inner { display:flex; justify-content:space-between; gap:10px; }
+  .navigation-inner .nav-actions { display:flex; align-items:center; gap:6px; }
+  .navigation-inner .nav-message { display:grid !important; width:38px; height:38px; flex:none; color:inherit; }
+  .navigation-inner .nav-notifications,
+  .navigation-inner .nav-account { display:none !important; }
+  .home-messages-fab { display:inline-flex; position:fixed; z-index:24; right:16px; bottom:calc(194px + env(safe-area-inset-bottom)); align-items:center; justify-content:center; gap:9px; min-height:46px; padding:0 17px; border:1px solid color-mix(in srgb,var(--primary-foreground) 16%,transparent); border-radius:999px; background:var(--primary); color:var(--primary-foreground); text-decoration:none; font-size:13px; font-weight:800; box-shadow:0 10px 26px color-mix(in srgb,var(--primary) 32%,transparent); }
+  .home-messages-fab:active { transform:scale(.98); }
+  .home-messages-count { display:grid; place-items:center; min-width:19px; height:19px; padding:0 4px; border-radius:999px; background:var(--accent); color:var(--accent-foreground); font-size:10px; }
+}
+@media (min-width: 761px) {
+  .home-messages-fab { display:none; }
+}
