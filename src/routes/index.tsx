@@ -82,6 +82,6 @@ function HomePage() {
 
     <Suspense fallback={null}><HomepageShowcase listings={liveListings}/></Suspense>
 
-    <section className="final-cta"><div className="wrap final-inner"><div><p className="kicker">YOUR NEXT CHAPTER</p><h2>Good things start<br/><em>with a place.</em></h2></div><Button asChild className="final-button"><Link to="/properties">Explore live homes <ArrowUpRight size={18}/></Link></Button></div></section>
+    <section className="final-cta"><div className="wrap final-inner"><div className="final-copy"><p className="kicker">YOUR NEXT CHAPTER</p><h2>Good things start<br/><em>with a place.</em></h2><p>Find a home that fits the way you want to live.</p></div><Button asChild className="final-button"><Link to="/properties">Explore live homes <ArrowUpRight size={18}/></Link></Button></div></section>
   </main>;
 }

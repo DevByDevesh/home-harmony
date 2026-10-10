@@ -11,6 +11,7 @@ import { PageEntrance } from "@/components/cinematic-motion";
 import { SupportChat } from "@/components/support-chat";
 import { getMaintenanceModeFn } from "@/lib/admin-settings.functions";
 import { getCurrentUser } from "@/lib/auth/auth.functions";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
 function NotFoundPage() { return <main className="fallback wrap"><p className="kicker">NOT FOUND</p><h1>That place isn’t here.</h1><p>The page may have moved, but there are more homes to explore.</p><Button asChild><Link to="/properties">Explore homes</Link></Button></main>; }
 function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
@@ -66,7 +67,37 @@ function RootApp() {
         <PageEntrance pageKey={pathname}><Outlet/></PageEntrance>
         <CompareTray/>
         <SupportChat/>
-        <footer className="footer"><div className="wrap footer-main"><div><Link to="/" className="footer-logo">houseprovider<span>.in</span></Link><p>Good places. New beginnings.</p></div><nav aria-label="Footer navigation"><Link to="/properties">Explore homes</Link><Link to="/saved">Saved</Link><Link to="/compare">Compare</Link><Link to="/dashboard">Dashboard</Link><Link to="/list-property">For property owners</Link><Link to="/account">Your account</Link><Link to="/support">Customer support</Link></nav></div><div className="wrap footer-note"><span>© HouseProvider.in</span><span>Property information, pricing and availability are subject to owner confirmation.</span></div></footer>
+        <footer className="footer">
+          <div className="wrap footer-main">
+            <div className="footer-brand">
+              <Link to="/" className="footer-logo"><span className="footer-mark">h</span><span>houseprovider<span className="footer-domain">.in</span></span></Link>
+              <p>Good places. New beginnings.</p>
+              <p className="footer-brand-note">Find a home that fits the way you want to live.</p>
+            </div>
+            <nav className="footer-links" aria-label="Explore">
+              <h2>Explore</h2>
+              <Link to="/properties">Find a home</Link>
+              <Link to="/saved">Saved homes</Link>
+              <Link to="/compare">Compare homes</Link>
+            </nav>
+            <nav className="footer-links" aria-label="Your account">
+              <h2>Your account</h2>
+              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/account">Account settings</Link>
+              <Link to="/list-property">List a property</Link>
+            </nav>
+            <div className="footer-contact">
+              <h2>Need a hand?</h2>
+              <p>For account, listing, payment, or technical support, our customer care team is here to help.</p>
+              <Link to="/support" className="footer-support-link">Visit customer support <span aria-hidden="true">↗</span></Link>
+              <a className="footer-email" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
+            </div>
+          </div>
+          <div className="wrap footer-note">
+            <span>© HouseProvider.in</span>
+            <span>Property information, pricing and availability are subject to owner confirmation.</span>
+          </div>
+        </footer>
       </>
     )}
     <Toaster position="top-center"/>

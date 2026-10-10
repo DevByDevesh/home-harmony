@@ -39,7 +39,7 @@ const veriActions: Record<string, [("start" | "approve" | "reject" | "revert"), 
 export function LiveVerificationsPanel() {
   const q = useQuery({ queryKey: ["admin", "verifications"], queryFn: () => adminListVerificationsFn() });
   const run = useRun("verifications", "properties");
-  return <Panel id="live-veri" title="Verification requests in the database" hint="Real checks requested by owners when they submit or edit a listing. Approving a check confirms only that verification check. Listing publication is a separate moderation decision below. Decisions update the listing’s verification status, notify the requester in-app, and are recorded in the audit log. No evidence can be uploaded yet — decide only after verifying out of band.">
+  return <Panel id="live-veri" title="Verification requests in the database" hint="">
     <Table q={q} rows={q.data} head={["Type", "Requested by", "Listing", "Status", "Submitted", "Reviewer", "Actions"]} empty="No verification requests yet. Owners request checks when they submit or edit a listing.">
       {q.data?.map(v => <tr key={v.id}>
         <td>{typeLabel(v.type)}</td><td>{v.subject}</td><td>{v.property}</td><td>{lc(v.status)}</td><td>{date(v.submittedAt)}</td><td>{v.reviewer}</td>
@@ -85,7 +85,7 @@ export function LiveReportsPanel() {
     RESOLVED: [["reopen", "Reopen"]],
     DISMISSED: [["reopen", "Reopen"]],
   };
-  return <Panel id="live-reports" title="Reports in the database" hint="Real visitor reports. A report is not proof of wrongdoing; review the evidence before taking action.">
+  return <Panel id="live-reports" title="Reports in the database" hint="">
     <Table q={q} rows={q.data} head={["Category", "Summary", "Reported account", "Listing", "Priority", "Status", "Reviewer", "Reported", "Actions"]} empty="No reports in the database.">
       {q.data?.map(r => <tr key={r.id}>
         <td>{reportCategoryLabels[r.category] ?? lc(r.category)}</td><td>{r.summary}</td><td>{r.subject}</td><td>{r.property}</td>

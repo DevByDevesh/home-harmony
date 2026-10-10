@@ -48,7 +48,6 @@ function AdminAnalytics() {
       {scope.listings ? <Distribution title="Listing status (permission-scoped)" data={[{ label: "Active", value: metrics.activeListings ?? 0 }, { label: "Under review", value: metrics.pendingListings ?? 0 }, { label: "Rejected", value: metrics.rejectedListings ?? 0 }]}/> : null}
       {scope.moderation ? <Distribution title="Moderation activity" data={[{ label: "Reports", value: metrics.totalReports ?? 0 }, { label: "Verification checks", value: metrics.totalVerifications ?? 0 }]}/> : null}
     </div>
-    <p className="form-hint">Admin analytics contain operational database activity only. They never expose Owner-management permissions or the Owner company dashboard.</p>
   </>;
 }
 
