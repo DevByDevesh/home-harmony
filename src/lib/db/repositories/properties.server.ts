@@ -174,7 +174,7 @@ export async function getPublicProperty(idOrSlug: string) {
   await expireListings();
   return db.property.findFirst({
     where: { status: "ACTIVE", images: { some: {} }, OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { ownerProfile: { select: { contactPhone: true, preferredContact: true } } } } },
+    include: { images: { orderBy: { sortOrder: "asc" } }, amenities: { include: { amenity: true } }, owner: { select: { name: true, image: true, createdAt: true, ownerProfile: { select: { displayName: true, contactPhone: true, preferredContact: true } } } } },
   });
 }
 
