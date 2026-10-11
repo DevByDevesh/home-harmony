@@ -18,6 +18,9 @@ export type PublicProperty = {
   images: { url: string | null; storageKey: string; altText: string; type: string }[];
   amenities: string[];
   promotion: "FEATURED" | "BOOST" | null;
+  sellerName?: string | null;
+  sellerAvatar?: string | null;
+  sellerMemberSince?: string | null;
 };
 
 type Row = Awaited<ReturnType<typeof import("./db/repositories/properties.server").listPublicProperties>>[number];
@@ -114,5 +117,10 @@ export const getPropertyFn = createServerFn({ method: "GET" })
 
     const { getPublicProperty } = await import("./db/repositories/properties.server");
     const row = await getPublicProperty(data.idOrSlug);
-    return row ? toPublic(row) : null;
+    return row ? {
+      ...toPublic(row),
+      sellerName: row.owner.ownerProfile?.displayName || row.owner.name || "Property owner",
+      sellerAvatar: row.owner.image,
+      sellerMemberSince: row.owner.createdAt.toISOString(),
+    } : null;
   });
