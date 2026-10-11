@@ -104,7 +104,7 @@ export function MyDbVisits() {
 }
 
 /** Seeker: send an enquiry about a live listing. Signed-in only. */
-export function EnquiryButton({ slug, name, compact = false, autoOpen = false }: { slug: string; name: string; compact?: boolean; autoOpen?: boolean | undefined }) {
+export function EnquiryButton({ slug, name, compact = false, autoOpen = false, buttonLabel = "Message Owner" }: { slug: string; name: string; compact?: boolean; autoOpen?: boolean | undefined; buttonLabel?: string }) {
   const { user } = useCurrentUser();
   const send = useServerFn(startConversationFn);
   const requestPhone = useServerFn(requestOwnerPhoneFn);
@@ -196,7 +196,7 @@ export function EnquiryButton({ slug, name, compact = false, autoOpen = false }:
 
   return <div className="detail-contact-actions">
     {user ? <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button onClick={e => e.stopPropagation()} variant="outline" className={compact ? "tile-contact-button" : "detail-more"}><MessageCircle size={17}/>Message Owner</Button></DialogTrigger>
+      <DialogTrigger asChild><Button onClick={e => e.stopPropagation()} variant="outline" className={compact ? "tile-contact-button" : "detail-more"}><MessageCircle size={17}/>{buttonLabel}</Button></DialogTrigger>
       <DialogContent className="visit-dialog">
         <DialogHeader><DialogTitle>Message Owner</DialogTitle><DialogDescription>{name}. Start a private chat, then request the owner’s phone number or a call. Your contact request requires owner approval.</DialogDescription></DialogHeader>
         <label className="visit-note">Message<textarea maxLength={1000} value={msg} onChange={e => setMsg(e.target.value)} placeholder="What would you like to know?"/></label>
