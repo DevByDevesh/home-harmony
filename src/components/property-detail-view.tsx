@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Bath, BedDouble, Check, MapPin, Maximize2, Expand, ChevronLeft, ChevronRight } from "lucide-react";
-import { displayPrice, type Home, type Listing, type ListingDetails } from "@/lib/catalog";
+import { type Home, type Listing, type ListingDetails } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Reveal } from "@/components/cinematic-motion";
