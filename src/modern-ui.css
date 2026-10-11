@@ -83,3 +83,11 @@
 .marketplace-seller-profile>div>span{font-size:11px;color:var(--muted-foreground)}
 .marketplace-seller-profile>div>strong{font-size:14px;overflow-wrap:anywhere}
 .marketplace-seller-profile>div>small{font-size:11px;color:var(--muted-foreground)}
+
+.detail-page .marketplace-side-heading{margin:0 0 16px;padding:0 2px}
+.detail-page .marketplace-side-heading .kicker{margin-bottom:7px}
+.detail-page .marketplace-side-heading h1{font-size:clamp(24px,2.2vw,34px);line-height:1.14;letter-spacing:-.035em;margin:0 0 10px;overflow-wrap:anywhere}
+.detail-page .marketplace-side-heading>p:not(.kicker){display:flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:13px;margin:0 0 14px}
+.detail-page .marketplace-side-heading .detail-actions{display:flex;flex-wrap:wrap;gap:8px}
+.detail-page .marketplace-side-heading .detail-actions>*{min-width:0}
+@media(max-width:760px){.detail-page .marketplace-side-heading h1{font-size:28px}}
