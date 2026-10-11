@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Calculator, CalendarCheck, ExternalLink, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Home, Listing, ListingDetails } from "@/lib/catalog";
-import { LocationIntelligenceMap } from "@/components/location-intelligence-map";
 
 type IntelligenceHome = Home & Partial<ListingDetails>;
 
@@ -101,7 +100,20 @@ export function PropertyIntelligence({ home, listings }: { home: IntelligenceHom
         </div>
       </section>
 
-      <LocationIntelligenceMap home={home as Listing} listings={listings} />
+      {typeof home.lat === "number" && typeof home.lng === "number" && home.lat !== 0 && home.lng !== 0 ? (
+        <div className="property-exact-map">
+          <iframe
+            title={`Map showing ${home.name} location`}
+            src={`https://maps.google.com/maps?q=${home.lat},${home.lng}&z=16&output=embed`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+          <p>Map pin is based on the location coordinates saved for this listing. Confirm the address with the owner before visiting.</p>
+        </div>
+      ) : (
+        <div className="property-map-unavailable">Exact map location hasn’t been added by the property owner yet.</div>
+      )}
 
       {home.floorPlanImages?.length ? (
         <section id="floor-plans" className="property-feature-section">
