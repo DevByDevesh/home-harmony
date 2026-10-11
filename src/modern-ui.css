@@ -58,3 +58,20 @@
  .detail-page .detail-thumbnail{flex-basis:72px;width:72px;height:54px}
  .detail-page .detail-summary{padding:16px}
 }
+
+
+/* OLX-style property gallery + seller panel */
+.detail-page .marketplace-primary-layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,.8fr);gap:24px;align-items:start;margin-top:22px}
+.detail-page .marketplace-gallery-column{min-width:0}
+.detail-page .marketplace-primary-layout .detail-image{margin:0}
+.detail-page .marketplace-seller-aside{position:sticky;top:18px;min-width:0}
+.detail-page .detail-heading{margin-bottom:0}
+.detail-page .detail-layout{grid-template-columns:minmax(0,1fr)}
+@media(max-width:900px){
+ .detail-page .marketplace-primary-layout{grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:16px}
+}
+@media(max-width:760px){
+ .detail-page .marketplace-primary-layout{grid-template-columns:1fr}
+ .detail-page .marketplace-seller-aside{position:static;grid-row:auto}
+ .detail-page .detail-layout{grid-template-columns:1fr}
+}
