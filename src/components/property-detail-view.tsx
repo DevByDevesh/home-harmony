@@ -18,8 +18,6 @@ export function PropertyDetailView({ home, listings, actions, aside, imageNote, 
 
   return <>
     <PropertySectionNav home={home} />
-    <div className="detail-heading"><div><p className="kicker">{home.mode === "Rent" ? "FOR RENT" : "FOR SALE"} / {home.kind.toUpperCase()}</p><h1>{home.name}<span className="peach-stop">.</span></h1><p><MapPin size={16}/>{home.neighborhood}, {home.city}</p></div>
-      <div className="detail-price">{actions && <div className="detail-actions">{actions}</div>}<strong>{displayPrice(home)}</strong><span>{home.mode === "Rent" ? "per month" : "asking price"}</span></div></div>
     <div className="marketplace-primary-layout"><div className="marketplace-gallery-column"><div className="detail-image">
       <div className="detail-gallery">
         <img
@@ -50,7 +48,7 @@ export function PropertyDetailView({ home, listings, actions, aside, imageNote, 
           </div>
         </DialogContent>
       </Dialog>
-    </div></div><aside className="detail-aside marketplace-seller-aside">{aside}</aside></div>
+    </div></div><aside className="detail-aside marketplace-seller-aside"><div className="marketplace-side-heading"><p className="kicker">{home.mode === "Rent" ? "FOR RENT" : "FOR SALE"} / {home.kind.toUpperCase()}</p><h1>{home.name}<span className="peach-stop">.</span></h1><p><MapPin size={16}/>{home.neighborhood}, {home.city}</p>{actions && <div className="detail-actions">{actions}</div>}</div>{aside}</aside></div>
     <div className="detail-layout"><div>
       <div id="details" className="fact-row"><span><BedDouble size={22}/><strong>{home.beds}</strong> Bedrooms</span><span><Bath size={22}/><strong>{home.baths}</strong> Bathrooms</span><span><Maximize2 size={22}/><strong>{home.area.toLocaleString("en-IN")}</strong> sq.ft.</span></div>
       <Reveal><section className="detail-block marketplace-facts"><p className="kicker">PROPERTY INFORMATION</p><h2>Property details.</h2><dl>
