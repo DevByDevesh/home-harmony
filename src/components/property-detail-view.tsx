@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { Bath, BedDouble, Check, MapPin, Maximize2, Expand, ChevronLeft, ChevronRight } from "lucide-react";
-import { displayPrice, type Home, type Listing } from "@/lib/catalog";
+import { displayPrice, type Home, type Listing, type ListingDetails } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Reveal } from "@/components/cinematic-motion";
 import { PropertyIntelligence, PropertySectionNav } from "@/components/property-intelligence";
 
 /** Shared property presentation used by the public detail page and the owner listing preview. */
-export function PropertyDetailView({ home, listings, actions, aside, imageNote, disclaimer, images }: { home: Home; listings?: Listing[]; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] | undefined }) {
+export function PropertyDetailView({ home, listings, actions, aside, imageNote, disclaimer, images }: { home: Home & Partial<ListingDetails>; listings?: Listing[]; actions?: ReactNode; aside: ReactNode; imageNote: string; disclaimer: string; images?: string[] | undefined }) {
   const galleryImages = images?.length ? images : [home.image];
   const [activePhoto, setActivePhoto] = useState(0);
   const currentPhoto = galleryImages[Math.min(activePhoto, galleryImages.length - 1)] ?? home.image;
@@ -53,6 +53,21 @@ export function PropertyDetailView({ home, listings, actions, aside, imageNote, 
     </div>
     <div className="detail-layout"><div>
       <div id="details" className="fact-row"><span><BedDouble size={22}/><strong>{home.beds}</strong> Bedrooms</span><span><Bath size={22}/><strong>{home.baths}</strong> Bathrooms</span><span><Maximize2 size={22}/><strong>{home.area.toLocaleString("en-IN")}</strong> sq.ft.</span></div>
+      <Reveal><section className="detail-block marketplace-facts"><p className="kicker">PROPERTY INFORMATION</p><h2>Property details.</h2><dl>
+        <div><dt>Property type</dt><dd>{home.kind}</dd></div>
+        <div><dt>Listing type</dt><dd>{home.mode === "Rent" ? "For rent" : "For sale"}</dd></div>
+        <div><dt>Furnishing</dt><dd>{home.furnishing}</dd></div>
+        <div><dt>Bedrooms</dt><dd>{home.beds}</dd></div>
+        <div><dt>Bathrooms</dt><dd>{home.baths}</dd></div>
+        <div><dt>Built-up area</dt><dd>{home.area.toLocaleString("en-IN")} sq.ft.</dd></div>
+        {home.parking !== undefined && <div><dt>Car parking</dt><dd>{home.parking}</dd></div>}
+        {home.floor !== undefined && <div><dt>Floor</dt><dd>{home.floor}{home.totalFloors !== undefined ? ` of ${home.totalFloors}` : ""}</dd></div>}
+        {home.propertyAgeYears !== undefined && <div><dt>Property age</dt><dd>{home.propertyAgeYears} {home.propertyAgeYears === 1 ? "year" : "years"}</dd></div>}
+        {home.mode === "Rent" && home.deposit !== undefined && home.deposit > 0 && <div><dt>Security deposit</dt><dd>{`₹${home.deposit.toLocaleString("en-IN")}`}</dd></div>}
+        {home.brokerage && <div><dt>Brokerage</dt><dd>{home.brokerage}</dd></div>}
+        {home.availableFrom && <div><dt>Available from</dt><dd>{new Date(home.availableFrom).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"})}</dd></div>}
+        <div><dt>Location</dt><dd>{home.neighborhood}, {home.city}</dd></div>
+      </dl></section></Reveal>
       <Reveal><section id="overview" className="detail-block"><p className="kicker">THE SPACE</p><h2>A closer look.</h2><p>{home.description}</p><p className="disclaimer">{disclaimer}</p></section></Reveal>
       <Reveal><section id="amenities" className="detail-block"><p className="kicker">WHAT’S INCLUDED</p><h2>The everyday details.</h2><div className="features-grid">{[home.furnishing, ...home.features].map(feature => <span key={feature}><Check size={17}/>{feature}</span>)}</div></section></Reveal>
     </div><aside className="detail-aside">{aside}</aside></div>
