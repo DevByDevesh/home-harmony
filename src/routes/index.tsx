@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowDown, ArrowRight, ArrowUpRight, LoaderCircle } from "lucide-react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import hero from "@/assets/new-hero.jpg";
 import { Button } from "@/components/ui/button";
 import { DiscoverySearch } from "@/components/discovery-search";
@@ -56,6 +56,28 @@ function HomePage() {
     ...liveListings.filter((item) => item.promotion !== "FEATURED"),
   ].slice(0, 3);
   const cities = Array.from(new Set(liveListings.map((item) => item.city))).slice(0, 4);
+  const showcaseSentinel = useRef<HTMLDivElement | null>(null);
+  const [loadShowcase, setLoadShowcase] = useState(false);
+
+  useEffect(() => {
+    const node = showcaseSentinel.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setLoadShowcase(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setLoadShowcase(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "500px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <main className="homepage-v2">
@@ -206,9 +228,13 @@ function HomePage() {
         </div>
       </section>
 
-      <Suspense fallback={null}>
-        <HomepageShowcase listings={liveListings} />
-      </Suspense>
+      {loadShowcase ? (
+        <Suspense fallback={<div className="story-band" aria-hidden="true" />}>
+          <HomepageShowcase listings={liveListings} />
+        </Suspense>
+      ) : (
+        <div ref={showcaseSentinel} aria-hidden="true" style={{ minHeight: 1 }} />
+      )}
 
       <section className="final-cta">
         <div className="wrap final-inner">
