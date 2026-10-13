@@ -1,13 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { listPropertiesFn } from "@/lib/properties.functions";
+import { listLivePropertiesByCityFn } from "@/lib/properties.functions";
 import { toListing } from "@/lib/property-mapper";
 import { displayPrice } from "@/lib/catalog";
-import { isDatabaseConfigured } from "@/lib/db/client.server";
 
 export const Route = createFileRoute("/flats-in-nagpur")({
   loader: async () => {
-    if (!isDatabaseConfigured()) return [];
-    const rows = await listPropertiesFn({ data: { city: "Nagpur", take: 100 } });
+    const rows = await listLivePropertiesByCityFn({ data: { city: "Nagpur" } });
     return rows.map(toListing);
   },
   head: () => ({

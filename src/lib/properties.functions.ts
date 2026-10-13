@@ -106,6 +106,16 @@ export const listPropertiesFn = createServerFn({ method: "GET" })
     return rows.map(toPublic);
   });
 
+export const listLivePropertiesByCityFn = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ city: z.string().min(1).max(80) }).strict().parse(d ?? {}))
+  .handler(async ({ data }) => {
+    const { isDatabaseConfigured } = await import("./db/client.server");
+    if (!isDatabaseConfigured()) return [];
+    const { listPublicProperties } = await import("./db/repositories/properties.server");
+    const rows = await listPublicProperties({ city: data.city, take: 100 });
+    return rows.map(toPublic);
+  });
+
 export const getPropertyFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ idOrSlug: z.string().min(1).max(200) }).strict().parse(d))
   .handler(async ({ data }) => {
