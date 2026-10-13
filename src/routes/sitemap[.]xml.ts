@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { isDatabaseConfigured } from "@/lib/db/client.server";
-import { listPublicProperties } from "@/lib/db/repositories/properties.server";
+import { isDatabaseConfigured, requireDb } from "@/lib/db/client.server";
 
 const ORIGIN = "https://houseprovider.in";
 const STATIC_URLS = ["/", "/properties", "/support"];
@@ -32,7 +31,13 @@ export const Route = createFileRoute("/sitemap[.]xml")({
 
         // Never publish fictional demo catalog entries in a production sitemap.
         if (isDatabaseConfigured()) {
-          const properties = await listPublicProperties({ take: 100 });
+          const db = await requireDb();
+          const properties = await db.property.findMany({
+            where: { status: "ACTIVE", images: { some: {} } },
+            select: { slug: true, updatedAt: true },
+            orderBy: { updatedAt: "desc" },
+            take: 50000,
+          });
           for (const property of properties) {
             if (!property.slug || !property.updatedAt) continue;
             urls.push({
