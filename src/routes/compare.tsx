@@ -14,6 +14,7 @@ import { resolveSavedListingState, staleListingLabel } from "@/lib/saved-listing
 
 export const Route = createFileRoute("/compare")({
   head: () => ({ meta: [
+      { name: "robots", content: "noindex, follow" },
     { title: "Compare properties side by side — HouseProvider.in" },
     { name: "description", content: "Compare up to four homes on rent, deposit, area, amenities and more — neutral facts, no rankings." },
     { property: "og:title", content: "Compare properties side by side — HouseProvider.in" },

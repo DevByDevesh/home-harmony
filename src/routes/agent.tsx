@@ -45,6 +45,7 @@ export const Route = createFileRoute("/agent")({
   beforeLoad: guardArea("agent"),
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({ meta: [
+      { name: "robots", content: "noindex, follow" },
     { title: "Agent CRM — HouseProvider.in" },
     { name: "description", content: "A lead pipeline, follow-ups, visits and performance analytics for property agents on HouseProvider.in." },
     { property: "og:title", content: "Agent CRM — HouseProvider.in" },

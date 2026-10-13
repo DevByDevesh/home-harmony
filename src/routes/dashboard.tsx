@@ -49,6 +49,7 @@ export const Route = createFileRoute("/dashboard")({
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Your dashboard — HouseProvider.in" },
       {
         name: "description",

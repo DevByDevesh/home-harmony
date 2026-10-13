@@ -12,6 +12,7 @@ export const Route = createFileRoute("/signup")({
   validateSearch: z.object({ redirect: z.string().optional() }),
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Create an account — HouseProvider.in" },
       {
         name: "description",
