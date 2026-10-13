@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+<title id="title">HouseProvider.in — Find a place that feels like home</title>
+<desc id="desc">HouseProvider property discovery brand graphic.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d182c"/><stop offset="1" stop-color="#542a52"/></linearGradient><linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc6a8"/><stop offset="1" stop-color="#ff9d87"/></linearGradient></defs>
+<rect width="1200" height="630" fill="url(#bg)"/><circle cx="1030" cy="100" r="260" fill="#fff" opacity=".04"/><circle cx="1100" cy="550" r="310" fill="#fff" opacity=".035"/>
+<g transform="translate(90 95)"><rect width="82" height="82" rx="7" fill="none" stroke="#fffaf7" stroke-width="3"/><text x="41" y="59" text-anchor="middle" font-family="Arial,sans-serif" font-size="59" font-weight="700" fill="#fffaf7">h</text><circle cx="63" cy="17" r="6" fill="url(#accent)"/></g>
+<text x="90" y="255" font-family="Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="6" fill="#ffc6a8">HOUSEPROVIDER.IN</text>
+<text x="90" y="355" font-family="Arial,sans-serif" font-size="58" font-weight="700" fill="#fffaf7">Find a place that</text><text x="90" y="425" font-family="Arial,sans-serif" font-size="58" font-weight="700" fill="#fffaf7">feels like <tspan fill="#ffc6a8">home.</tspan></text>
+<path d="M90 480 H310" stroke="#ffc6a8" stroke-width="4" stroke-linecap="round"/><text x="90" y="535" font-family="Arial,sans-serif" font-size="22" fill="#fffaf7" opacity=".8">Discover homes across India</text>
+</svg>
