@@ -32,6 +32,7 @@ export const Route = createFileRoute("/owner")({
   beforeLoad: guardListingAccess(),
   validateSearch: z.object({ tab: z.string().optional() }),
   head: () => ({ meta: [
+      { name: "robots", content: "noindex, follow" },
     { title: "Owner dashboard — HouseProvider.in" },
     { name: "description", content: "Manage your listings, visit requests, verification and listing performance on HouseProvider.in." },
     { property: "og:title", content: "Owner dashboard — HouseProvider.in" },
