@@ -23,6 +23,7 @@ export const Route = createFileRoute("/login")({
   validateSearch: search,
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, follow" },
       { title: "Sign in — HouseProvider.in" },
       {
         name: "description",
