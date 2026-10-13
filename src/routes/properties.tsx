@@ -89,6 +89,7 @@ export const Route = createFileRoute("/properties")({
       { property: "og:title", content: "Explore homes on list or map — HouseProvider.in" },
       { property: "og:description", content: "Find a space that fits the way you live." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://houseprovider.in/properties" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://houseprovider.in/properties" }],
