@@ -6,11 +6,11 @@ export const Route = createFileRoute("/list-property")({
   loader: async () => ({ user: await getCurrentUser() }),
   head: () => ({ meta: [
   { title: "For property owners and agents — HouseProvider.in" },
-  { name: "description", content: "Create a listing in nine guided steps, manage it from the owner dashboard, or run your pipeline in the agent CRM — currently in current mode." },
+  { name: "description", content: "Learn how property owners and agents can manage property listings and enquiries with HouseProvider.in." },
   { property: "og:title", content: "For property owners and agents — HouseProvider.in" },
-  { property: "og:description", content: "Owner listing tools and an agent CRM, in current mode." },
-  { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
-] }), component: OwnersPage });
+  { property: "og:description", content: "Property listing tools and enquiry management for owners and agents." },
+  { property: "og:type", content: "website" }, { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" }, { name: "twitter:card", content: "summary_large_image" },
+], links: [{ rel: "canonical", href: "https://houseprovider.in/list-property" }] }), component: OwnersPage });
 function OwnersPage() {
   const { user } = Route.useLoaderData();
   const isOwner = user?.role === "OWNER";
