@@ -31,7 +31,10 @@ export const Route = createFileRoute("/")({
       { name: "twitter:description", content: "Discover homes across India. Search by location, property type and budget." },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://houseprovider.in/" }],
+    links: [
+      { rel: "canonical", href: "https://houseprovider.in/" },
+      { rel: "preload", as: "image", href: hero, fetchPriority: "high" },
+    ],
   }),
   component: HomePage,
 });
