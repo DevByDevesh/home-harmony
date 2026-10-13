@@ -19,14 +19,14 @@ function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
   return <main className="fallback wrap"><p className="kicker">SOMETHING WENT WRONG</p><h1>This page didn’t load.</h1><p>Try again or return to the home page.</p><div className="fallback-actions"><Button onClick={() => { router.invalidate(); reset(); }}>Try again</Button><Button asChild variant="outline"><Link to="/">Go home</Link></Button></div></main>;
 }
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({ meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }], links: [
+  head: () => ({ meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }, { name: "theme-color", content: "#542a52" }, { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" }, { property: "og:site_name", content: "HouseProvider.in" }, { property: "og:locale", content: "en_IN" }, { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" }, { property: "og:image:width", content: "1200" }, { property: "og:image:height", content: "630" }, { property: "og:image:alt", content: "HouseProvider.in — Find a place that feels like home" }, { name: "twitter:image", content: "https://houseprovider.in/og-houseprovider.svg" }], links: [
     { rel: "stylesheet", href: appCss }, { rel: "stylesheet", href: modernUiCss }, { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }, { rel: "manifest", href: "/manifest.webmanifest" },
     { rel: "preconnect", href: "https://fonts.googleapis.com" }, { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
     { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" }
   ] }),
   shellComponent: RootShell, component: RootApp, notFoundComponent: NotFoundPage, errorComponent: ErrorPage,
 });
-function RootShell({ children }: { children: ReactNode }) { return <html lang="en"><head><HeadContent/></head><body>{children}<Scripts/></body></html>; }
+function RootShell({ children }: { children: ReactNode }) { const schema = { "@context": "https://schema.org", "@graph": [{ "@type": "Organization", "@id": "https://houseprovider.in/#organization", name: "HouseProvider.in", url: "https://houseprovider.in/", logo: { "@type": "ImageObject", url: "https://houseprovider.in/favicon.svg" } }, { "@type": "WebSite", "@id": "https://houseprovider.in/#website", name: "HouseProvider.in", url: "https://houseprovider.in/", publisher: { "@id": "https://houseprovider.in/#organization" }, inLanguage: "en-IN" }] }; return <html lang="en"><head><HeadContent/><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}/></head><body>{children}<Scripts/></body></html>; }
 function MaintenancePage() {
   return <main className="fallback wrap">
     <p className="kicker">HOUSEPROVIDER</p>
