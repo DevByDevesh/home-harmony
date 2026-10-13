@@ -1,4 +1,4 @@
-const CACHE = "houseprovider-shell-v1";
+const CACHE = "houseprovider-shell-v2";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -21,8 +21,16 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin)
     return;
   event.respondWith(
-    fetch(event.request).catch(() =>
-      caches.match(event.request).then((r) => r || caches.match("/")),
-    ),
+    fetch(event.request).catch(async () => {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      // Only app navigations should fall back to the cached shell; never return HTML for API,
+      // image, script, or stylesheet requests.
+      if (event.request.mode === "navigate") {
+        const shell = await caches.match("/");
+        if (shell) return shell;
+      }
+      return Response.error();
+    }),
   );
 });
