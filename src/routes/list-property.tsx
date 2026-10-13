@@ -9,7 +9,7 @@ export const Route = createFileRoute("/list-property")({
   { name: "description", content: "Learn how property owners and agents can manage property listings and enquiries with HouseProvider.in." },
   { property: "og:title", content: "For property owners and agents — HouseProvider.in" },
   { property: "og:description", content: "Property listing tools and enquiry management for owners and agents." },
-  { property: "og:type", content: "website" }, { property: "og:url", content: "https://houseprovider.in/list-property" }, { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" }, { name: "twitter:card", content: "summary_large_image" },
+  { property: "og:type", content: "website" }, { name: "twitter:title", content: "For property owners and agents — HouseProvider.in" }, { name: "twitter:description", content: "Property listing tools and enquiry management for owners and agents." }, { property: "og:url", content: "https://houseprovider.in/list-property" }, { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" }, { name: "twitter:card", content: "summary_large_image" },
 ], links: [{ rel: "canonical", href: "https://houseprovider.in/list-property" }] }), component: OwnersPage });
 function OwnersPage() {
   const { user } = Route.useLoaderData();

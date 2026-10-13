@@ -91,6 +91,8 @@ export const Route = createFileRoute("/properties")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/properties" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Explore homes on list or map — HouseProvider.in" },
+      { name: "twitter:description", content: "Discover homes across India by budget, BHK, furnishing and amenities, on a list or map." },
     ],
     links: [{ rel: "canonical", href: "https://houseprovider.in/properties" }],
   }),
