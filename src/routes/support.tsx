@@ -12,6 +12,7 @@ export const Route = createFileRoute("/support")({
     { name: "description", content: "Get help with your HouseProvider account, property listing, payment, safety report or technical issue." },
     { property: "og:title", content: "Customer Support — HouseProvider.in" },
     { property: "og:description", content: "Get help with your HouseProvider account, property listing, payment, safety report or technical issue." },
+    { property: "og:url", content: "https://houseprovider.in/support" },
     { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" },
   ], links: [{ rel: "canonical", href: "https://houseprovider.in/support" }] }),
   component: SupportPage,
