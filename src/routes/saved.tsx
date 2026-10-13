@@ -9,6 +9,7 @@ import { useUserData } from "@/lib/user-data";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({ meta: [
+      { name: "robots", content: "noindex, follow" },
     { title: "Saved properties — HouseProvider.in" },
     { name: "description", content: "Homes you saved on this device, ready to revisit and compare." },
     { property: "og:title", content: "Saved properties — HouseProvider.in" },
