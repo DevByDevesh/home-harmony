@@ -9,8 +9,11 @@ import { SUPPORT_CATEGORIES, SUPPORT_EMAIL, SUPPORT_PRIORITIES, SUPPORT_STATUSES
 export const Route = createFileRoute("/support")({
   head: () => ({ meta: [
     { title: "Customer Support — HouseProvider.in" },
-    { name: "description", content: "HouseProvider customer support for account, listing, payment, abuse and technical issues." },
-  ] }),
+    { name: "description", content: "Get help with your HouseProvider account, property listing, payment, safety report or technical issue." },
+    { property: "og:title", content: "Customer Support — HouseProvider.in" },
+    { property: "og:description", content: "Get help with your HouseProvider account, property listing, payment, safety report or technical issue." },
+    { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" },
+  ], links: [{ rel: "canonical", href: "https://houseprovider.in/support" }] }),
   component: SupportPage,
 });
 
