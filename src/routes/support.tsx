@@ -18,6 +18,8 @@ export const Route = createFileRoute("/support")({
     { name: "twitter:title", content: "Customer Support — HouseProvider.in" },
     { name: "twitter:description", content: "Get help with your HouseProvider account, property listing, payment, safety report or technical issue." },
     { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" },
+    { property: "og:image:alt", content: "HouseProvider.in — Find a place that feels like home" },
+    { name: "twitter:image:alt", content: "HouseProvider.in — Find a place that feels like home" },
   ], links: [{ rel: "canonical", href: "https://houseprovider.in/support" }] }),
   component: SupportPage,
 });

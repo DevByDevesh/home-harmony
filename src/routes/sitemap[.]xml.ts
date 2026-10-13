@@ -31,19 +31,24 @@ export const Route = createFileRoute("/sitemap[.]xml")({
 
         // Never publish fictional demo catalog entries in a production sitemap.
         if (isDatabaseConfigured()) {
-          const db = await requireDb();
-          const properties = await db.property.findMany({
-            where: { status: "ACTIVE", images: { some: {} } },
-            select: { slug: true, updatedAt: true },
-            orderBy: { updatedAt: "desc" },
-            take: 50000,
-          });
-          for (const property of properties) {
-            if (!property.slug || !property.updatedAt) continue;
-            urls.push({
-              loc: `${ORIGIN}/property/${encodeURIComponent(property.slug)}`,
-              lastmod: new Date(property.updatedAt).toISOString().slice(0, 10),
+          try {
+            const db = await requireDb();
+            const properties = await db.property.findMany({
+              where: { status: "ACTIVE", images: { some: {} } },
+              select: { slug: true, updatedAt: true },
+              orderBy: { updatedAt: "desc" },
+              take: 50000,
             });
+            for (const property of properties) {
+              if (!property.slug || !property.updatedAt) continue;
+              urls.push({
+                loc: `${ORIGIN}/property/${encodeURIComponent(property.slug)}`,
+                lastmod: new Date(property.updatedAt).toISOString().slice(0, 10),
+              });
+            }
+          } catch (error) {
+            // Keep core public URLs available if the listing database is temporarily unavailable.
+            console.error("[sitemap] Could not load active property URLs:", error);
           }
         }
 
