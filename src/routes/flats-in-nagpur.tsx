@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { listLivePropertiesByCityFn } from "@/lib/properties.functions";
 import { toListing } from "@/lib/property-mapper";
-import { displayPrice } from "@/lib/catalog";
+import { formatDisplayPrice } from "@/lib/price-format";
 
 export const Route = createFileRoute("/flats-in-nagpur")({
   loader: async () => {
@@ -50,7 +50,7 @@ function NagpurFlatsPage() {
                     <p className="kicker">{home.mode === "Rent" ? "FOR RENT" : "FOR SALE"} · {home.kind}</p>
                     <h3><Link to="/property/$slug" params={{ slug: home.slug }}>{home.name}</Link></h3>
                     <p>{home.neighborhood}, Nagpur</p>
-                    <p><strong>{displayPrice(home.price, home.mode)}</strong> · {home.beds} BHK · {home.area.toLocaleString("en-IN")} sq ft</p>
+                    <p><strong>{formatDisplayPrice(home.mode, home.price)}</strong> · {home.beds} BHK · {home.area.toLocaleString("en-IN")} sq ft</p>
                   </div>
                 </article>
               ))}
