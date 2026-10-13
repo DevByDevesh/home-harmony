@@ -1,17 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /admin
 Disallow: /api/
-Disallow: /account
-Disallow: /dashboard
-Disallow: /owner
-Disallow: /agent
-Disallow: /messages
-Disallow: /saved
-Disallow: /compare
-Disallow: /login
-Disallow: /signup
-Disallow: /forgot-password
-Disallow: /reset-password
 
 Sitemap: https://houseprovider.in/sitemap.xml
