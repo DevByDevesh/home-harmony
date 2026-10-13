@@ -144,8 +144,13 @@ function ResultsPage() {
     />
   ));
 
+  const breadcrumbData = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://houseprovider.in/" },
+    { "@type": "ListItem", position: 2, name: "Explore homes", item: "https://houseprovider.in/properties" },
+  ] }).replace(/</g, "\\u003c");
+
   return (
-    <main className={`results-page view-${view}`}>
+    <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbData }}/><main className={`results-page view-${view}`}>
       <div className="wrap">
         <div className="results-intro">
           <p className="kicker">THE COLLECTION</p>
@@ -340,7 +345,7 @@ function ResultsPage() {
           </div>
         )}
       </div>
-    </main>
+    </main></>
   );
 }
 function AIPropertyAssistant({ listings, filters }: { listings: Listing[]; filters: Filters }) {
