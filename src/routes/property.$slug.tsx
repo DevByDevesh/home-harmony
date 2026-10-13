@@ -33,6 +33,9 @@ export const Route = createFileRoute("/property/$slug")({
     { property: "og:title", content: loaderData ? `${loaderData.name} — HouseProvider.in` : "Property not found — HouseProvider.in" },
     { property: "og:description", content: loaderData ? `A home in ${loaderData.neighborhood}, ${loaderData.city}.` : "This property could not be loaded." },
     { property: "og:type", content: "website" },
+    { name: "twitter:title", content: loaderData ? `${loaderData.name} — HouseProvider.in` : "Property not found — HouseProvider.in" },
+    { name: "twitter:description", content: loaderData ? `A home in ${loaderData.neighborhood}, ${loaderData.city}.` : "This property could not be found." },
+    ...(!loaderData ? [{ name: "robots", content: "noindex, follow" }] : []),
     { property: "og:url", content: loaderData ? "https://houseprovider.in/property/" + encodeURIComponent(loaderData.slug) : "https://houseprovider.in/properties" }, { property: "og:image", content: "https://houseprovider.in/og-houseprovider.svg" }, { name: "twitter:card", content: "summary_large_image" },
   ], links: loaderData ? [{ rel: "canonical", href: "https://houseprovider.in/property/" + encodeURIComponent(loaderData.slug) }] : [{ rel: "canonical", href: "https://houseprovider.in/properties" }] }; }, component: DetailPage,
 });
