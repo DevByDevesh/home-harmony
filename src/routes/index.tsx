@@ -15,20 +15,20 @@ import { useLiveListings } from "@/lib/use-live-listings";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "HouseProvider.in — Find a place that feels like home" },
+      { title: "Buy & Rent Homes in India | HouseProvider.in" },
       {
         name: "description",
-        content: "Discover homes across India. Search by location, property type and budget.",
+        content: "Find homes for rent and sale across India. Explore property listings by location, budget and property type on HouseProvider.in.",
       },
-      { property: "og:title", content: "HouseProvider.in — Find a place that feels like home" },
+      { property: "og:title", content: "Buy & Rent Homes in India | HouseProvider.in" },
       {
         property: "og:description",
-        content: "Discover homes across India. Search by location, property type and budget.",
+        content: "Find homes for rent and sale across India. Explore property listings by location, budget and property type on HouseProvider.in.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/" },
-      { name: "twitter:title", content: "HouseProvider.in — Find a place that feels like home" },
-      { name: "twitter:description", content: "Discover homes across India. Search by location, property type and budget." },
+      { name: "twitter:title", content: "Buy & Rent Homes in India | HouseProvider.in" },
+      { name: "twitter:description", content: "Find homes for rent and sale across India. Explore property listings by location, budget and property type on HouseProvider.in." },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

@@ -80,14 +80,14 @@ export const Route = createFileRoute("/properties")({
   ),
   head: () => ({
     meta: [
-      { title: "Explore homes on list or map — HouseProvider.in" },
+      { title: "Find Homes for Rent & Sale in India | HouseProvider.in" },
       {
         name: "description",
         content:
-          "Discover homes across India by budget, BHK, furnishing and amenities, on a list or map.",
+          "Find homes for rent and sale across India. Search by location, budget, BHK, furnishing and amenities using list or map view.",
       },
       { property: "og:title", content: "Explore homes on list or map — HouseProvider.in" },
-      { property: "og:description", content: "Find a space that fits the way you live." },
+      { property: "og:description", content: "Explore homes for rent and sale across India. Filter property listings by location, budget, BHK, furnishing and amenities." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/properties" },
       { name: "twitter:card", content: "summary_large_image" },
