@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/engagement";
 export const Route = createFileRoute("/messages")({
   beforeLoad: guardArea("authenticated"),
   head: () => ({ meta: [
+      { name: "robots", content: "noindex, follow" },
     { title: "Messages — HouseProvider.in" },
     { name: "description", content: "Your HouseProvider conversations." },
   ] }),
