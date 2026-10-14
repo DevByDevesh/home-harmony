@@ -37,6 +37,20 @@ function NagpurFlatsPage() {
           <Link to="/properties" className="text-link">Browse all properties</Link>
           <Link to="/list-property" className="text-link">List a property</Link>
         </div>
+        <section className="seo-guide-copy" aria-labelledby="nagpur-home-guide">
+          <h2 id="nagpur-home-guide">Find a home in Nagpur</h2>
+          <p>When comparing flats in Nagpur, start with the neighbourhood and your daily commute, then compare rent or sale price, BHK, carpet or built-up area, furnishing, parking and building amenities. Listing details and availability can change, so confirm them directly with the owner or authorised agent before arranging a visit.</p>
+          <div className="fallback-actions">
+            <Link to="/properties" search={{ location: "Nagpur", mode: "Rent" }} className="text-link">Look for homes to rent in Nagpur</Link>
+            <Link to="/properties" search={{ location: "Nagpur", mode: "Buy" }} className="text-link">Look for homes to buy in Nagpur</Link>
+          </div>
+          <h3>Before renting a flat</h3>
+          <p>Confirm the monthly rent, security deposit, maintenance charges, agreement period, notice terms, furnishing inventory and move-in date. Visit the property where possible and get payment terms and commitments in writing.</p>
+          <h3>Before buying a flat</h3>
+          <p>Review the title and ownership documents, sanctioned plans and applicable approvals, society or maintenance costs, taxes and any outstanding dues with a qualified local professional. Do not rely on a listing alone as proof of legal status.</p>
+          <h3>How HouseProvider listings work</h3>
+          <p>Use the property search to compare available details and open a listing for its photos and information. HouseProvider does not replace independent checks; confirm price, availability and all important details with the advertiser before committing.</p>
+        </section>
         {listings.length > 0 ? (
           <section aria-label="Available Nagpur properties" className="nagpur-listings">
             <h2>Available properties in Nagpur</h2>
