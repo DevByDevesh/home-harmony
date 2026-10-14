@@ -4,7 +4,7 @@ import { toListing } from "@/lib/property-mapper";
 import { formatDisplayPrice } from "@/lib/price-format";
 
 export const Route = createFileRoute("/pg-in-nagpur")({
-  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur" } })).map(toListing).filter((home) => home.kind === "PG" && home.mode === "Rent"),
+  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur", propertyType: "PG", listingType: "RENT" } })).map(toListing),
   head: () => ({
     meta: [
       { title: "PG Accommodation in Nagpur | HouseProvider.in" },
