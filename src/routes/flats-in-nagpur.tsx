@@ -10,15 +10,15 @@ export const Route = createFileRoute("/flats-in-nagpur")({
   },
   head: () => ({
     meta: [
-      { title: "Flats in Nagpur for Rent & Sale | HouseProvider.in" },
-      { name: "description", content: "Explore available flats and homes in Nagpur on HouseProvider.in. Compare real listings by rent or sale price, bedrooms, locality and amenities." },
-      { property: "og:title", content: "Flats in Nagpur for Rent & Sale | HouseProvider.in" },
-      { property: "og:description", content: "Explore available flats and homes in Nagpur. Compare listings by price, bedrooms, locality and amenities." },
+      { title: "Flats in Nagpur: Rent, Buy & Property Search | HouseProvider.in" },
+      { name: "description", content: "Search flats in Nagpur for rent or sale. Explore 1 BHK, 2 BHK and 3 BHK home options, houses and residential properties by budget, locality and amenities on HouseProvider.in." },
+      { property: "og:title", content: "Flats in Nagpur: Rent, Buy & Property Search | HouseProvider.in" },
+      { property: "og:description", content: "Explore Nagpur property searches for flats, houses, rent, resale and sale. Compare available listings by budget, BHK, locality and amenities." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/flats-in-nagpur" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Flats in Nagpur for Rent & Sale | HouseProvider.in" },
-      { name: "twitter:description", content: "Browse Nagpur property listings by rent or sale price, bedrooms, locality and amenities." },
+      { name: "twitter:title", content: "Flats in Nagpur: Rent, Buy & Property Search | HouseProvider.in" },
+      { name: "twitter:description", content: "Find flats for rent or sale in Nagpur and explore home options by BHK, budget, locality and amenities." },
     ],
     links: [{ rel: "canonical", href: "https://houseprovider.in/flats-in-nagpur" }],
   }),
@@ -38,13 +38,13 @@ function NagpurFlatsPage() {
           <Link to="/list-property" className="text-link">List a property</Link>
         </div>
         <section className="seo-guide-copy" aria-labelledby="nagpur-home-guide">
-          <h2 id="nagpur-home-guide">Find a home in Nagpur</h2>
-          <p>When comparing flats in Nagpur, start with the neighbourhood and your daily commute, then compare rent or sale price, BHK, carpet or built-up area, furnishing, parking and building amenities. Listing details and availability can change, so confirm them directly with the owner or authorised agent before arranging a visit.</p>
+          <h2 id="nagpur-home-guide">Nagpur property search: rent, resale and homes for sale</h2>
+          <p>Search phrases people may use include flats for rent in Nagpur, flats for sale in Nagpur, 1 BHK flats, 2 BHK flats, 3 BHK flats, houses for rent, resale flats and residential property in Nagpur. Availability depends on current published listings, so use the search filters and verify each property directly with its owner or authorised agent. Compare the neighbourhood, commute, rent or asking price, area, furnishing, parking and amenities before arranging a visit.</p>
           <div className="fallback-actions">
             <Link to="/properties" search={{ location: "Nagpur", mode: "Rent" }} className="text-link">Look for homes to rent in Nagpur</Link>
             <Link to="/properties" search={{ location: "Nagpur", mode: "Buy" }} className="text-link">Look for homes to buy in Nagpur</Link>
           </div>
-          <h3>Before renting a flat</h3>
+          <h3>Explore Nagpur localities</h3>\n          <p>You can narrow a property search by locality, including areas such as Dharampeth, Manish Nagar, MIHAN, Besa, Beltarodi, Wardha Road, Hingna, Trimurti Nagar, Sadar and Civil Lines. These are search examples, not a claim that a property is currently available in every area.</p>\n          <h3>Before renting a flat</h3>
           <p>Confirm the monthly rent, security deposit, maintenance charges, agreement period, notice terms, furnishing inventory and move-in date. Visit the property where possible and get payment terms and commitments in writing.</p>
           <h3>Before buying a flat</h3>
           <p>Review the title and ownership documents, sanctioned plans and applicable approvals, society or maintenance costs, taxes and any outstanding dues with a qualified local professional. Do not rely on a listing alone as proof of legal status.</p>
