@@ -252,6 +252,13 @@ function HomePage() {
             <Link to="/properties" search={{ mode: "Rent" }} className="text-link">Explore homes for rent</Link>
             <Link to="/properties" search={{ mode: "Buy" }} className="text-link">Explore homes for sale</Link>
             <Link to="/flats-in-nagpur" className="text-link">Explore flats in Nagpur</Link>
+            <Link to="/flats-for-rent-in-nagpur" className="text-link">Flats for rent in Nagpur</Link>
+            <Link to="/flats-for-sale-in-nagpur" className="text-link">Flats for sale in Nagpur</Link>
+            <Link to="/rooms-for-rent-in-nagpur" className="text-link">Rooms for rent in Nagpur</Link>
+            <Link to="/pg-in-nagpur" className="text-link">PG accommodation in Nagpur</Link>
+            <Link to="/apartments-in-nagpur" className="text-link">Apartments in Nagpur</Link>
+            <Link to="/houses-for-rent-in-nagpur" className="text-link">Houses for rent in Nagpur</Link>
+            <Link to="/commercial-property-in-nagpur" className="text-link">Commercial property in Nagpur</Link>
             <Link to="/list-property" className="text-link">List your property</Link>
           </div>
           <div className="seo-guide-copy">
