@@ -15,12 +15,12 @@ import { useLiveListings } from "@/lib/use-live-listings";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Property in India: Homes for Rent & Sale | HouseProvider.in" },
+      { title: "House Provider | HouseProvider.in – Find Homes for Rent & Sale" },
       {
         name: "description",
         content: "Search property in India with HouseProvider.in. Explore houses for rent, flats for rent, flats for sale and homes by location, budget, BHK and property type.",
       },
-      { property: "og:title", content: "Buy & Rent Homes in India | HouseProvider.in" },
+      { property: "og:title", content: "House Provider | HouseProvider.in – Find Homes for Rent & Sale" },
       {
         property: "og:description",
         content: "Find homes for rent and sale across India. Explore property listings by location, budget and property type on HouseProvider.in.",
