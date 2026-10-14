@@ -31,6 +31,8 @@ function CategoryPage() {
     <div className="fallback-actions">
       <Link to="/properties" search={{ location: "Nagpur" }} className="text-link">Browse all Nagpur properties</Link>
       <Link to="/flats-in-nagpur" className="text-link">Explore flats in Nagpur</Link>
+      <Link to="/apartments-in-nagpur" className="text-link">Residential apartments</Link>
+      <Link to="/houses-for-rent-in-nagpur" className="text-link">Houses for rent</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
     <section className="seo-guide-copy"><h2>Commercial property in Nagpur</h2><p>Explore commercial property listings and compare usable area, frontage, access, parking, permitted use, utilities and asking price or rent. Check suitability for your intended business before arranging a visit.</p>
