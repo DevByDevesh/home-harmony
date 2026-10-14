@@ -12,7 +12,7 @@ export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 export const ADMIN_ROLES: AuthRole[] = ["ADMIN"];
 export const PRIVILEGED_ROLES: AuthRole[] = ["OWNER", "ADMIN"];
 /** Accounts allowed to create and manage their own property listings. */
-export const LISTING_ROLES: AuthRole[] = ["USER", "OWNER"];
+export const LISTING_ROLES: AuthRole[] = ["USER", "OWNER", "ADMIN"];
 
 export type AppPermission =
   | "profile.manage" | "saved.manage" | "searches.manage" | "comparisons.manage" | "visits.own" | "enquiries.own"
