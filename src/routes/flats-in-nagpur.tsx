@@ -51,7 +51,9 @@ function NagpurFlatsPage() {
             <Link to="/properties" search={{ location: "Nagpur", mode: "Rent" }} className="text-link">Look for homes to rent in Nagpur</Link>
             <Link to="/properties" search={{ location: "Nagpur", mode: "Buy" }} className="text-link">Look for homes to buy in Nagpur</Link>
           </div>
-          <h3>Explore Nagpur localities</h3>\n          <p>You can narrow a property search by locality, including areas such as Dharampeth, Manish Nagar, MIHAN, Besa, Beltarodi, Wardha Road, Hingna, Trimurti Nagar, Sadar and Civil Lines. These are search examples, not a claim that a property is currently available in every area.</p>\n          <h3>Before renting a flat</h3>
+          <h3>Explore Nagpur localities</h3>
+          <p>You can narrow a property search by locality, including areas such as Dharampeth, Manish Nagar, MIHAN, Besa, Beltarodi, Wardha Road, Hingna, Trimurti Nagar, Sadar and Civil Lines. These are search examples, not a claim that a property is currently available in every area.</p>
+          <h3>Before renting a flat</h3>
           <p>Confirm the monthly rent, security deposit, maintenance charges, agreement period, notice terms, furnishing inventory and move-in date. Visit the property where possible and get payment terms and commitments in writing.</p>
           <h3>Before buying a flat</h3>
           <p>Review the title and ownership documents, sanctioned plans and applicable approvals, society or maintenance costs, taxes and any outstanding dues with a qualified local professional. Do not rely on a listing alone as proof of legal status.</p>
