@@ -35,7 +35,7 @@ function CategoryPage() {
       <Link to="/flats-for-rent-in-nagpur" className="text-link">Flats for rent</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
-    <section className="seo-guide-copy"><h2>Paying guest accommodation in Nagpur</h2><p>Compare paying guest accommodation by monthly cost, single or shared occupancy, meals, Wi-Fi, laundry, curfew rules and distance to college or work. Confirm which services are included in the advertised price.</p>
+    <section className="seo-guide-copy">
       <h2>What to check before choosing</h2><p>Ask about the deposit, meal schedule, guest policy, electricity charges, notice period, room-sharing arrangements and written house rules before paying.</p>
       <h2>Explore Nagpur localities</h2><p>Search around the areas that fit your commute and budget, such as Manish Nagar, Besa, Beltarodi, MIHAN, Wardha Road, Dharampeth, Trimurti Nagar, Hingna, Sadar and Civil Lines. These are locality examples, not a claim that a listing is currently available in each area.</p>
     </section>
