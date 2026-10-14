@@ -107,12 +107,16 @@ export const listPropertiesFn = createServerFn({ method: "GET" })
   });
 
 export const listLivePropertiesByCityFn = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ city: z.string().min(1).max(80) }).strict().parse(d ?? {}))
+  .inputValidator((d: unknown) => z.object({
+    city: z.string().min(1).max(80),
+    propertyType: z.enum(["APARTMENT", "HOUSE", "ROOM", "PG", "COMMERCIAL"]).optional(),
+    listingType: z.enum(["RENT", "BUY"]).optional(),
+  }).strict().parse(d ?? {}))
   .handler(async ({ data }) => {
     const { isDatabaseConfigured } = await import("./db/client.server");
     if (!isDatabaseConfigured()) return [];
     const { listPublicProperties } = await import("./db/repositories/properties.server");
-    const rows = await listPublicProperties({ city: data.city, take: 100 });
+    const rows = await listPublicProperties({ city: data.city, propertyType: data.propertyType, listingType: data.listingType, take: 100 });
     return rows.map(toPublic);
   });
 
