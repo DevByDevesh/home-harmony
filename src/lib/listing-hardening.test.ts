@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { LISTING_ROLES } from "./auth/roles.ts";
 import { formatDisplayPrice } from "./price-format.ts";
 
-test("listing access includes regular users and owners but not admin-only accounts", () => {
-  assert.deepEqual(LISTING_ROLES, ["USER", "OWNER"]);
+test("listing access includes regular users, owners, and admins", () => {
+  assert.deepEqual(LISTING_ROLES, ["USER", "OWNER", "ADMIN"]);
   assert.ok(LISTING_ROLES.includes("USER"));
   assert.ok(LISTING_ROLES.includes("OWNER"));
-  assert.ok(!(LISTING_ROLES as readonly string[]).includes("ADMIN"));
+  assert.ok(LISTING_ROLES.includes("ADMIN"));
 });
 
 test("sale price formatting stays in lakh until one crore", () => {
