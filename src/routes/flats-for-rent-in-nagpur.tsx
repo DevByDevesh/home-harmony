@@ -4,7 +4,7 @@ import { toListing } from "@/lib/property-mapper";
 import { formatDisplayPrice } from "@/lib/price-format";
 
 export const Route = createFileRoute("/flats-for-rent-in-nagpur")({
-  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur" } })).map(toListing).filter((home) => home.mode === "Rent"),
+  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur", propertyType: "APARTMENT", listingType: "RENT" } })).map(toListing),
   head: () => ({
     meta: [
       { title: "Flats for Rent in Nagpur | Houses & 1, 2, 3 BHK | HouseProvider.in" },
