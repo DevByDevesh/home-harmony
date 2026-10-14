@@ -80,19 +80,19 @@ export const Route = createFileRoute("/properties")({
   ),
   head: () => ({
     meta: [
-      { title: "Find Homes for Rent & Sale in India | HouseProvider.in" },
+      { title: "Property Listings in India: Buy, Rent & Resale | HouseProvider.in" },
       {
         name: "description",
         content:
-          "Find homes for rent and sale across India. Search by location, budget, BHK, furnishing and amenities using list or map view.",
+          "Browse property listings in India for homes to rent, flats to buy and resale properties. Filter by location, budget, BHK, furnishing, parking and amenities.",
       },
-      { property: "og:title", content: "Explore homes on list or map — HouseProvider.in" },
-      { property: "og:description", content: "Explore homes for rent and sale across India. Filter property listings by location, budget, BHK, furnishing and amenities." },
+      { property: "og:title", content: "Browse Property Listings to Rent or Buy — HouseProvider.in" },
+      { property: "og:description", content: "Search houses for rent, flats for sale and residential properties by location, budget, BHK, furnishing and amenities." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/properties" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Explore homes on list or map — HouseProvider.in" },
-      { name: "twitter:description", content: "Discover homes across India by budget, BHK, furnishing and amenities, on a list or map." },
+      { name: "twitter:description", content: "Explore homes for rent, flats for sale and resale property listings across India by location, budget and BHK." },
       { name: "twitter:image:alt", content: "HouseProvider.in — Find a place that feels like home" },
     ],
     links: [{ rel: "canonical", href: "https://houseprovider.in/properties" }],
