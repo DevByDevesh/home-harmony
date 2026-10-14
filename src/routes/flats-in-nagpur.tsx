@@ -35,6 +35,13 @@ function NagpurFlatsPage() {
         <p>Explore property listings in Nagpur and compare the details that matter: budget, bedrooms, locality, furnishing and amenities. Open an individual listing to review its photos and property information before contacting the owner or agent.</p>
         <div className="fallback-actions">
           <Link to="/properties" className="text-link">Browse all properties</Link>
+          <Link to="/flats-for-rent-in-nagpur" className="text-link">Flats for rent</Link>
+          <Link to="/flats-for-sale-in-nagpur" className="text-link">Flats for sale</Link>
+          <Link to="/rooms-for-rent-in-nagpur" className="text-link">Rooms for rent</Link>
+          <Link to="/pg-in-nagpur" className="text-link">PG accommodation</Link>
+          <Link to="/apartments-in-nagpur" className="text-link">Apartments</Link>
+          <Link to="/houses-for-rent-in-nagpur" className="text-link">Houses for rent</Link>
+          <Link to="/commercial-property-in-nagpur" className="text-link">Commercial property</Link>
           <Link to="/list-property" className="text-link">List a property</Link>
         </div>
         <section className="seo-guide-copy" aria-labelledby="nagpur-home-guide">
