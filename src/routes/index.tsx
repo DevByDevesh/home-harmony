@@ -104,9 +104,9 @@ function HomePage() {
               <span /> A NEW WAY TO FIND YOUR PLACE
             </p>
             <h1>
-              Find a place
+              Find homes to
               <br />
-              that feels like <em>home.</em>
+              rent or <em>buy.</em>
             </h1>
             <p className="hero-description">
               Discover homes, neighborhoods and spaces intelligently — based on how you actually
