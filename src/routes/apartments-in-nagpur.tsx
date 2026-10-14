@@ -31,6 +31,8 @@ function CategoryPage() {
     <div className="fallback-actions">
       <Link to="/properties" search={{ location: "Nagpur" }} className="text-link">Browse all Nagpur properties</Link>
       <Link to="/flats-in-nagpur" className="text-link">Explore flats in Nagpur</Link>
+      <Link to="/flats-for-rent-in-nagpur" className="text-link">Apartments for rent</Link>
+      <Link to="/flats-for-sale-in-nagpur" className="text-link">Apartments for sale</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
     <section className="seo-guide-copy"><h2>Apartments in Nagpur for rent and sale</h2><p>Explore apartment listings in Nagpur and compare BHK, area, asking price or rent, furnishing, parking, building amenities and commute. Availability is based on live listings and can change.</p>
