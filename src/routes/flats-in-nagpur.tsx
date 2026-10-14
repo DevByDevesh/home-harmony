@@ -11,9 +11,9 @@ export const Route = createFileRoute("/flats-in-nagpur")({
   head: () => ({
     meta: [
       { title: "Flats in Nagpur: Rent, Buy & Property Search | HouseProvider.in" },
-      { name: "description", content: "Search flats in Nagpur for rent or sale. Explore 1 BHK, 2 BHK and 3 BHK home options, houses and residential properties by budget, locality and amenities on HouseProvider.in." },
+      { name: "description", content: "Search flats in Nagpur for rent or sale. Compare available apartments by BHK, budget, locality, floor area and amenities on HouseProvider.in." },
       { property: "og:title", content: "Flats in Nagpur: Rent, Buy & Property Search | HouseProvider.in" },
-      { property: "og:description", content: "Search flats in Nagpur for rent or sale. Explore 1 BHK, 2 BHK and 3 BHK home options, houses and residential properties by budget, locality and amenities on HouseProvider.in." },
+      { property: "og:description", content: "Search flats in Nagpur for rent or sale. Compare available apartments by BHK, budget, locality, floor area and amenities on HouseProvider.in." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://houseprovider.in/flats-in-nagpur" },
       { name: "twitter:card", content: "summary_large_image" },
