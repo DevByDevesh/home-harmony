@@ -116,7 +116,7 @@ export const listLivePropertiesByCityFn = createServerFn({ method: "GET" })
     const { isDatabaseConfigured } = await import("./db/client.server");
     if (!isDatabaseConfigured()) return [];
     const { listPublicProperties } = await import("./db/repositories/properties.server");
-    const rows = await listPublicProperties({ city: data.city, propertyType: data.propertyType, listingType: data.listingType, take: 100 });
+    const rows = await listPublicProperties({ city: data.city, ...(data.propertyType ? { propertyType: data.propertyType } : {}), ...(data.listingType ? { listingType: data.listingType } : {}), take: 100 });
     return rows.map(toPublic);
   });
 
