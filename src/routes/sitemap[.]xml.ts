@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { isDatabaseConfigured, requireDb } from "@/lib/db/client.server";
 
 const ORIGIN = "https://houseprovider.in";
-const STATIC_URLS = ["/", "/properties", "/flats-in-nagpur", "/flats-for-rent-in-nagpur", "/flats-for-sale-in-nagpur", "/list-property", "/support"];
+const STATIC_URLS = ["/", "/properties", "/flats-in-nagpur", "/flats-for-rent-in-nagpur", "/flats-for-sale-in-nagpur", "/rooms-for-rent-in-nagpur", "/pg-in-nagpur", "/apartments-in-nagpur", "/houses-for-rent-in-nagpur", "/commercial-property-in-nagpur", "/list-property", "/support"];
 
 function xmlEscape(value: string) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
