@@ -5,7 +5,7 @@ import { formatDisplayPrice } from "@/lib/price-format";
 
 export const Route = createFileRoute("/flats-in-nagpur")({
   loader: async () => {
-    const rows = await listLivePropertiesByCityFn({ data: { city: "Nagpur" } });
+    const rows = await listLivePropertiesByCityFn({ data: { city: "Nagpur", propertyType: "APARTMENT" } });
     return rows.map(toListing);
   },
   head: () => ({
@@ -32,7 +32,7 @@ function NagpurFlatsPage() {
       <div className="wrap">
         <p className="kicker">NAGPUR PROPERTY GUIDE</p>
         <h1>Flats in Nagpur for Rent and Sale</h1>
-        <p>Explore property listings in Nagpur and compare the details that matter: budget, bedrooms, locality, furnishing and amenities. Open an individual listing to review its photos and property information before contacting the owner or agent.</p>
+        <p>Explore apartment listings in Nagpur for rent or sale and compare budget, bedrooms, locality, furnishing and amenities. Open an individual listing to review its photos and property information before contacting the owner or agent.</p>
         <div className="fallback-actions">
           <Link to="/properties" className="text-link">Browse all properties</Link>
           <Link to="/flats-for-rent-in-nagpur" className="text-link">Flats for rent</Link>
