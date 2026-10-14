@@ -35,7 +35,7 @@ function CategoryPage() {
       <Link to="/flats-for-sale-in-nagpur" className="text-link">Apartments for sale</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
-    <section className="seo-guide-copy"><h2>Apartments in Nagpur for rent and sale</h2><p>Explore apartment listings in Nagpur and compare BHK, area, asking price or rent, furnishing, parking, building amenities and commute. Availability is based on live listings and can change.</p>
+    <section className="seo-guide-copy">
       <h2>What to check before choosing</h2><p>Confirm the carpet or built-up area, maintenance costs, parking allocation, building facilities, occupancy status and all rental or purchase documents directly with the advertiser.</p>
       <h2>Explore Nagpur localities</h2><p>Search around the areas that fit your commute and budget, such as Manish Nagar, Besa, Beltarodi, MIHAN, Wardha Road, Dharampeth, Trimurti Nagar, Hingna, Sadar and Civil Lines. These are locality examples, not a claim that a listing is currently available in each area.</p>
     </section>
