@@ -35,7 +35,7 @@ function CategoryPage() {
       <Link to="/houses-for-rent-in-nagpur" className="text-link">Houses for rent</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
-    <section className="seo-guide-copy"><h2>Commercial property in Nagpur</h2><p>Explore commercial property listings and compare usable area, frontage, access, parking, permitted use, utilities and asking price or rent. Check suitability for your intended business before arranging a visit.</p>
+    <section className="seo-guide-copy">
       <h2>What to check before choosing</h2><p>Verify permitted land or building use, applicable approvals, lease terms, maintenance, utility capacity, taxes and any fit-out restrictions with a qualified local professional.</p>
       <h2>Explore Nagpur localities</h2><p>Search around the areas that fit your commute and budget, such as Manish Nagar, Besa, Beltarodi, MIHAN, Wardha Road, Dharampeth, Trimurti Nagar, Hingna, Sadar and Civil Lines. These are locality examples, not a claim that a listing is currently available in each area.</p>
     </section>
