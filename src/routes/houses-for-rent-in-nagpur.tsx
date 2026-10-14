@@ -35,7 +35,7 @@ function CategoryPage() {
       <Link to="/rooms-for-rent-in-nagpur" className="text-link">Rooms for rent</Link>
       <Link to="/list-property" className="text-link">List your property</Link>
     </div>
-    <section className="seo-guide-copy"><h2>Independent houses for rent in Nagpur</h2><p>Compare rental houses by monthly rent, bedrooms, floor plan, parking, outdoor space, furnishing and neighbourhood. Check whether the home is independent or part of a shared property.</p>
+    <section className="seo-guide-copy">
       <h2>What to check before choosing</h2><p>Confirm maintenance responsibilities, water supply, parking, deposit, agreement period, repair responsibilities and move-in date in writing before committing.</p>
       <h2>Explore Nagpur localities</h2><p>Search around the areas that fit your commute and budget, such as Manish Nagar, Besa, Beltarodi, MIHAN, Wardha Road, Dharampeth, Trimurti Nagar, Hingna, Sadar and Civil Lines. These are locality examples, not a claim that a listing is currently available in each area.</p>
     </section>
