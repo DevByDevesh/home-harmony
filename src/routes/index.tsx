@@ -243,6 +243,26 @@ function HomePage() {
         <div ref={showcaseSentinel} aria-hidden="true" style={{ minHeight: 1 }} />
       )}
 
+      <section className="seo-discovery-section" aria-labelledby="home-search-guides">
+        <div className="wrap">
+          <p className="kicker">FIND YOUR NEXT HOME</p>
+          <h2 id="home-search-guides">Explore homes by what you need</h2>
+          <p>HouseProvider helps you explore available homes, compare property details and contact owners or agents. Start with your budget and preferred location, then review each listing’s photos, amenities and availability before making a decision.</p>
+          <div className="fallback-actions">
+            <Link to="/properties" search={{ mode: "Rent" }} className="text-link">Explore homes for rent</Link>
+            <Link to="/properties" search={{ mode: "Buy" }} className="text-link">Explore homes for sale</Link>
+            <Link to="/flats-in-nagpur" className="text-link">Explore flats in Nagpur</Link>
+            <Link to="/list-property" className="text-link">List your property</Link>
+          </div>
+          <div className="seo-guide-copy">
+            <h3>What to check before choosing a property</h3>
+            <p>Compare the total rent or asking price, location and commute, number of bedrooms, furnishing, parking and other amenities. Confirm deposit, maintenance charges, ownership or authority to rent, move-in date and all terms directly with the owner or authorised agent before paying.</p>
+            <h3>How to find a home that fits your budget</h3>
+            <p>Use the property search filters to narrow results by location, budget and BHK. Open individual listings for the available photos and details, and verify availability and final terms with the advertiser because prices and availability can change.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="final-cta">
         <div className="wrap final-inner">
           <div className="final-copy">
