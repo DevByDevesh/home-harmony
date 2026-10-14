@@ -4,7 +4,7 @@ import { toListing } from "@/lib/property-mapper";
 import { formatDisplayPrice } from "@/lib/price-format";
 
 export const Route = createFileRoute("/flats-for-sale-in-nagpur")({
-  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur" } })).map(toListing).filter((home) => home.mode === "Buy"),
+  loader: async () => (await listLivePropertiesByCityFn({ data: { city: "Nagpur", propertyType: "APARTMENT", listingType: "BUY" } })).map(toListing),
   head: () => ({
     meta: [
       { title: "Flats for Sale in Nagpur | Buy Homes & Resale Flats | HouseProvider.in" },
