@@ -3744,3 +3744,43 @@ body:has(.filter-sheet[data-state="open"]) .support-chat { display: none !import
 @media (min-width: 761px) {
   .home-messages-fab { display:none; }
 }
+
+
+/* Mobile layout safety fix: keep the public page and its sections full-width. */
+html,
+body {
+  width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.homepage-v2 {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.homepage-v2 > .hero,
+.homepage-v2 > section,
+.homepage-v2 > div {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+.homepage-v2 .wrap {
+  box-sizing: border-box;
+  width: calc(100% - 28px);
+  max-width: 1420px;
+  margin-inline: auto;
+}
+
+@media (min-width: 681px) {
+  .homepage-v2 .wrap {
+    width: min(calc(100% - 54px), 1420px);
+  }
+}
