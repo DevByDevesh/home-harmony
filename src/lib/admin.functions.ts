@@ -18,6 +18,7 @@ export const listAdminPropertiesFn = createServerFn({ method: "GET" }).handler(a
   const { requireDb } = await import("./db/client.server");
   const db = await requireDb();
   const rows = await db.property.findMany({
+    where: { status: { not: "DELETED" } },
     orderBy: { updatedAt: "desc" },
     take: 200,
     select: {
