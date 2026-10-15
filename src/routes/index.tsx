@@ -56,6 +56,14 @@ function HomePage() {
     return () => window.clearTimeout(id);
   }, []);
   const { data: liveListings = [], isLoading, isError } = useLiveListings({ enabled: loadLive });
+  const sampleReviews = [
+    { initial: "S", rating: 5, quote: "It was easy to explore homes by budget and compare the details before reaching out.", name: "Sample reviewer 01", role: "Home seeker · Sample" },
+    { initial: "R", rating: 5, quote: "The listing layout made it simple to understand the property and what to ask the owner.", name: "Sample reviewer 02", role: "Property explorer · Sample" },
+    { initial: "A", rating: 4, quote: "Being able to narrow down the search helped me focus on homes that fit my needs.", name: "Sample reviewer 03", role: "Home seeker · Sample" },
+    { initial: "M", rating: 5, quote: "The property information gave me a useful starting point for comparing options.", name: "Sample reviewer 04", role: "Property explorer · Sample" },
+    { initial: "P", rating: 5, quote: "A clean search experience made browsing different homes feel more organised.", name: "Sample reviewer 05", role: "Home seeker · Sample" },
+    { initial: "K", rating: 4, quote: "It helped me create a shortlist and prepare better questions before contacting an advertiser.", name: "Sample reviewer 06", role: "Property explorer · Sample" },
+  ];
   const promoted = liveListings.filter((item) => item.promotion === "FEATURED");
   const boosted = liveListings.filter((item) => item.promotion === "BOOST");
   const featured = [
@@ -258,43 +266,20 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="homepage-reviews-track" aria-label="Sample customer review cards">
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>It was easy to explore homes by budget and compare the details before reaching out.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">S</span><div><strong>Sample reviewer 01</strong><span>Home seeker · Sample</span></div></div>
-            </article>
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>The listing layout made it simple to understand the property and what to ask the owner.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">R</span><div><strong>Sample reviewer 02</strong><span>Property explorer · Sample</span></div></div>
-            </article>
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="4 out of 5 stars">★★★★☆</div>
-              <p>Being able to narrow down the search helped me focus on homes that fit my needs.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">A</span><div><strong>Sample reviewer 03</strong><span>Home seeker · Sample</span></div></div>
-            </article>
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>The property information gave me a useful starting point for comparing options.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">M</span><div><strong>Sample reviewer 04</strong><span>Property explorer · Sample</span></div></div>
-            </article>
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
-              <p>A clean search experience made browsing different homes feel more organised.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">P</span><div><strong>Sample reviewer 05</strong><span>Home seeker · Sample</span></div></div>
-            </article>
-            <article className="homepage-review-card">
-              <span className="homepage-review-quote" aria-hidden="true">“</span>
-              <div className="homepage-review-stars" aria-label="4 out of 5 stars">★★★★☆</div>
-              <p>It helped me create a shortlist and prepare better questions before contacting an advertiser.</p>
-              <div className="homepage-review-person"><span className="homepage-review-avatar">K</span><div><strong>Sample reviewer 06</strong><span>Property explorer · Sample</span></div></div>
-            </article>
+          <div className="homepage-reviews-marquee" aria-label="Sample customer review cards moving horizontally">
+            <div className="homepage-reviews-track">
+              {[...sampleReviews, ...sampleReviews].map((review, index) => (
+                <article className="homepage-review-card" key={`${review.name}-${index}`} aria-hidden={index >= sampleReviews.length ? true : undefined}>
+                  <span className="homepage-review-quote" aria-hidden="true">“</span>
+                  <div className="homepage-review-stars" aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
+                  <p>{review.quote}</p>
+                  <div className="homepage-review-person">
+                    <span className="homepage-review-avatar">{review.initial}</span>
+                    <div><strong>{review.name}</strong><span>{review.role}</span></div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
           <p className="homepage-reviews-disclaimer">Preview only: these are illustrative sample reviews, not real customer testimonials.</p>
 
