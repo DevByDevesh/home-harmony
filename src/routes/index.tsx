@@ -243,6 +243,74 @@ function HomePage() {
         <div ref={showcaseSentinel} aria-hidden="true" style={{ minHeight: 1 }} />
       )}
 
+      <section className="homepage-reviews" aria-labelledby="homepage-reviews-title">
+        <div className="wrap">
+          <div className="homepage-reviews-heading">
+            <div>
+              <p className="kicker">A COMMUNITY THAT FEELS AT HOME</p>
+              <h2 id="homepage-reviews-title">Real homes. <em>Real experiences.</em></h2>
+              <p className="homepage-reviews-intro">A little insight from people exploring the next chapter of their lives.</p>
+            </div>
+            <div className="homepage-reviews-score" aria-label="Sample review section preview">
+              <span className="homepage-review-stars" aria-hidden="true">★★★★★</span>
+              <strong>Community stories</strong>
+              <span>Sample reviews · Preview content</span>
+            </div>
+          </div>
+
+          <div className="homepage-reviews-track" aria-label="Sample customer review cards">
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+              <p>It was easy to explore homes by budget and compare the details before reaching out.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">S</span><div><strong>Sample reviewer 01</strong><span>Home seeker · Sample</span></div></div>
+            </article>
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+              <p>The listing layout made it simple to understand the property and what to ask the owner.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">R</span><div><strong>Sample reviewer 02</strong><span>Property explorer · Sample</span></div></div>
+            </article>
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="4 out of 5 stars">★★★★☆</div>
+              <p>Being able to narrow down the search helped me focus on homes that fit my needs.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">A</span><div><strong>Sample reviewer 03</strong><span>Home seeker · Sample</span></div></div>
+            </article>
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+              <p>The property information gave me a useful starting point for comparing options.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">M</span><div><strong>Sample reviewer 04</strong><span>Property explorer · Sample</span></div></div>
+            </article>
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="5 out of 5 stars">★★★★★</div>
+              <p>A clean search experience made browsing different homes feel more organised.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">P</span><div><strong>Sample reviewer 05</strong><span>Home seeker · Sample</span></div></div>
+            </article>
+            <article className="homepage-review-card">
+              <span className="homepage-review-quote" aria-hidden="true">“</span>
+              <div className="homepage-review-stars" aria-label="4 out of 5 stars">★★★★☆</div>
+              <p>It helped me create a shortlist and prepare better questions before contacting an advertiser.</p>
+              <div className="homepage-review-person"><span className="homepage-review-avatar">K</span><div><strong>Sample reviewer 06</strong><span>Property explorer · Sample</span></div></div>
+            </article>
+          </div>
+          <p className="homepage-reviews-disclaimer">Preview only: these are illustrative sample reviews, not real customer testimonials.</p>
+
+          <div className="homepage-review-form" id="share-experience">
+            <div className="homepage-review-form-heading">
+              <p className="kicker">SHARE YOUR EXPERIENCE</p>
+              <h3>Have feedback for us?</h3>
+              <p>We’d love to hear how your HouseProvider search is going.</p>
+            </div>
+            <Link to="/support" className="homepage-review-contact">
+              Share feedback with our team <ArrowUpRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="seo-discovery-section" aria-labelledby="home-search-guides">
         <div className="wrap">
           <p className="kicker">FIND YOUR NEXT HOME</p>
