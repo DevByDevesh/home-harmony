@@ -4091,3 +4091,126 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .homepage-v2 .homepage-review-card { transition: none; }
 }
+
+
+/* Mobile viewport and layout guardrails: apply across every public route, not just home. */
+.page-entrance {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 680px) {
+  html,
+  body,
+  #root,
+  .page-entrance,
+  .homepage-v2,
+  .results-page,
+  .detail-page,
+  .support-page {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .wrap {
+    box-sizing: border-box;
+    width: calc(100% - 28px);
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  main,
+  section,
+  article,
+  header,
+  footer,
+  nav,
+  form,
+  .wrap,
+  .home-grid,
+  .results-toolbar,
+  .detail-layout,
+  .marketplace-primary-layout {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  iframe,
+  canvas {
+    max-width: 100%;
+  }
+
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-tile,
+  .tile-media,
+  .tile-info,
+  .tile-specs,
+  .tile-meta {
+    min-width: 0;
+  }
+
+  .navigation-inner .wordmark {
+    min-width: 0;
+    max-width: calc(100% - 110px);
+    gap: 7px;
+    font-size: clamp(14px, 4vw, 18px);
+  }
+
+  .navigation-inner .wordmark > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .navigation-inner .nav-actions {
+    flex-shrink: 0;
+  }
+
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .homepage-v2 .homepage-reviews-heading,
+  .homepage-v2 .homepage-review-form {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .homepage-v2 .homepage-review-contact {
+    box-sizing: border-box;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .wrap {
+    width: calc(100% - 24px);
+  }
+
+  .navigation-inner {
+    gap: 6px;
+  }
+
+  .navigation-inner .wordmark-symbol {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    font-size: 20px;
+  }
+
+  .homepage-v2 .homepage-reviews {
+    padding-block: 44px;
+  }
+
+  .homepage-v2 .homepage-review-card {
+    flex-basis: min(86vw, 340px);
+    width: min(86vw, 340px);
+  }
+}
