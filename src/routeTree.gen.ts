@@ -13,17 +13,26 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AgentRouteImport } from './routes/agent'
+import { Route as ApartmentsInNagpurRouteImport } from './routes/apartments-in-nagpur'
+import { Route as CommercialPropertyInNagpurRouteImport } from './routes/commercial-property-in-nagpur'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as FlatsForRentInNagpurRouteImport } from './routes/flats-for-rent-in-nagpur'
+import { Route as FlatsForSaleInNagpurRouteImport } from './routes/flats-for-sale-in-nagpur'
+import { Route as FlatsInNagpurRouteImport } from './routes/flats-in-nagpur'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HousesForRentInNagpurRouteImport } from './routes/houses-for-rent-in-nagpur'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as PgInNagpurRouteImport } from './routes/pg-in-nagpur'
 import { Route as PropertiesRouteImport } from './routes/properties'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RoomsForRentInNagpurRouteImport } from './routes/rooms-for-rent-in-nagpur'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAgentsRouteImport } from './routes/admin.agents'
@@ -69,6 +78,17 @@ const AgentRoute = AgentRouteImport.update({
   path: '/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApartmentsInNagpurRoute = ApartmentsInNagpurRouteImport.update({
+  id: '/apartments-in-nagpur',
+  path: '/apartments-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommercialPropertyInNagpurRoute =
+  CommercialPropertyInNagpurRouteImport.update({
+    id: '/commercial-property-in-nagpur',
+    path: '/commercial-property-in-nagpur',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
@@ -79,9 +99,29 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FlatsForRentInNagpurRoute = FlatsForRentInNagpurRouteImport.update({
+  id: '/flats-for-rent-in-nagpur',
+  path: '/flats-for-rent-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlatsForSaleInNagpurRoute = FlatsForSaleInNagpurRouteImport.update({
+  id: '/flats-for-sale-in-nagpur',
+  path: '/flats-for-sale-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlatsInNagpurRoute = FlatsInNagpurRouteImport.update({
+  id: '/flats-in-nagpur',
+  path: '/flats-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HousesForRentInNagpurRoute = HousesForRentInNagpurRouteImport.update({
+  id: '/houses-for-rent-in-nagpur',
+  path: '/houses-for-rent-in-nagpur',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ListPropertyRoute = ListPropertyRouteImport.update({
@@ -104,6 +144,11 @@ const OwnerRoute = OwnerRouteImport.update({
   path: '/owner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PgInNagpurRoute = PgInNagpurRouteImport.update({
+  id: '/pg-in-nagpur',
+  path: '/pg-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PropertiesRoute = PropertiesRouteImport.update({
   id: '/properties',
   path: '/properties',
@@ -114,6 +159,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoomsForRentInNagpurRoute = RoomsForRentInNagpurRouteImport.update({
+  id: '/rooms-for-rent-in-nagpur',
+  path: '/rooms-for-rent-in-nagpur',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -122,6 +172,11 @@ const SavedRoute = SavedRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -251,17 +306,26 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
+  '/apartments-in-nagpur': typeof ApartmentsInNagpurRoute
+  '/commercial-property-in-nagpur': typeof CommercialPropertyInNagpurRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/flats-for-rent-in-nagpur': typeof FlatsForRentInNagpurRoute
+  '/flats-for-sale-in-nagpur': typeof FlatsForSaleInNagpurRoute
+  '/flats-in-nagpur': typeof FlatsInNagpurRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/houses-for-rent-in-nagpur': typeof HousesForRentInNagpurRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
+  '/pg-in-nagpur': typeof PgInNagpurRoute
   '/properties': typeof PropertiesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rooms-for-rent-in-nagpur': typeof RoomsForRentInNagpurRoute
   '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -291,17 +355,26 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/agent': typeof AgentRoute
+  '/apartments-in-nagpur': typeof ApartmentsInNagpurRoute
+  '/commercial-property-in-nagpur': typeof CommercialPropertyInNagpurRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/flats-for-rent-in-nagpur': typeof FlatsForRentInNagpurRoute
+  '/flats-for-sale-in-nagpur': typeof FlatsForSaleInNagpurRoute
+  '/flats-in-nagpur': typeof FlatsInNagpurRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/houses-for-rent-in-nagpur': typeof HousesForRentInNagpurRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
+  '/pg-in-nagpur': typeof PgInNagpurRoute
   '/properties': typeof PropertiesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rooms-for-rent-in-nagpur': typeof RoomsForRentInNagpurRoute
   '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -333,17 +406,26 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
   '/agent': typeof AgentRoute
+  '/apartments-in-nagpur': typeof ApartmentsInNagpurRoute
+  '/commercial-property-in-nagpur': typeof CommercialPropertyInNagpurRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
+  '/flats-for-rent-in-nagpur': typeof FlatsForRentInNagpurRoute
+  '/flats-for-sale-in-nagpur': typeof FlatsForSaleInNagpurRoute
+  '/flats-in-nagpur': typeof FlatsInNagpurRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/houses-for-rent-in-nagpur': typeof HousesForRentInNagpurRoute
   '/list-property': typeof ListPropertyRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/owner': typeof OwnerRoute
+  '/pg-in-nagpur': typeof PgInNagpurRoute
   '/properties': typeof PropertiesRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/rooms-for-rent-in-nagpur': typeof RoomsForRentInNagpurRoute
   '/saved': typeof SavedRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/admin/agents': typeof AdminAgentsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -376,17 +458,26 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/agent'
+    | '/apartments-in-nagpur'
+    | '/commercial-property-in-nagpur'
     | '/compare'
     | '/dashboard'
+    | '/flats-for-rent-in-nagpur'
+    | '/flats-for-sale-in-nagpur'
+    | '/flats-in-nagpur'
     | '/forgot-password'
+    | '/houses-for-rent-in-nagpur'
     | '/list-property'
     | '/login'
     | '/messages'
     | '/owner'
+    | '/pg-in-nagpur'
     | '/properties'
     | '/reset-password'
+    | '/rooms-for-rent-in-nagpur'
     | '/saved'
     | '/signup'
+    | '/sitemap.xml'
     | '/support'
     | '/admin/agents'
     | '/admin/analytics'
@@ -416,17 +507,26 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/agent'
+    | '/apartments-in-nagpur'
+    | '/commercial-property-in-nagpur'
     | '/compare'
     | '/dashboard'
+    | '/flats-for-rent-in-nagpur'
+    | '/flats-for-sale-in-nagpur'
+    | '/flats-in-nagpur'
     | '/forgot-password'
+    | '/houses-for-rent-in-nagpur'
     | '/list-property'
     | '/login'
     | '/messages'
     | '/owner'
+    | '/pg-in-nagpur'
     | '/properties'
     | '/reset-password'
+    | '/rooms-for-rent-in-nagpur'
     | '/saved'
     | '/signup'
+    | '/sitemap.xml'
     | '/support'
     | '/admin/agents'
     | '/admin/analytics'
@@ -457,17 +557,26 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/agent'
+    | '/apartments-in-nagpur'
+    | '/commercial-property-in-nagpur'
     | '/compare'
     | '/dashboard'
+    | '/flats-for-rent-in-nagpur'
+    | '/flats-for-sale-in-nagpur'
+    | '/flats-in-nagpur'
     | '/forgot-password'
+    | '/houses-for-rent-in-nagpur'
     | '/list-property'
     | '/login'
     | '/messages'
     | '/owner'
+    | '/pg-in-nagpur'
     | '/properties'
     | '/reset-password'
+    | '/rooms-for-rent-in-nagpur'
     | '/saved'
     | '/signup'
+    | '/sitemap.xml'
     | '/support'
     | '/admin/agents'
     | '/admin/analytics'
@@ -499,17 +608,26 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRouteWithChildren
   AgentRoute: typeof AgentRoute
+  ApartmentsInNagpurRoute: typeof ApartmentsInNagpurRoute
+  CommercialPropertyInNagpurRoute: typeof CommercialPropertyInNagpurRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
+  FlatsForRentInNagpurRoute: typeof FlatsForRentInNagpurRoute
+  FlatsForSaleInNagpurRoute: typeof FlatsForSaleInNagpurRoute
+  FlatsInNagpurRoute: typeof FlatsInNagpurRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HousesForRentInNagpurRoute: typeof HousesForRentInNagpurRoute
   ListPropertyRoute: typeof ListPropertyRoute
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   OwnerRoute: typeof OwnerRoute
+  PgInNagpurRoute: typeof PgInNagpurRoute
   PropertiesRoute: typeof PropertiesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RoomsForRentInNagpurRoute: typeof RoomsForRentInNagpurRoute
   SavedRoute: typeof SavedRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   OwnerCompanyRoute: typeof OwnerCompanyRoute
   OwnerNewRoute: typeof OwnerNewRoute
@@ -549,6 +667,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apartments-in-nagpur': {
+      id: '/apartments-in-nagpur'
+      path: '/apartments-in-nagpur'
+      fullPath: '/apartments-in-nagpur'
+      preLoaderRoute: typeof ApartmentsInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commercial-property-in-nagpur': {
+      id: '/commercial-property-in-nagpur'
+      path: '/commercial-property-in-nagpur'
+      fullPath: '/commercial-property-in-nagpur'
+      preLoaderRoute: typeof CommercialPropertyInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare': {
       id: '/compare'
       path: '/compare'
@@ -563,11 +695,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/flats-for-rent-in-nagpur': {
+      id: '/flats-for-rent-in-nagpur'
+      path: '/flats-for-rent-in-nagpur'
+      fullPath: '/flats-for-rent-in-nagpur'
+      preLoaderRoute: typeof FlatsForRentInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flats-for-sale-in-nagpur': {
+      id: '/flats-for-sale-in-nagpur'
+      path: '/flats-for-sale-in-nagpur'
+      fullPath: '/flats-for-sale-in-nagpur'
+      preLoaderRoute: typeof FlatsForSaleInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flats-in-nagpur': {
+      id: '/flats-in-nagpur'
+      path: '/flats-in-nagpur'
+      fullPath: '/flats-in-nagpur'
+      preLoaderRoute: typeof FlatsInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/houses-for-rent-in-nagpur': {
+      id: '/houses-for-rent-in-nagpur'
+      path: '/houses-for-rent-in-nagpur'
+      fullPath: '/houses-for-rent-in-nagpur'
+      preLoaderRoute: typeof HousesForRentInNagpurRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/list-property': {
@@ -598,6 +758,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pg-in-nagpur': {
+      id: '/pg-in-nagpur'
+      path: '/pg-in-nagpur'
+      fullPath: '/pg-in-nagpur'
+      preLoaderRoute: typeof PgInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/properties': {
       id: '/properties'
       path: '/properties'
@@ -612,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rooms-for-rent-in-nagpur': {
+      id: '/rooms-for-rent-in-nagpur'
+      path: '/rooms-for-rent-in-nagpur'
+      fullPath: '/rooms-for-rent-in-nagpur'
+      preLoaderRoute: typeof RoomsForRentInNagpurRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -624,6 +798,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -844,17 +1025,26 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AdminRoute: AdminRouteWithChildren,
   AgentRoute: AgentRoute,
+  ApartmentsInNagpurRoute: ApartmentsInNagpurRoute,
+  CommercialPropertyInNagpurRoute: CommercialPropertyInNagpurRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
+  FlatsForRentInNagpurRoute: FlatsForRentInNagpurRoute,
+  FlatsForSaleInNagpurRoute: FlatsForSaleInNagpurRoute,
+  FlatsInNagpurRoute: FlatsInNagpurRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HousesForRentInNagpurRoute: HousesForRentInNagpurRoute,
   ListPropertyRoute: ListPropertyRoute,
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   OwnerRoute: OwnerRoute,
+  PgInNagpurRoute: PgInNagpurRoute,
   PropertiesRoute: PropertiesRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RoomsForRentInNagpurRoute: RoomsForRentInNagpurRoute,
   SavedRoute: SavedRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   OwnerCompanyRoute: OwnerCompanyRoute,
   OwnerNewRoute: OwnerNewRoute,
