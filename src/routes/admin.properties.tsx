@@ -73,7 +73,7 @@ function AdminProperties() {
       confirm: "Delete permanently",
       onConfirm: () => void moderate(p, "DELETE"),
     }) },
-{ label: "Archive", hidden: p.status === "ARCHIVED", destructive: true, onSelect: () => ask({
+{ label: "Archive", hidden: p.status === "ARCHIVED" || p.status === "DELETED", destructive: true, onSelect: () => ask({
       title: `Archive “${p.title}”?`,
       description: "Archived listings are hidden from seekers but retained in the database.",
       confirm: "Archive",
