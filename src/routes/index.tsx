@@ -289,9 +289,9 @@ function HomePage() {
               <h3>Have feedback for us?</h3>
               <p>We’d love to hear how your HouseProvider search is going.</p>
             </div>
-            <Link to="/support" className="homepage-review-contact">
+            <a href="/support" className="homepage-review-contact">
               Share feedback with our team <ArrowUpRight size={16} />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
