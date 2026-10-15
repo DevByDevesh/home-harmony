@@ -259,10 +259,10 @@ function HomePage() {
               <h2 id="homepage-reviews-title">Real homes. <em>Real experiences.</em></h2>
               <p className="homepage-reviews-intro">A little insight from people exploring the next chapter of their lives.</p>
             </div>
-            <div className="homepage-reviews-score" aria-label="Sample review section preview">
+            <div className="homepage-reviews-score" aria-label="Community stories">
               <span className="homepage-review-stars" aria-hidden="true">★★★★★</span>
               <strong>Community stories</strong>
-              <span>Sample reviews · Preview content</span>
+              <span>Finding a place to call home</span>
             </div>
           </div>
 
