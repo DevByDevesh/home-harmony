@@ -4028,3 +4028,66 @@ body {
     mask-image: none;
   }
 }
+
+
+/* Match homepage review carousel to HouseProvider's existing light plum/rose theme. */
+.homepage-v2 .homepage-reviews {
+  color: #342c32;
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(255, 179, 154, .24), transparent 38%),
+    radial-gradient(ellipse at 100% 100%, rgba(84, 42, 82, .08), transparent 44%),
+    linear-gradient(135deg, #faf7f5 0%, #f3e9e6 55%, #f8f4f2 100%);
+}
+.homepage-v2 .homepage-reviews::before {
+  opacity: .22;
+  background-image: linear-gradient(rgba(84,42,82,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(84,42,82,.045) 1px, transparent 1px);
+}
+.homepage-v2 .homepage-reviews-heading .kicker,
+.homepage-v2 .homepage-review-form-heading .kicker { color: #542a52; }
+.homepage-v2 .homepage-reviews-heading h2 { color: #342c32; }
+.homepage-v2 .homepage-reviews-heading h2 em { color: #542a52; }
+.homepage-v2 .homepage-reviews-intro { color: #6c6068; }
+.homepage-v2 .homepage-reviews-score {
+  border-color: rgba(84,42,82,.16);
+  background: rgba(255,255,255,.64);
+}
+.homepage-v2 .homepage-reviews-score strong { color: #342c32; }
+.homepage-v2 .homepage-reviews-score > span:last-child { color: #7a6c75; }
+.homepage-v2 .homepage-review-stars { color: #a97831; }
+.homepage-v2 .homepage-review-card {
+  border-color: rgba(84,42,82,.14);
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(255,250,248,.84));
+  box-shadow: 0 14px 36px rgba(65,42,57,.055);
+}
+.homepage-v2 .homepage-review-card:hover {
+  border-color: rgba(84,42,82,.34);
+  background: linear-gradient(145deg, #fff, #fdf2ee);
+  box-shadow: 0 18px 42px rgba(65,42,57,.10);
+}
+.homepage-v2 .homepage-review-quote { color: #542a52; }
+.homepage-v2 .homepage-review-card > p { color: #5f555b; }
+.homepage-v2 .homepage-review-person { border-top-color: rgba(84,42,82,.12); }
+.homepage-v2 .homepage-review-avatar {
+  border-color: rgba(84,42,82,.28);
+  color: #542a52;
+  background: #f8eeeb;
+}
+.homepage-v2 .homepage-review-person strong { color: #342c32; }
+.homepage-v2 .homepage-review-person > div > span { color: #7c536f; }
+.homepage-v2 .homepage-reviews-disclaimer { color: #766a72; }
+.homepage-v2 .homepage-review-form {
+  border-color: rgba(84,42,82,.14);
+  background: rgba(255,255,255,.58);
+  box-shadow: 0 14px 36px rgba(65,42,57,.045);
+}
+.homepage-v2 .homepage-review-form-heading h3 { color: #342c32; }
+.homepage-v2 .homepage-review-form-heading > p:last-child { color: #6c6068; }
+.homepage-v2 .homepage-review-contact {
+  border-color: #542a52;
+  background: #542a52;
+  color: #fffaf7;
+}
+.homepage-v2 .homepage-review-contact:hover { background: #3e203d; color: #fffaf7; }
+@media (prefers-reduced-motion: reduce) {
+  .homepage-v2 .homepage-review-card { transition: none; }
+}
