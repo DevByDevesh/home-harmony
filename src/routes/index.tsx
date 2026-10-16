@@ -315,10 +315,14 @@ function HomePage() {
             <Link to="/list-property" className="text-link">List your property</Link>
           </div>
           <div className="seo-guide-copy">
-            <h3>What to check before choosing a property</h3>
-            <p>Compare the total rent or asking price, location and commute, number of bedrooms, furnishing, parking and other amenities. Confirm deposit, maintenance charges, ownership or authority to rent, move-in date and all terms directly with the owner or authorised agent before paying.</p>
-            <h3>How to find a home that fits your budget</h3>
-            <p>Use the property search filters to narrow results by location, budget and BHK. Open individual listings for the available photos and details, and verify availability and final terms with the advertiser because prices and availability can change.</p>
+            <article>
+              <h3>What to check before choosing a property</h3>
+              <p>Compare the total rent or asking price, location and commute, number of bedrooms, furnishing, parking and other amenities. Confirm deposit, maintenance charges, ownership or authority to rent, move-in date and all terms directly with the owner or authorised agent before paying.</p>
+            </article>
+            <article>
+              <h3>How to find a home that fits your budget</h3>
+              <p>Use the property search filters to narrow results by location, budget and BHK. Open individual listings for the available photos and details, and verify availability and final terms with the advertiser because prices and availability can change.</p>
+            </article>
           </div>
         </div>
       </section>

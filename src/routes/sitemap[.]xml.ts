@@ -23,7 +23,7 @@ function sitemapResponse(urls: Array<{ loc: string; lastmod?: string }>) {
   });
 }
 
-export const Route = createFileRoute("/sitemap[.]xml")({
+export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
