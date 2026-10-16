@@ -14,7 +14,7 @@ import { getCurrentUser } from "@/lib/auth/auth.functions";
 import { SUPPORT_EMAIL } from "@/lib/support";
 
 function NotFoundPage() { return <main className="fallback wrap"><p className="kicker">NOT FOUND</p><h1>That place isn’t here.</h1><p>The page may have moved, but there are more homes to explore.</p><Button asChild><Link to="/properties">Explore homes</Link></Button></main>; }
-function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorPage({ error, reset }: { error: unknown; reset: () => void }) {
   const router = useRouter();
   return <main className="fallback wrap"><p className="kicker">SOMETHING WENT WRONG</p><h1>This page didn’t load.</h1><p>Try again or return to the home page.</p><div className="fallback-actions"><Button onClick={() => { router.invalidate(); reset(); }}>Try again</Button><Button asChild variant="outline"><Link to="/">Go home</Link></Button></div></main>;
 }
